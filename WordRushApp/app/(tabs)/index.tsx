@@ -3,12 +3,17 @@ import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import React from 'react';
 
+type ApiData = {
+  message?: string;
+  // add other fields if needed
+};
+
 export default function TabOneScreen() {
-  const [data,setdata] = React.useState<any>(undefined);
+  const [data, setdata] = React.useState<ApiData | undefined>(undefined);
   React.useEffect(() => {
     const getAPiData = async () => {
-      let result = await fetch('http://localhost:5178/api/games');
-        let data = await result.json();
+      const result = await fetch('http://localhost:5178/api/games');
+        const data = await result.json();
         setdata(data);
         console.log(data);
     };
@@ -20,7 +25,7 @@ export default function TabOneScreen() {
       {data && (     
           <Text style={styles.title}>{data.message}</Text>        
       )}
-      <Text style={styles.title}>{data.message}</Text>
+      <Text style={styles.title}>{data?.message}</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <EditScreenInfo path="app/(tabs)/index.tsx" />  
     </View>
