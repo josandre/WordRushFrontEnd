@@ -1,10 +1,16 @@
 import * as React from 'react';
-import renderer from 'react-test-renderer';
-
+import { render, cleanup } from '@testing-library/react-native';
 import { MonoText } from '../StyledText';
 
-it(`renders correctly`, () => {
-  const tree = renderer.create(<MonoText>Snapshot test!</MonoText>).toJSON();
+// Stabilize theme so it doesn't flip between light/dark in CI
+jest.mock('../useColorScheme', () => ({
+    useColorScheme: () => 'light',
+}));
 
-  expect(tree).toMatchSnapshot();
+afterEach(cleanup);
+
+it('renders correctly', () => {
+    const { toJSON, unmount } = render(<MonoText>Snapshot test!</MonoText>);
+    expect(toJSON()).toMatchSnapshot();
+    unmount();
 });

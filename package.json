@@ -37,6 +37,7 @@
     "@babel/core": "^7.25.2",
     "@eslint/js": "^9.35.0",
     "@eslint/json": "^0.13.2",
+    "@testing-library/react-native": "^13.3.3",
     "@types/react": "~19.0.10",
     "eslint": "^9.35.0",
     "eslint-plugin-react": "^7.37.5",
