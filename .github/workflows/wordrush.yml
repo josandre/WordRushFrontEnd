@@ -39,7 +39,7 @@ jobs:
         run: npm test -- --ci --watchAll=false --runInBand
 
       - name: Build check (Expo export)
-        run: npx expo export --platform web --output dist
+        run: npx expo export --platform web --output-dir dist
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
