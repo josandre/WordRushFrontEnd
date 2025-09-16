@@ -1,0 +1,38 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Logs
+*.log
+*.tmp
+*.swp
+
+# Metro
+.expo/
+.expo-shared/
+
+# React Native
+/ios/Pods/
+/ios/build/
+/android/.gradle/
+/android/app/build/
+/android/build/
+/android/local.properties
+
+# Bundler
+*.bundle
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Testing
+/coverage/
