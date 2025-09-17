@@ -36,6 +36,70 @@ Se generan types/DTOs desde Swagger/OpenAPI del backend para asegurar contratos 
 - *Calidad*: ESLint + Prettier + Husky (pre-commit).
 
 ---
+# 📐 Estándares de Desarrollo
+
+## Estrategia de ramas (Git)
+
+**Modelo de ramas:**
+- `main` → Solo versiones **estables**.
+- `develop` → Rama de integración de **features**.
+- `feature/` → Ramas de trabajo creadas desde `develop`.
+
+**Convenciones de nombres:**
+- Formato: `feature/<idTarea>`
+- Ejemplo: `feature/1234-login-con-jwt`
+
+## Reglas de Merge
+
+- **Hacia develop**:
+    - Pull Request (PR) obligatorio.
+    - Estrategia: **Squash & Merge**.
+
+- **Hacia main**:
+    - Solo permitido desde `develop`.
+
+
+## Convención de nombres
+
+- **Componentes React / Screens**: `PascalCase` → `LoginScreen`, `UserCard`
+- **Hooks personalizados**: `camelCase` con prefijo `use` → `useAuth`, `useUserProfile`
+- **Interfaces / Types (TypeScript)**: `PascalCase` → `User`, `TodoItem`, `ApiResponse`
+- **Funciones y métodos**: `camelCase` → `fetchData()`, `handleSubmit()`
+- **Variables locales / parámetros**: `camelCase` → `userName`, `isLoading`
+- **Constantes (globales o config)**: `UPPER_SNAKE_CASE` → `API_BASE_URL`, `MAX_RETRY_COUNT`
+- **Archivos**:
+    - Componentes → `PascalCase.tsx` → `UserCard.tsx`
+    - Hooks / utilidades → `camelCase.ts` → `useAuth.ts`, `formatDate.ts`
+    - Estilos → `componentName.styles.ts`
+- **Estado global (Zustand/Redux)**: `camelCase` para slices y stores → `authStore`, `useAppStore`
+- **Tests**: mismo nombre del archivo + `.test.tsx` o `.spec.ts`
+
+## Reglas de Merge
+
+- **Hacia develop**:
+    - Pull Request (PR) obligatorio.
+    - Estrategia: **Squash & Merge**.
+
+- **Hacia main**:
+    - Solo permitido desde `develop`.
+
+---
+
+## ⚙️ Pipelines CI/CD
+
+- Los **pipelines** se ejecutan automáticamente **cuando se realiza un `push` en cualquier rama**.
+- El flujo incluye las siguientes etapas:
+
+1. **Set up job**
+2. **Checkout code**
+3. **Setup .NET**
+4. **Restore dependencies**
+5. **Build**
+6. **Run tests**
+7. **Post Setup .NET**
+8. **Post Checkout code**
+9. **Complete job**
+---
 
 ## ⚙️ Setup local
 
