@@ -11,9 +11,6 @@
   "test": "jest --watchAll",
   "lint": "npx eslint app --fix"
 },
-"resolutions": {
-  "eslint-plugin-react-native": "^4.1.0"
-},
   "jest": {
     "preset": "jest-expo"
   },
