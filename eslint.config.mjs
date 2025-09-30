@@ -9,7 +9,15 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["node_modules", "dist", "build", "android", "ios"],
+    ignores: [
+      "node_modules",
+      "dist",
+      "build",
+      "android",
+      "ios",
+      "*.mjs",
+      "eslint.config.mjs", // Exclude this config file from linting
+    ],
   },
 
   // JavaScript recommended rules
