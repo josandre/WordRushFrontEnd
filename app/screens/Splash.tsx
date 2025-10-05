@@ -15,7 +15,7 @@ export default function Splash() {
         <SafeAreaView style={[style.area, { backgroundColor: Colors.bg,  }]}>
             <StatusBar translucent={true} backgroundColor='transparent' barStyle={'light-content'} />
             <ImageBackground source={require('../../assets/image/bg.png')} resizeMode='stretch' style={{ flex: 1,justifyContent:'center',alignItems:'center' }}>
-                <Image source={require('../../assets/image/Logo.png')} resizeMode='stretch' style={{ height: 166, width: 124 }} />
+                <Image source={require('../../assets/image/Logo.png')} resizeMode='stretch' style={{ height: 166, width: 140 }} />
             </ImageBackground>
         </SafeAreaView>
     )
