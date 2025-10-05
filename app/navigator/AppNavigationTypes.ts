@@ -1,15 +1,11 @@
 import { StackNavigationProp } from '@react-navigation/stack';
 
-type AppRoutes = {
+export type AppRoutes = {
   Home: undefined;
-  Login: undefined;
+  Login: { fromRegisterSuccess: boolean };
   MyTabs: undefined;
-  NewPass: undefined;
   Option: undefined;
-  Pass: undefined;
-  Reset: undefined;
   Signup: undefined;
-  User: undefined;
 };
 
 
