@@ -3,7 +3,6 @@
 # dependencies
 node_modules/
 
-.idea
 
 # Expo
 .expo/
@@ -31,6 +30,13 @@ yarn-error.*
 # macOS
 .DS_Store
 *.pem
+
+# macOS
+.vs/
+.vscode/
+.idea/
+*.sln.iml
+
 
 # local env files
 .env*.local
