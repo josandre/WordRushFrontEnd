@@ -41,7 +41,8 @@ export default StyleSheet.create({
     authCtaRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        marginTop: 20
     },
     authCtaButton: {
         marginVertical: 20

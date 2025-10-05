@@ -16,7 +16,7 @@ export default function AuthCTA({ title, onSignUp, onLogin }: AuthCTAProps) {
         <View style={mstyles.authCtaContainer}>
             <Text style={mstyles.authCtaTitle}>{title}</Text>
 
-            <PrimaryButton title={SIGN_UP_TITLE} onPress={onSignUp} containerStyle={mstyles.authCtaButton} />
+            <PrimaryButton title={SIGN_UP_TITLE} onPress={onSignUp} />
 
             <View style={mstyles.authCtaRow}>
                 <Text style={mstyles.authCtaHintText}>{LOGIN_HELPER_TEXT}</Text>
