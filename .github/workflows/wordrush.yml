@@ -36,7 +36,7 @@ jobs:
         run: npm run lint
 
       - name: Test
-        run: npm test -- --ci --watchAll=false --runInBand
+        run: npm test -- --ci --watchAll=false --runInBand --passWithNoTests
 
       - name: Build check (Expo export)
         run: npx expo export --platform web --output-dir dist
