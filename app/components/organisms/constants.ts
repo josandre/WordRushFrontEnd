@@ -11,7 +11,7 @@ export enum ERROR_FORM_MESSAGES {
   InvalidEmail = "Enter a valid email",
   RequiredEmail = "Email is required",
   PasswordValidation = "Password must be at least 6 characters",
-  PasswordRequired = "Password must be at least 6 characters",
+  PasswordRequired = "Password is required",
   PasswordMatchValidation = "Passwords do not match",
   PasswordConfirmation = "Please confirm your password",
 }
