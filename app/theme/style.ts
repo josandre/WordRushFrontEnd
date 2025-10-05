@@ -1,8 +1,6 @@
 import { StyleSheet, Dimensions } from "react-native";
 import { Colors } from "./color";
 
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 const width = Dimensions.get('screen').width
 const height = Dimensions.get('screen').height
 
@@ -172,6 +170,10 @@ export default StyleSheet.create({
     icon:{
         height:24,width:24,borderRadius:30,borderColor:'#E6E6E6',borderWidth:1,justifyContent:'center',alignItems:'center'
     },
+
+    container: {
+      marginTop: 10
+    }, 
 
     btn: {
         backgroundColor: Colors.primary,

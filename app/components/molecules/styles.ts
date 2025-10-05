@@ -45,7 +45,85 @@ export default StyleSheet.create({
     },
     authCtaButton: {
         marginVertical: 20
+    },
+    // Login molecules
+    socialButton: {
+        ...base.btn,
+        marginTop: 15,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    socialIcon: {
+        height: 22,
+        width: 22
+    },
+    socialLabel: {
+        ...base.m16,
+        marginLeft: 20
+    },
+    orRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 25
+    },
+    orDivider: {
+        ...base.divider,
+        flex: 1
+    },
+    orText: {
+        ...base.r16,
+        marginHorizontal: 20
+    },
+    fieldLabel: {
+        ...base.r14,
+        marginTop: 10
+    },
+    fieldContainer: {
+        ...base.inputcontainer,
+        marginTop: 8
+    },
+    textInput: {
+        ...base.r14,
+        flex: 1,
+        marginBottom: -4,
+        marginLeft: 10
+    },
+    forgotLink: {
+        ...base.m16,
+        textAlign: 'center',
+        marginTop: 30
+    },
+    termsText: {
+        ...base.r14,
+        textAlign: 'center',
+        lineHeight: 24,
+        marginTop: 20
+    },
+    errorText: {
+        ...base.r14,
+        color: '#D32F2F',
+        marginTop: 6
+    },
+    // Option actions
+    optionLoginButton: {
+        marginTop: 20
+    },
+    optionSignupButton: {
+        marginTop: 15,
+        backgroundColor: Colors.btn
+    },
+    optionSignupText: {
+        color: Colors.primary
+    },
+    optionLaterButton: {
+        marginTop: 15,
+        backgroundColor: Colors.bg
+    },
+    optionLaterText: {
+        color: Colors.disable
+    },
+    actionsContainer: {
+        marginTop: 15
     }
 })
-
-
