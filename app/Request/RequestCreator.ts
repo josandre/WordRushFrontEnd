@@ -1,72 +1,91 @@
-import { Platform } from 'react-native'
+import { Platform } from "react-native";
 
 export class RequestCreator {
-  private readonly baseUrl: string
+  private readonly baseUrl: string;
 
   constructor() {
     this.baseUrl =
       (process.env.EXPO_PUBLIC_API_BASE as string) ||
-      (Platform.OS === 'android' ? 'http://10.0.2.2:5178' : 'http://127.0.0.1:5178')
+      (Platform.OS === "android"
+        ? "http://10.0.2.2:5178"
+        : "http://127.0.0.1:5178");
   }
 
-  private extractErrorMessage = (body: any): string | undefined  => {
-    if (!body) return undefined
-    if (typeof body === 'string') return body
-    if (typeof body === 'object') {
-        
-        if (typeof body.message === 'string') return body.message
-        if (Array.isArray(body.errors)) {
-            const first = body.errors[0]
-            if (typeof first === 'string') return first
-            if (first && typeof first.message === 'string') return first.message
-        }
-        
-        for (const key of Object.keys(body)) {
-            const val = (body as any)[key]
-            if (typeof val === 'string') return val
-        }
+  private extractErrorMessage = (body: any): string | undefined => {
+    if (!body) return undefined;
+    if (typeof body === "string") return body;
+    if (typeof body === "object") {
+      if (typeof body.message === "string") return body.message;
+      if (Array.isArray(body.errors)) {
+        const first = body.errors[0];
+        if (typeof first === "string") return first;
+        if (first && typeof first.message === "string") return first.message;
+      }
+
+      for (const key of Object.keys(body)) {
+        const val = (body as any)[key];
+        if (typeof val === "string") return val;
+      }
     }
-    return undefined
-  }
-
+    return undefined;
+  };
 
   private async request<T>(
     path: string,
-    options: RequestInit
-  ): Promise<{ success: boolean; data?: T; errorMessage?: string; status?: number; details?: unknown }> {
-    
+    options: RequestInit,
+  ): Promise<{
+    success: boolean;
+    data?: T;
+    errorMessage?: string;
+    status?: number;
+    details?: unknown;
+  }> {
     try {
       const response = await fetch(`${this.baseUrl}${path}`, {
-        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {}),
+        },
         ...options,
-      })
+      });
 
-      const contentType = response.headers.get('content-type') || ''
-      const isJson = contentType.includes('application/json')
+      const contentType = response.headers.get("content-type") || "";
+      const isJson = contentType.includes("application/json");
       const body: unknown = isJson
         ? await response.json().catch(() => undefined)
-        : await response.text().catch(() => undefined)
+        : await response.text().catch(() => undefined);
 
       if (!response.ok) {
-        const message = this.extractErrorMessage(body) || `Request failed (${response.status})`
-        return { success: false, errorMessage: message, status: response.status, details: body }
+        const message =
+          this.extractErrorMessage(body) ||
+          `Request failed (${response.status})`;
+        return {
+          success: false,
+          errorMessage: message,
+          status: response.status,
+          details: body,
+        };
       }
 
-      return { success: true, data: body as T }
+      return { success: true, data: body as T };
     } catch (err: any) {
-      return { success: false, errorMessage: err?.message || 'Network error' }
+      return { success: false, errorMessage: err?.message || "Network error" };
     }
   }
 
-  public async post<T>(path: string, payload: any): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
+  public async post<T>(
+    path: string,
+    payload: any,
+  ): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
     return this.request<T>(path, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
-    })
+    });
   }
 
-  public async get<T>(path: string): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
-    return this.request<T>(path, { method: 'GET' })
+  public async get<T>(
+    path: string,
+  ): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
+    return this.request<T>(path, { method: "GET" });
   }
-
 }
