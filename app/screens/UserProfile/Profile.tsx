@@ -2,35 +2,39 @@
 import {
   View,
   Text,
-  FlatList,
   Dimensions,
   StatusBar,
   KeyboardAvoidingView,
-  ImageBackground,
   TouchableOpacity,
   Image,
   ScrollView,
-  TextInput,
-  Switch,
-  StyleSheet,
   Platform,
 } from "react-native";
-import React, { useState, useContext } from "react";
+import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import style from "../../theme/style";
 import { Colors } from "../../theme/color";
 import Icon from "react-native-vector-icons/Ionicons";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
-import { Avatar } from "react-native-paper";
 import { AppBar } from "@react-native-material/core";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import useProfileUser from "./services/useProfileUser";
 const width = Dimensions.get("screen").width;
 const height = Dimensions.get("screen").height;
 
 const Tab = createMaterialTopTabNavigator();
+
+const useApicall = () => {
+  const { getProfileUser, loading, error, data } = useProfileUser();
+
+  React.useEffect(() => {
+    getProfileUser({ userEmail: "tovar@gmail.com" });
+  }, []);
+
+  return data;
+};
 
 const Top = () => {
   return (
@@ -70,7 +74,7 @@ const Top = () => {
               </Text>
             </View>
           ),
-          headerShown: false,
+          //headerShown: false,
         }}
       />
       <Tab.Screen
@@ -93,7 +97,7 @@ const Top = () => {
               </Text>
             </View>
           ),
-          headerShown: false,
+          //headerShown: false,
         }}
       />
 
@@ -117,7 +121,7 @@ const Top = () => {
               </Text>
             </View>
           ),
-          headerShown: false,
+          //headerShown: false,
         }}
       />
     </Tab.Navigator>
@@ -126,6 +130,7 @@ const Top = () => {
 
 const Badge = () => {
   const navigation = useNavigation<AppNavigation>();
+
   return (
     <SafeAreaView style={[style.area, { backgroundColor: Colors.bg }]}>
       <ScrollView
@@ -553,9 +558,38 @@ const Details = () => {
     </SafeAreaView>
   );
 };
+const avatars: any = {
+  t4: require("../../../assets/image/t4.png"),
+  a5: require("../../../assets/image/a5.png"),
+  a6: require("../../../assets/image/a6.png"),
+  a12: require("../../../assets/image/a12.png"),
+  a14: require("../../../assets/image/a14.png"),
+  a16: require("../../../assets/image/a16.png"),
+  a18: require("../../../assets/image/a18.png"),
+  a19: require("../../../assets/image/a19.png"),
+  a20: require("../../../assets/image/a20.png"),
+  a21: require("../../../assets/image/a21.png"),
+  a22: require("../../../assets/image/a22.png"),
+  a23: require("../../../assets/image/a23.png"),
+  a24: require("../../../assets/image/a24.png"),
+  a27: require("../../../assets/image/a27.png"),
+  a28: require("../../../assets/image/a28.png"),
+  a29: require("../../../assets/image/a29.png"),
+  s1: require("../../../assets/image/s1.png"),
+  s4: require("../../../assets/image/s4.png"),
+  s5: require("../../../assets/image/s5.png"),
+  s13: require("../../../assets/image/s13.png"),
+  s24: require("../../../assets/image/s24.png"),
+  s25: require("../../../assets/image/s25.png"),
+  s26: require("../../../assets/image/s26.png"),
+  s27: require("../../../assets/image/s27.png"),
+  s47: require("../../../assets/image/s47.png"),
+};
 
 export default function Profile() {
   const navigation = useNavigation<AppNavigation>();
+  const user = useApicall();
+  const avatarSource = avatars[user?.avatar] || avatars["t4"];
   return (
     <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
       <StatusBar
@@ -597,7 +631,7 @@ export default function Profile() {
           ]}
         >
           <Image
-            source={require("../../../assets/image/a18.png")}
+            source={avatarSource}
             resizeMode="stretch"
             style={{
               height: 100,
@@ -606,16 +640,15 @@ export default function Profile() {
               marginTop: -50,
             }}
           ></Image>
-
           <Text
             style={[
               style.apptitle,
               { color: Colors.txt, textAlign: "center", marginTop: 4 },
             ]}
           >
-            Madelyn Dias
+            {user?.nickname || ""}
+            {user?.email ? ` (${user.email})` : ""}
           </Text>
-
           <View
             style={{
               marginTop: 5,
@@ -683,7 +716,6 @@ export default function Profile() {
               </Text>
             </View>
           </View>
-
           <Top></Top>
         </View>
       </KeyboardAvoidingView>

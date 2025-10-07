@@ -42,7 +42,7 @@ export type AppRoutes = {
   RateApp: undefined;
   ShareApp: undefined;
   Faq: undefined;
-  FeedbackForm: undefined;  
+  FeedbackForm: undefined;
   InAppBrowser: { url: string };
 };
 

@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   Dimensions,
   StatusBar,
   KeyboardAvoidingView,
