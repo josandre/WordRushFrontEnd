@@ -69,8 +69,14 @@ export default [
       "react-native/no-single-element-style-arrays": "warn",
 
       // General
-      "no-console": "warn",
-      "prettier/prettier": "warn",
+      "no-console": "warn",      
+      "prettier/prettier": 
+            [ "warn",
+              "error",
+              {
+                "endOfLine": "lf"
+              }
+            ],
     },
     settings: {
       react: {
