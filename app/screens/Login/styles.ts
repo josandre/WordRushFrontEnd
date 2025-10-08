@@ -3,7 +3,9 @@ import { StyleSheet } from 'react-native'
 
 export default StyleSheet.create({
     backgroundImage: {
-        flex: 1
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     keyboardAvoiding: {
         flex: 1
@@ -24,3 +26,6 @@ export default StyleSheet.create({
 
 export const SUCCESS_SNACKBAR_COLOR  = '#2e7d32' 
 export const ERROR_SNACKBAR_COLOR  = '#d32f2f' 
+
+
+

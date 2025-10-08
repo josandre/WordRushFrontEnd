@@ -6,7 +6,7 @@ import { Colors } from '../../theme/color'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppNavigation } from '@/app/navigator/AppNavigationTypes'
 import OptionCard from '../../components/organisms/OptionCard'
-import { HELPER_TEXT, IMAGE_BG, TITLE } from './constants'
+import { HELPER_TEXT, IMAGE_BG, IMAGE_BG_WITH_LOGO, TITLE } from './constants'
 import optionStyles from './styles'
 import { keyboardBehavior } from './helpers'
 
@@ -19,7 +19,18 @@ export default function Option() {
 
     return (
         <SafeAreaView style={[style.area, { backgroundColor: Colors.bord }]}>
-            <ImageBackground source={IMAGE_BG} resizeMode='stretch' style={optionStyles.backgroundImage}>
+
+        <ImageBackground source={IMAGE_BG_WITH_LOGO} resizeMode='stretch' style={{ flex: 1,justifyContent:'center',alignItems:'center' }}>
+
+            <ImageBackground
+                        source={Platform.OS === 'web' ? IMAGE_BG : IMAGE_BG_WITH_LOGO}
+                        resizeMode={Platform.OS === 'web' ? 'contain' : 'cover'}
+                        style={[
+                            optionStyles.backgroundImage,
+                             Platform.OS === 'web' && { width, height },
+                        ]}
+                        >
+
                 <StatusBar backgroundColor='transparent' translucent={true} barStyle={'dark-content'} />
                 <KeyboardAvoidingView style={optionStyles.keyboardAvoiding} behavior={keyboardBehavior()}>
                     <View style={optionStyles.contentWrapper}>
@@ -32,6 +43,7 @@ export default function Option() {
                     </View>
                 </KeyboardAvoidingView>
             </ImageBackground>
+    </ImageBackground>            
         </SafeAreaView>
     )
 }

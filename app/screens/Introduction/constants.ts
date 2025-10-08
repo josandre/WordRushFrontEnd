@@ -1,4 +1,4 @@
-import introBg from '@/assets/image/bge.png'
+import introBg from '@/assets/image/bg1.png'
 import introImg1 from '@/assets/image/1.png'
 import introImg2 from '@/assets/image/3.png'
 

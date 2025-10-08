@@ -7,8 +7,10 @@ import Splash from '@/app/screens/Splash';
 import Introduction from '@/app/screens/Introduction/Introduction';
 import Signup from '@/app/screens/Login/Signup';
 import MyTabs from '@/app/navigator/BottomNavigator';
+import { Platform } from 'react-native';
 
 const Stack = createNativeStackNavigator();
+const isWeb = Platform.OS === 'web';
 
 export default function StackNavigator() {
 
@@ -36,11 +38,19 @@ export default function StackNavigator() {
             : null
         }
 
-        <Stack.Screen
-          name="Introduction"
-          component={Introduction}
-          options={{ headerShown: false }} />
-          
+        {isWeb ? (
+          <Stack.Screen
+            name="Option"
+            component={Option}
+            options={{ headerShown: false }}
+          />
+        ) : (
+          <Stack.Screen
+            name="Introduction"
+            component={Introduction}
+            options={{ headerShown: false }}
+          />
+        )}
 
         <Stack.Screen
           name="MyTabs"
@@ -52,16 +62,19 @@ export default function StackNavigator() {
           component={Signup}
           options={{ headerShown: false }} />
 
-        <Stack.Screen
-          name="Option"
-          component={Option}
-          options={{ headerShown: false }} />
-
 
         <Stack.Screen
           name="Login"
           component={Login}
           options={{ headerShown: false }} />
+
+        {!isWeb && (
+         <Stack.Screen
+            name="Option"
+            component={Option}
+            options={{ headerShown: false }}
+          /> 
+        )}
 
       </Stack.Navigator>
     </NavigationContainer>
