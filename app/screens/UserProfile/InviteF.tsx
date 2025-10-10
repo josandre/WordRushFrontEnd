@@ -60,7 +60,9 @@ export default function InviteF() {
             style={{ backgroundColor: "transparent" }}
             elevation={0}
             leading={
-              <TouchableOpacity onPress={() => navigation.navigate("Setting")}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("SettingScreen")}
+              >
                 <Icon name="arrow-back" size={24} color={Colors.secondary} />
               </TouchableOpacity>
             }

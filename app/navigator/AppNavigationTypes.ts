@@ -20,7 +20,7 @@ export type AppRoutes = {
   WordGame: undefined;
   WordList: undefined;
   Flashcards: undefined;
-  Setting: undefined;
+  SettingScreen: undefined;
   Notifications: undefined;
   Help: undefined;
   Support: undefined;
@@ -44,6 +44,8 @@ export type AppRoutes = {
   Faq: undefined;
   FeedbackForm: undefined;
   InAppBrowser: { url: string };
+  UpdateProfile: undefined;
+  UpdateForm: undefined;
 };
 
 export type AppNavigation = StackNavigationProp<AppRoutes>;

@@ -8,7 +8,9 @@ import Introduction from "@/app/screens/Introduction/Introduction";
 import Signup from "@/app/screens/Login/Signup";
 import MyTabs from "@/app/navigator/BottomNavigator";
 import Profile from "@/app/screens/UserProfile/Profile";
-import Setting from "@/app/screens/UserProfile/Setting";
+import SettingScreen from "@/app/screens/UserProfile/SettingScreen";
+import UpdateProfile from "@/app/screens/UserProfile/UpdateProfile";
+//import UpdateForm from "@/app/components/organisms/UpdateForm";
 
 const Stack = createNativeStackNavigator();
 
@@ -66,10 +68,20 @@ export default function StackNavigator() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Setting"
-          component={Setting}
+          name="SettingScreen"
+          component={SettingScreen}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="UpdateProfile"
+          component={UpdateProfile}
+          options={{ headerShown: false }}
+        />
+        {/* <Stack.Screen
+          name="UpdateForm"
+          component={UpdateForm}
+          options={{ headerShown: false }}
+        /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );
