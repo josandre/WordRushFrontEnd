@@ -9,6 +9,10 @@ import Signup from '@/app/screens/Login/Signup';
 import MyTabs from '@/app/navigator/BottomNavigator';
 import { Platform } from 'react-native';
 
+import ConfigureLobby from '@/app/screens/Lobby/ConfigureLobby';
+import JoinLobby from '@/app/screens/Lobby/JoinLobby';
+import Lobby from '@/app/screens/Lobby/Lobby';
+
 const Stack = createNativeStackNavigator();
 const isWeb = Platform.OS === 'web';
 
@@ -55,6 +59,21 @@ export default function StackNavigator() {
         <Stack.Screen
           name="MyTabs"
           component={MyTabs}
+          options={{ headerShown: false }} />
+
+        <Stack.Screen
+          name="ConfigureLobby"
+          component={ConfigureLobby}
+          options={{ headerShown: false }} />
+        
+        <Stack.Screen
+          name="JoinLobby"
+          component={JoinLobby}
+          options={{ headerShown: false }} />
+        
+        <Stack.Screen
+          name="Lobby"
+          component={Lobby}
           options={{ headerShown: false }} />
 
         <Stack.Screen
