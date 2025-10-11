@@ -1,19 +1,59 @@
-import { View, Text, Dimensions, StatusBar, KeyboardAvoidingView, TouchableOpacity, Platform } from 'react-native'
-import React from 'react'
+import { View, StatusBar, KeyboardAvoidingView, TouchableOpacity, Platform } from 'react-native'
+import React, { useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import style from '../../theme/style'
 import { Colors } from '../../theme/color'
-import { AppBar } from '@react-native-material/core';
+import { AppBar, Snackbar} from '@react-native-material/core';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppNavigation } from '@/app/navigator/AppNavigationTypes'
 import LoginForm from '../../components/organisms/LoginForm'
+import useLogIn, { LogInPayload } from './services/useLogIn'
+import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from './constants'
+import styles, { ERROR_SNACKBAR_COLOR } from './styles'
+import WebTokenManager from '@/app/TokenManagers/web/WebTokenManager'
+import MobileTokenManager from '@/app/TokenManagers/mobile/MobileTokenManager'
 
-const width = Dimensions.get('screen').width
-const height = Dimensions.get('screen').height
+const isWeb = Platform.OS === 'web';
+
 
 export default function Login() {
     const navigation = useNavigation<AppNavigation>();
+    const { logIn, loading, error, data } = useLogIn();
+    const [snackbar, setSnackbar] = useState<SnackBarProps>({ visible: false, message: '' });
+    
+
+    const handleSubmit = async (form: LogInPayload) => {
+        const payload = {
+            email: form.email,
+            password: form.password
+        }
+
+        const result = await logIn(payload)
+
+        if(result.success){
+            const tokens = result.data
+            
+
+            if(isWeb){
+                await WebTokenManager.saveTokens(tokens)
+
+            }else{
+                await MobileTokenManager.saveTokens(tokens)
+            }
+
+            navigation.navigate('MyTabs')
+            // Logic To save token
+        }else {
+            const errorSnackBar: SnackBarProps = {
+                visible: true,
+                message: result.errorMessage,
+                color: ERROR_SNACKBAR_COLOR
+            }
+            setSnackbar(errorSnackBar)
+        }
+    }
+
 
     return (
         <SafeAreaView style={[style.area, { backgroundColor: Colors.bord }]}>
@@ -28,7 +68,11 @@ export default function Login() {
                         elevation={0}
                         leading={<TouchableOpacity onPress={() => navigation.navigate('Option')} />}
                     />
-                    <LoginForm onLogin={() => navigation.navigate('MyTabs')} onForgot={() => navigation.navigate('Reset')} />
+                    <LoginForm onLogin={handleSubmit} onForgot={() => navigation.navigate('Reset')} loading={loading} />
+                    
+                    {snackbar.visible && (
+                        <Snackbar message={snackbar.message ?? FALLBACK_ERROR_MESSAGE} style={[styles.snackbarContainer, { backgroundColor: snackbar.color }]}/>
+                    )}
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>

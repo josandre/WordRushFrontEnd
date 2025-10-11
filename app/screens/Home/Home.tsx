@@ -1,17 +1,36 @@
-import { Dimensions } from 'react-native'
-import React, {  } from 'react'
-import style from '@/app/theme/style';
-import { Colors } from '@/app/theme/color';
+import React, { useEffect, useState } from 'react'
+import { SafeAreaView, Text } from 'react-native'
+import { Colors } from '@/app/theme/color'
+import style from '@/app/theme/style'
+import useGameControllerTest, { TestResponse } from './services/useGameControllerTest'
 
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-const width = Dimensions.get('screen').width
-const height = Dimensions.get('screen').height
-
-//TODO: Taylor to complete home screen. This is just a temp placeholder
 export default function Home() {
-    return (
-        <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
-        </SafeAreaView>
-    )
+  const { games, loading, error, data } = useGameControllerTest()
+  const [result, setResult] = useState<TestResponse | undefined>()
+
+
+  // THIS IS JUST FOR TESTING AUTH INTERCEPTOR< IT SHOULD BE REMOVED
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const res = await games()
+        setResult(res.data)
+        console.log('JAC', res.data)
+      } catch (err) {
+        console.error('Error fetching games:', err)
+      }
+    }
+
+    fetchGames()
+  }, []) // 👈 empty dependency array = run once on mount
+
+  return (
+    <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
+      <Text style={{ color: Colors.bg, fontSize: 16, textAlign: 'center', margin: 20 }}>
+        {loading && 'Loading...'}
+        {error && 'Error loading games'}
+        {result?.name}
+      </Text>
+    </SafeAreaView>
+  )
 }

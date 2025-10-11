@@ -12,3 +12,5 @@ export type SnackBarProps = {
     color?: string
 }
 
+export const FALLBACK_ERROR_MESSAGE = "An error occured processing the login"
+
