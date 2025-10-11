@@ -1,29 +1,47 @@
-import { View, Text,  TextInput, Dimensions, ImageBackground, StatusBar, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView } from 'react-native'
-import React, { useState, useContext } from 'react'
+import React, { useEffect, useState } from 'react'
+import { View, SafeAreaView, Text, StatusBar, TouchableOpacity, Image, ScrollView } from 'react-native'
+import { Colors } from '@/app/theme/color'
 
-import { useNavigation } from '@react-navigation/native';
-import style from '@/app/theme/style';
-import { Colors } from '@/app/theme/color';
-import Icon from 'react-native-vector-icons/Ionicons';
-
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppNavigation } from '@/app/navigator/AppNavigationTypes';
+import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import style from '@/app/theme/style'
+import useGameControllerTest, { TestResponse } from './services/useGameControllerTest'
 
-const width = Dimensions.get('screen').width
-const height = Dimensions.get('screen').height
-
-//TODO: Taylor to complete home screen. This is just a temp placeholder
 export default function Home() {
     const navigation = useNavigation<AppNavigation>();
+    const { games, loading, error, data } = useGameControllerTest()
+    const [result, setResult] = useState<TestResponse | undefined>()
 
     function getUserName(): string {
         // TODO: Actually get the active user's username
         return "Guest";
     } 
 
-    return (
-        <SafeAreaView style={[style.area, { backgroundColor: Colors.primary, }]}>
-            <StatusBar translucent={true} backgroundColor={'transparent'} barStyle={'light-content'} />
+    // THIS IS JUST FOR TESTING AUTH INTERCEPTOR< IT SHOULD BE REMOVED
+    useEffect(() => {
+        const fetchGames = async () => {
+        try {
+            const res = await games()
+            setResult(res.data)
+            console.log('JAC', res.data)
+        } catch (err) {
+            console.error('Error fetching games:', err)
+        }
+        }
+
+    fetchGames()
+  }, []) // 👈 empty dependency array = run once on mount
+
+  return (
+    <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
+      <Text style={{ color: Colors.bg, fontSize: 16, textAlign: 'center', margin: 20 }}>
+        {loading && 'Loading...'}
+        {error && 'Error loading games'}
+        {result?.name}
+      </Text>
+
+      <StatusBar translucent={true} backgroundColor={'transparent'} barStyle={'light-content'} />
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 30, marginHorizontal: 20 }}>
                 <View style={{ flex: 1 }}>
@@ -62,6 +80,6 @@ export default function Home() {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-        </SafeAreaView>
-    )
+    </SafeAreaView>
+  )
 }

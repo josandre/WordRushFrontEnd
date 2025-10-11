@@ -59,73 +59,86 @@ export default StyleSheet.create({
     },
     s24: {
         fontSize: 24,
-        fontFamily: 'Rubik-SemiBold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-SemiBold',
+        fontWeight: isWeb ? '600' : 'normal',
         color: Colors.secondary,
     },
     b24: {
         fontSize: 24,
-        fontFamily: 'Rubik-Bold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Bold',
+        fontWeight: isWeb ? '700' : 'normal',
         color: Colors.secondary,
     },
     m22: {
         fontSize: 22,
-        fontFamily: 'Rubik-Medium',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Medium',
+        fontWeight: isWeb ? '500' : 'normal',
         color: Colors.secondary,
     },
 
 
     r10: {
         fontSize: 10,
-        fontFamily: 'Rubik-Regular',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Regular',
+        fontWeight: isWeb ? '400' : 'normal',
         color: Colors.active,
     },
     m10: {
         fontSize: 10,
-        fontFamily: 'Rubik-Medium',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Medium',
+        fontWeight: isWeb ? '500' : 'normal',
         color: Colors.active,
     },
 
 
     r12: {
         fontSize: 12,
-        fontFamily: 'Rubik-Regular',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Regular',
+        fontWeight: isWeb ? '400' : 'normal',
         color: Colors.active,
     },
     m12: {
         fontSize: 12,
-        fontFamily: 'Rubik-Medium',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Medium',
+        fontWeight: isWeb ? '500' : 'normal',
         color: Colors.active,
     },
     b12: {
         fontSize: 12,
-        fontFamily: 'Rubik-Bold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Bold',
+        fontWeight: isWeb ? '700' : 'normal',
         color: Colors.active,
     },
     s12: {
         fontSize: 12,
-        fontFamily: 'Rubik-SemiBold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-SemiBold',
+        fontWeight: isWeb ? '600' : 'normal',
         color: Colors.active,
     },
 
 
     r14: {
         fontSize: 14,
-        fontFamily: 'Rubik-Regular',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Regular',
+        fontWeight: isWeb ? '400' : 'normal',
         color: Colors.active,
     },
     m14: {
         fontSize: 14,
-        fontFamily: 'Rubik-Medium',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Medium',
+        fontWeight: isWeb ? '500' : 'normal',
         color: Colors.active,
     },
     b14: {
         fontSize: 14,
-        fontFamily: 'Rubik-Bold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Bold',
+        fontWeight: isWeb ? '700' : 'normal',
         color: Colors.active,
     },
     s14: {
         fontSize: 14,
-        fontFamily: 'Rubik-SemiBold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-SemiBold',
+        fontWeight: isWeb ? '600' : 'normal',
         color: Colors.active,
     },
 
@@ -144,34 +157,40 @@ export default StyleSheet.create({
     },
     b16: {
         fontSize: 16,
-        fontFamily: 'Rubik-Bold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Bold',
+        fontWeight: isWeb ? '700' : 'normal',
         color: Colors.active,
     },
     s16: {
         fontSize: 16,
-        fontFamily: 'Rubik-SemiBold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-SemiBold',
+        fontWeight: isWeb ? '600' : 'normal',
         color: Colors.active,
     },
 
 
     r18: {
         fontSize: 18,
-        fontFamily: 'Rubik-Regular',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Regular',
+        fontWeight: isWeb ? '400' : 'normal',
         color: Colors.active,
     },
     m18: {
         fontSize: 18,
-        fontFamily: 'Rubik-Medium',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Medium',
+        fontWeight: isWeb ? '500' : 'normal',
         color: Colors.active,
     },
     b18: {
         fontSize: 18,
-        fontFamily: 'Rubik-Bold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Bold',
+        fontWeight: isWeb ? '700' : 'normal',
         color: Colors.active,
     },
     s18: {
         fontSize: 18,
-        fontFamily: 'Rubik-SemiBold',
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-SemiBold',
+        fontWeight: isWeb ? '600' : 'normal',
         color: Colors.active,
     },
 
@@ -288,7 +307,8 @@ export default StyleSheet.create({
 
     dividertxt: {
         color: Colors.disable,
-        fontFamily: 'Rubik-Regular'
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Regular',
+        fontWeight: isWeb ? '400' : 'normal'
     },
 
     verticaldivider: {
@@ -312,7 +332,8 @@ export default StyleSheet.create({
         backgroundColor: Colors.primary,
         borderColor: Colors.primary,
         color: Colors.secondary,
-        fontFamily: 'Rubik-medium'
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Medium',
+        fontWeight: isWeb ? '500' : 'normal'
     },
     categoryText: {
         fontSize: 19,
@@ -324,7 +345,8 @@ export default StyleSheet.create({
         paddingTop: 7,
         paddingHorizontal: 10,
         marginHorizontal: 5,
-        fontFamily: 'Rubik-Medium'
+        fontFamily: isWeb ? 'Rubik, sans-serif' : 'Rubik-Medium',
+        fontWeight: isWeb ? '500' : 'normal'
     },
     categorycontainer: {
         flexDirection: 'row',

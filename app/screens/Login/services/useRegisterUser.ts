@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { RequestCreator } from '@/app/Request/RequestCreator'
+import { Failure, Success } from './constants'
 
 
 const path = '/auth/sign-up'
@@ -22,19 +23,7 @@ export type SignUpResponse = {
     RoleId?: string
 }
 
-export type RegisterSuccess = {
-    success: true
-    data: SignUpResponse
-}
-
-export type RegisterFailure = {
-    success: false
-    errorMessage: string
-    status?: number
-    details?: unknown
-}
-
-export type RegisterResult = RegisterSuccess | RegisterFailure
+export type RegisterResult = Success | Failure
 
 export default function useRegisterUser() {
     const [loading, setLoading] = useState(false)
