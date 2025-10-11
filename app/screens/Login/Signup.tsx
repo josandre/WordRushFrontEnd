@@ -12,11 +12,7 @@ import { SIGN_UP_TITLE } from '@/app/components/molecules/constants'
 import useRegisterUser, { RegisterPayload } from './services/useRegisterUser'
 import { Snackbar } from '@react-native-material/core'
 import styles, { ERROR_SNACKBAR_COLOR, SUCCESS_SNACKBAR_COLOR } from './styles'
-import { SnackBarProps } from './constants'
-
-const width = Dimensions.get('screen').width
-const height = Dimensions.get('screen').height
-
+import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from './constants'
 
 export default function Signup() {
     const navigation = useNavigation<AppNavigation>();
@@ -67,7 +63,7 @@ export default function Signup() {
                     <SignupForm onLogin={() => navigation.navigate('Login', { fromRegisterSuccess: false })} onSubmit={handleSubmit} loading={loading} />
 
                     {snackbar.visible && (
-                        <Snackbar message={snackbar.message ?? 'There was an error during the process, please try again'} style={[styles.snackbarContainer, { backgroundColor: snackbar.color }]}/>
+                        <Snackbar message={snackbar.message ?? FALLBACK_ERROR_MESSAGE} style={[styles.snackbarContainer, { backgroundColor: snackbar.color }]}/>
                     )}
                 </View>
             </KeyboardAvoidingView>

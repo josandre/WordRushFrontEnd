@@ -11,11 +11,18 @@ import { Snackbar } from '@react-native-material/core'
 import TermsNotice from '../molecules/TermsNotice'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SNACKBAR_MESSAGES } from './constants'
+import { LogInPayload } from '@/app/screens/Login/services/useLogIn'
 
 
 type LoginRouteProp = RouteProp<AppRoutes, 'Login'>
 
-export default function LoginForm({ onLogin, onForgot }: { onLogin: () => void; onForgot: () => void }) {
+type Props = {
+  onLogin: (form: LogInPayload) => void,
+  onForgot: () => void 
+  loading: boolean
+}
+
+export default function LoginForm({ onLogin, onForgot, loading = false }: Props) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [isPasswordVisible, setIsPasswordVisible] = useState(false)
@@ -23,6 +30,9 @@ export default function LoginForm({ onLogin, onForgot }: { onLogin: () => void; 
     const route = useRoute<LoginRouteProp>()
     const fromRegisterSuccess = route.params?.fromRegisterSuccess
     const insets = useSafeAreaInsets()
+    const isNonEmpty = (val: string) => val.trim().length > 0
+    const isFormValid = isNonEmpty(email) && isNonEmpty(password)
+
 
     useEffect(() => {
     if (fromRegisterSuccess) {
@@ -48,7 +58,7 @@ export default function LoginForm({ onLogin, onForgot }: { onLogin: () => void; 
           onToggleVisible={() => setIsPasswordVisible(!isPasswordVisible)}
         />
 
-        <PrimaryButton title="Login" onPress={onLogin} />
+        <PrimaryButton title="Login" onPress={ () => onLogin({email, password})} disabled={!isFormValid || loading} loading={loading} />
 
         {/* TODO: Implement forgot password feature */}
         <PrimaryButton
