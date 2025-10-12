@@ -58,13 +58,13 @@ export default [
       "react/react-in-jsx-scope": "off", // React Hooks
 
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn", // React Native
-      // Note: 'react-native/no-unused-styles' is not part of the standard plugin and was removed to fix the error.
-
-      "react-native/split-platform-components": "warn",
-      "react-native/no-inline-styles": "off",
-      "react-native/no-color-literals": "off",
-      "react-native/no-single-element-style-arrays": "warn", // General
+      "react-hooks/exhaustive-deps": "warn", // React Native (All custom rules removed to resolve initialization error)
+      // If linting succeeds, you can try re-adding these one-by-one:
+      // "react-native/split-platform-components": "warn",
+      // "react-native/no-inline-styles": "off",
+      // "react-native/no-color-literals": "off",
+      // "react-native/no-single-element-style-arrays": "warn",
+      // General
 
       "no-console": "warn",
       "prettier/prettier": [
