@@ -65,7 +65,7 @@ export default [
       "react-hooks/exhaustive-deps": "warn",
 
       // React Native
-      "react-native/no-unused-styles": "warn",
+      //"react-native/no-unused-styles": "off",
       "react-native/split-platform-components": "warn",
       "react-native/no-inline-styles": "off",
       "react-native/no-color-literals": "off",
