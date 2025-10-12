@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
 import { RequestCreator } from "@/app/Request/RequestCreator";
 
-const path = "/api/userProfile/get-profile";
+const GET_PATH = "/api/userProfile/get-profile";
+const UPDATE_PATH = "/api/userProfile/update-profile";
 
 export type ProfileUserPayload = {
   userEmail: string;
@@ -16,34 +17,24 @@ export type ProfileUserResponse = {
   password?: string;
 };
 
-export type ProfileUserSuccess = {
-  success: true;
-  data: ProfileUserResponse;
+export type ProfileUserResult = {
+  success: boolean;
+  data?: ProfileUserResponse;
+  errorMessage?: string;
 };
-
-export type ProfileUserFailure = {
-  success: false;
-  errorMessage: string;
-  status?: number;
-  details?: unknown;
-};
-
-export type ProfileUserResult = ProfileUserSuccess | ProfileUserFailure;
 
 export default function useProfileUser() {
+  const [pdata, setData] = useState<ProfileUserResponse | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const [data, setData] = useState<ProfileUserResponse | undefined>(undefined);
 
-  const getProfileUser = useCallback(async (payload: ProfileUserPayload) => {
+  const getProfileUser = useCallback(async (payload: ProfileUserPayload): Promise<ProfileUserResult> => {
     setLoading(true);
     setError(undefined);
     setData(undefined);
 
     const api = new RequestCreator();
-    const result = await api.get<ProfileUserResponse>(
-      path + `?userEmail=${payload.userEmail}`,
-    );
+    const result = await api.get<ProfileUserResponse>(`${GET_PATH}?userEmail=${payload.userEmail}`);
 
     if (!result.success) {
       setError(result.errorMessage);
@@ -53,13 +44,27 @@ export default function useProfileUser() {
 
     setData(result.data);
     setLoading(false);
-    return { success: true, data: result.data! };
+    return { success: true, data: result.data };
   }, []);
 
-  return {
-    getProfileUser,
-    loading,
-    error,
-    data,
-  };
+  // Update local state immediately
+  const updateProfile = useCallback((updates: Partial<ProfileUserResponse>) => {
+    setData(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  // Update server
+  const updateProfileAPI = useCallback(async (updates: Partial<ProfileUserResponse>): Promise<ProfileUserResult> => {
+    if (!pdata?.id) return { success: false, errorMessage: "User ID is missing" };
+
+    const api = new RequestCreator();
+    const payload: ProfileUserResponse = { ...pdata, ...updates };
+    const result = await api.put<ProfileUserResponse>(UPDATE_PATH, payload);
+
+    if (!result.success) return { success: false, errorMessage: result.errorMessage };
+
+    setData(result.data);
+    return { success: true, data: result.data };
+  }, [pdata]);
+
+  return { pdata, loading, error, getProfileUser, updateProfile, updateProfileAPI };
 }

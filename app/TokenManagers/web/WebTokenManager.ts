@@ -19,4 +19,7 @@ export default class WebTokenManager {
         return tokens?.accessToken
     }
 
+    static async clearTokens(): Promise<void> {
+    await this.storage.removeValue();    
+  }
 }

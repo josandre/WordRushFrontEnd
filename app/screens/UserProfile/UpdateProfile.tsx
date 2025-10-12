@@ -1,80 +1,74 @@
-import {
-  View,
-  Dimensions,
-  StatusBar,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { View, StatusBar, KeyboardAvoidingView, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { AppBar, Snackbar } from "@react-native-material/core";
+import Icon from "react-native-vector-icons/Ionicons";
+
 import style from "../../theme/style";
 import { Colors } from "../../theme/color";
-import { AppBar } from "@react-native-material/core";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import { keyboardBehavior } from "../Login/helpers";
 import UpdateForm from "@/app/components/organisms/UpdateForm";
-import { SIGN_UP_TITLE } from "@/app/components/molecules/constants";
-//import useRegisterUser, { RegisterPayload } from "./services/useRegisterUser";
-import useProfileUser from "./services/useProfileUser";
-import { Snackbar } from "@react-native-material/core";
-import styles, {
-  ERROR_SNACKBAR_COLOR,
-  SUCCESS_SNACKBAR_COLOR,
-} from "../Login/styles";
+import styles, { SUCCESS_SNACKBAR_COLOR } from "../Login/styles";
 import { SnackBarProps } from "../Login/constants";
-import avatars, { AvatarId, getAvatarImage } from "@/assets/avatars";
-const width = Dimensions.get("screen").width;
-const height = Dimensions.get("screen").height;
+
+import avatars, { AvatarId } from "@/assets/avatars";
+import useProfileUser from "./services/useProfileUser";
+import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
+import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileTokenManager";
 
 export default function UpdateProfile() {
   const navigation = useNavigation<AppNavigation>();
-  const { getProfileUser, data } = useProfileUser();
+  const { pdata, getProfileUser, updateProfile, updateProfileAPI } =
+    useProfileUser();
   const [snackbar, setSnackbar] = useState<SnackBarProps>({
     visible: false,
     message: "",
+    color: SUCCESS_SNACKBAR_COLOR,
   });
-  React.useEffect(() => {
-    getProfileUser({ userEmail: "taylor@gmail.com" });
+
+  const isWeb = Platform.OS === "web";
+
+  // 🔹 Load user profile depending on platform
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      const userdata = await (isWeb
+        ? ProfileWebTokenManager.getUserProfile()
+        : ProfileMobileTokenManager.getUserProfile());
+
+      if (userdata?.email) {
+        await getProfileUser({ userEmail: userdata.email });
+      } else {
+        console.warn("No stored user email found!");
+      }
+    };
+    loadUserProfile();
   }, []);
 
-  const user = data;
-  const avatarSource = getAvatarImage(user?.avatar) || avatars["t4"];
-  //   const handleSubmit = async (form: RegisterPayload) => {
-  //     const payload = {
-  //       userName: form.nickname,
-  //       email: form.email,
-  //       password: form.password,
-  //       nickname: form.nickname,
-  //       avatar: "",
-  //     };
-  //     const result = await register(payload);
-  //     if (result.success) {
-  //       const successSnackBar: SnackBarProps = {
-  //         visible: true,
-  //         message: result.data?.Message || "Registered",
-  //         color: SUCCESS_SNACKBAR_COLOR,
-  //       };
+  // Snackbar handler
+  const handleSuccess = (message: string) => {
+    setSnackbar({ visible: true, message, color: SUCCESS_SNACKBAR_COLOR });
+    setTimeout(
+      () => setSnackbar((prev) => ({ ...prev, visible: false })),
+      2000
+    );
+  };
 
-  //       setSnackbar(successSnackBar);
-  //       navigation.navigate("Login", { fromRegisterSuccess: true });
-  //     } else {
-  //       const errorSnackBar: SnackBarProps = {
-  //         visible: true,
-  //         message: result.errorMessage,
-  //         color: ERROR_SNACKBAR_COLOR,
-  //       };
-  //       setSnackbar(errorSnackBar);
-  //     }
-  //   };
+  // Preselected avatar logic
+  const avatar: AvatarId =
+    pdata?.avatar && Object.keys(avatars).includes(pdata.avatar)
+      ? (pdata.avatar as AvatarId)
+      : "t4";
 
   return (
     <SafeAreaView style={[style.area, { backgroundColor: Colors.bord }]}>
       <StatusBar
         backgroundColor="transparent"
-        translucent={true}
-        barStyle={"dark-content"}
+        translucent
+        barStyle="dark-content"
       />
+
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={keyboardBehavior()}>
         <View
           style={[
@@ -86,30 +80,36 @@ export default function UpdateProfile() {
           ]}
         >
           <AppBar
-            title={"Update Profile"}
+            title="Update Profile"
             titleStyle={[style.apptitle, { color: Colors.txt }]}
-            centerTitle={true}
+            centerTitle
             style={{ backgroundColor: "transparent" }}
             elevation={0}
+            leading={
+              <Icon
+                name="arrow-back"
+                size={24}
+                color={Colors.txt}
+                onPress={() => navigation.goBack()}
+              />
+            }
           />
 
           <UpdateForm
-            onLogin={() => navigation.navigate("Profile")}
-            onSubmit={() => {
-              setSnackbar({
-                visible: true,
-                message: "Profile Updated Successfully",
-                color: SUCCESS_SNACKBAR_COLOR,
-              });
+            user={pdata}
+            avatar={avatar}
+            onSubmit={async (updated) => {
+              updateProfile(updated); // live UI update
+              const result = await updateProfileAPI(updated); // server update
+              if (result.success) handleSuccess("Profile Updated Successfully");
+              else console.warn(result.errorMessage);
             }}
+            onLogin={() => navigation.navigate("Profile")}
           />
 
           {snackbar.visible && (
             <Snackbar
-              message={
-                snackbar.message ??
-                "There was an error during the process, please try again"
-              }
+              message={snackbar.message ?? "An unexpected error occurred"}
               style={[
                 styles.snackbarContainer,
                 { backgroundColor: snackbar.color },

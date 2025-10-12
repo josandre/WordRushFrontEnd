@@ -26,6 +26,7 @@ export default function SettingScreen() {
         backgroundColor="transparent"
         barStyle="dark-content"
       />
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

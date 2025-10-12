@@ -1,10 +1,10 @@
-import { Platform } from 'react-native'
-import WebTokenManager from '../TokenManagers/web/WebTokenManager'
-import MobileTokenManager from '../TokenManagers/mobile/MobileTokenManager'
+import { Platform } from "react-native";
+import WebTokenManager from "../TokenManagers/web/WebTokenManager";
+import MobileTokenManager from "../TokenManagers/mobile/MobileTokenManager";
 
 export class RequestCreator {
-  private readonly baseUrl: string
-  private readonly isWeb = Platform.OS === 'web';
+  private readonly baseUrl: string;
+  private readonly isWeb = Platform.OS === "web";
 
   constructor() {
     this.baseUrl =
@@ -36,24 +36,29 @@ export class RequestCreator {
   private async request<T>(
     path: string,
     options: RequestInit
-  ): Promise<{ success: boolean; data?: T; errorMessage?: string; status?: number; details?: unknown }> {
-    const token = this.isWeb ?
-      await WebTokenManager.getAccessToken() :
-      await MobileTokenManager.getAccessToken()
-    
+  ): Promise<{
+    success: boolean;
+    data?: T;
+    errorMessage?: string;
+    status?: number;
+    details?: unknown;
+  }> {
+    const token = this.isWeb
+      ? await WebTokenManager.getAccessToken()
+      : await MobileTokenManager.getAccessToken();
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(options.headers instanceof Headers
         ? Object.fromEntries(options.headers.entries())
-        : (options.headers as Record<string, string> || {})),
-    }
+        : (options.headers as Record<string, string>) || {}),
+    };
 
     if (token) {
-      console.log('JAC', token)
+      console.log("JAC", token);
 
-      headers['Authorization'] = `Bearer ${token}`
+      headers["Authorization"] = `Bearer ${token}`;
     }
-
 
     try {
       const response = await fetch(`${this.baseUrl}${path}`, {
@@ -87,7 +92,7 @@ export class RequestCreator {
 
   public async post<T>(
     path: string,
-    payload: any,
+    payload: any
   ): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
     return this.request<T>(path, {
       method: "POST",
@@ -96,8 +101,23 @@ export class RequestCreator {
   }
 
   public async get<T>(
-    path: string,
+    path: string
   ): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
     return this.request<T>(path, { method: "GET" });
+  }
+  public async put<T>(
+    path: string,
+    payload: any
+  ): Promise<{
+    success: boolean;
+    data?: T;
+    errorMessage?: string;
+    status?: number;
+    details?: unknown;
+  }> {
+    return this.request<T>(path, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
   }
 }

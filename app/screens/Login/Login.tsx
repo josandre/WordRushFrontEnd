@@ -19,18 +19,36 @@ import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from "./constants";
 import styles, { ERROR_SNACKBAR_COLOR } from "./styles";
 import WebTokenManager from "@/app/TokenManagers/web/WebTokenManager";
 import MobileTokenManager from "@/app/TokenManagers/mobile/MobileTokenManager";
+import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileTokenManager";
+import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
+import useProfileUser from "../../screens/UserProfile/services/useProfileUser";
 
 const isWeb = Platform.OS === "web";
+
+const clearPersistentStorage = async () => {
+  if (isWeb) {
+    await WebTokenManager.clearTokens();
+    await ProfileWebTokenManager.clearProfile();
+  } else {
+    await MobileTokenManager.clearTokens();
+    await ProfileMobileTokenManager.clearProfile();
+  }
+};
 
 export default function Login() {
   const navigation = useNavigation<AppNavigation>();
   const { logIn, loading, error, data } = useLogIn();
+  const { getProfileUser, pdata } = useProfileUser();
+
   const [snackbar, setSnackbar] = useState<SnackBarProps>({
     visible: false,
     message: "",
   });
 
   const handleSubmit = async (form: LogInPayload) => {
+    // 1. Clear Persistent Storage (AsyncStorage/localStorage)
+    await clearPersistentStorage();
+    // 2. Attempt Login
     const payload = {
       email: form.email,
       password: form.password,
@@ -40,13 +58,15 @@ export default function Login() {
 
     if (result.success) {
       const tokens = result.data;
-
+      await getProfileUser({ userEmail: form.email });
+      const user = pdata;
       if (isWeb) {
         await WebTokenManager.saveTokens(tokens);
+        await ProfileWebTokenManager.saveProfile(user);
       } else {
         await MobileTokenManager.saveTokens(tokens);
+        await ProfileMobileTokenManager.saveProfile(user);
       }
-
       navigation.navigate("MyTabs");
       // Logic To save token
     } else {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   SafeAreaView,
   KeyboardAvoidingView,
@@ -10,31 +10,55 @@ import { useNavigation } from "@react-navigation/native";
 import { Colors } from "../../theme/color";
 import style from "../../theme/style";
 import Icon from "react-native-vector-icons/Ionicons";
-import avatars, { AvatarId, getAvatarImage } from "@/assets/avatars";
+import avatars, { getAvatarImage } from "@/assets/avatars";
 import useProfileUser from "./services/useProfileUser";
 import ProfileHeader from "../../components/molecules/ProfileHeader";
 import RankSection from "../../components/molecules/RankSection";
 import ProfileTabs from "../../components/organisms/ProfileTabs";
-
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
+import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileTokenManager";
+
 const Tab = createMaterialTopTabNavigator();
+const isWeb = Platform.OS === "web";
 
 export default function Profile() {
   const navigation = useNavigation<AppNavigation>();
-  const { getProfileUser, data } = useProfileUser();
+  const { getProfileUser, pdata } = useProfileUser();
 
-  React.useEffect(() => {
-    getProfileUser({ userEmail: "taylor@gmail.com" });
+  useEffect(() => {
+    // Load stored user data and then fetch profile
+    const loadUserWebProfile = async () => {
+      const userdata = await ProfileWebTokenManager.getUserProfile();
+
+      if (userdata?.email) {
+        await getProfileUser({ userEmail: userdata.email });
+      } else {
+        console.warn("No stored user email found!");
+      }
+    };
+    const loadUserMobileProfile = async () => {
+      const userdata = await ProfileMobileTokenManager.getUserProfile();
+
+      if (userdata?.email) {
+        await getProfileUser({ userEmail: userdata.email });
+      } else {
+        console.warn("No stored user email found!");
+      }
+    };
+
+    if (isWeb) loadUserWebProfile();
+    else loadUserMobileProfile();
   }, []);
 
-  const user = data;
-  const avatarSource = getAvatarImage(user?.avatar) || avatars["t4"];
-  //avatars[user?.avatar as AvatarId]
+  const user = pdata;
+  const avatarSource = getAvatarImage(user?.avatar) || avatars["t4f"];
+
   return (
     <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
       <StatusBar
-        translucent={true}
+        translucent
         backgroundColor="transparent"
         barStyle="dark-content"
       />
@@ -59,6 +83,7 @@ export default function Profile() {
             />
           }
         />
+
         <SafeAreaView
           style={[
             style.main,
@@ -75,8 +100,8 @@ export default function Profile() {
         >
           <ProfileHeader
             avatar={avatarSource}
-            nickname={user?.nickname}
-            email={user?.email}
+            nickname={user?.nickname ?? "Guest"}
+            email={user?.email ?? "No email"}
           />
           <RankSection />
           <ProfileTabs />

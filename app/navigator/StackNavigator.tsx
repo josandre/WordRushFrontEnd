@@ -79,11 +79,11 @@ export default function StackNavigator() {
           component={UpdateProfile}
           options={{ headerShown: false }}
         />
-        {/* <Stack.Screen
-          name="UpdateForm"
-          component={UpdateForm}
+        <Stack.Screen
+          name="Option"
+          component={Option}
           options={{ headerShown: false }}
-        /> */}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

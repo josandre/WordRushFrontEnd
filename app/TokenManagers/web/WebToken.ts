@@ -14,7 +14,14 @@ export default class Storage<T> {
         return value ? JSON.parse(value) : null
     }
 
-    removeValue() {
-        return localStorage.removeItem(this.key)
+    async removeValue(): Promise<void> {
+        if (typeof localStorage !== 'undefined') {
+            try {
+                localStorage.removeItem(this.key);
+            } catch (e) {
+                console.error("WebStorage removeValue error:", e);
+            }
+        }
+        return Promise.resolve();
     }
 }

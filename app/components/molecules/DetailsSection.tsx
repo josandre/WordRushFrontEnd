@@ -5,21 +5,21 @@ import { Colors } from "../../theme/color";
 const matches = [
   {
     id: 1,
-    opponent: "AI Beginner",
+    opponent: "Beginner",
     result: "Win",
     score: "15 - 10",
     date: "2025-10-01",
   },
   {
     id: 2,
-    opponent: "AI Advanced",
+    opponent: "Advanced",
     result: "Loss",
     score: "9 - 15",
     date: "2025-09-28",
   },
   {
     id: 3,
-    opponent: "AI Expert",
+    opponent: "Expert",
     result: "Win",
     score: "14 - 12",
     date: "2025-09-25",
@@ -62,11 +62,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: Colors.text,
+    color: Colors.txt,
     marginBottom: 10,
   },
   matchCard: {
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.secondary,
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
-    color: Colors.white,
+    color: Colors.primary,
   },
   result: {
     fontWeight: "bold",
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   details: {
     marginTop: 5,
-    color: Colors.secondary,
+    color: Colors.txt1,
     fontSize: 13,
   },
 });

@@ -1,3 +1,4 @@
+import { tokens } from "react-native-paper/lib/typescript/styles/themes/v3/tokens"
 import { Tokens } from "../constants"
 import Storage from "./MobileToken"
 
@@ -18,4 +19,10 @@ export default class MobileTokenManager {
         return tokens?.accessToken
     }
 
+    static async clearTokens(): Promise<void> {
+    try {
+      await this.storage.removeValue();      
+    } catch (e) {      
+    }
+  }
 }

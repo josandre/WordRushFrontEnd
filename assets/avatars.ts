@@ -2,6 +2,7 @@
 
 const avatars = {
   t4: require("./image/t4.png"),
+  t4f: require("./image/t4f.png"),
   a5: require("./image/a5.png"),
   a6: require("./image/a6.png"),
   a12: require("./image/a12.png"),
@@ -33,5 +34,5 @@ export type AvatarId = keyof typeof avatars;
 export default avatars;
 
 export const getAvatarImage = (id?: string) => {
-  return avatars[id as AvatarId] ?? avatars["s1"];
+  return avatars[id as AvatarId] ?? avatars["t4f"];
 };

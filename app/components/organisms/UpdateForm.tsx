@@ -1,25 +1,47 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
 import TermsNotice from "../molecules/TermsNotice";
 import InputField from "../molecules/InputField";
 import PrimaryButton from "../atoms/PrimaryButton";
-//import { RegisterPayload } from "@/app/screens/Login/services/useRegisterUser";
+import AvatarPicker from "../molecules/AvatarPicker";
 import { ERROR_FORM_MESSAGES } from "./constants";
-import {
-  ProfileUserPayload,
-  ProfileUserResponse,
-} from "@/app/screens/UserProfile/services/useProfileUser";
+import { ProfileUserResponse } from "@/app/screens/UserProfile/services/useProfileUser";
+import { AvatarId } from "@/assets/avatars";
 
 type Props = {
+  user?: ProfileUserResponse;
+  avatar?: AvatarId; // preselected avatar
   onSubmit: (form: ProfileUserResponse) => void;
   onLogin: () => void;
   loading?: boolean;
 };
 
-export default function UpdateForm({ onSubmit, loading = false }: Props) {
+export default function UpdateForm({
+  user,
+  avatar,
+  onSubmit,
+  onLogin,
+  loading = false,
+}: Props) {
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
-  //const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<AvatarId>(
+    avatar ?? "t4"
+  );
+
+  // Preload current user info, including avatar
+  useEffect(() => {
+    if (user) {
+      setNickname(user.nickname ?? "");
+      setEmail(user.email ?? "");
+      if (user.avatar && Object.keys(AvatarIdMap).includes(user.avatar)) {
+        setSelectedAvatar(user.avatar as AvatarId);
+      } else if (avatar) {
+        setSelectedAvatar(avatar); // fallback to prop
+      }
+    }
+  }, [user, avatar]);
+
   const isValidEmail = (val: string) => /[^\s@]+@[^\s@]+\.[^\s@]+/.test(val);
   const isNonEmpty = (val: string) => val.trim().length > 0;
 
@@ -35,6 +57,10 @@ export default function UpdateForm({ onSubmit, loading = false }: Props) {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 10 }}>
+      {/* Avatar Picker */}
+      <AvatarPicker avatar={selectedAvatar} onChange={setSelectedAvatar} />
+
+      {/* Nickname Input */}
       <InputField
         label="Nickname"
         value={nickname}
@@ -43,20 +69,64 @@ export default function UpdateForm({ onSubmit, loading = false }: Props) {
         leftIconName="person-outline"
         error={nicknameError}
       />
+
+      {/* Email Input */}
       <InputField
         label="Email Address"
         value={email}
         onChangeText={setEmail}
+        placeholder="you@example.com"
+        leftIconName="mail-outline"
         error={emailError}
       />
 
+      {/* Submit Button */}
       <PrimaryButton
         title="Update Profile"
-        onPress={() => onSubmit({ nickname: nickname, email })}
+        onPress={() =>
+          onSubmit({
+            ...user,
+            nickname,
+            email,
+            avatar: selectedAvatar,
+          } as ProfileUserResponse)
+        }
         disabled={!isFormValid || loading}
         loading={loading}
       />
+
       <TermsNotice />
     </ScrollView>
   );
 }
+
+// Map of valid AvatarIds for type checking
+const AvatarIdMap: Record<string, boolean> = {
+  t4: true,
+  t4f: true,
+  a5: true,
+  a6: true,
+  a12: true,
+  a14: true,
+  a16: true,
+  a18: true,
+  a19: true,
+  a20: true,
+  a21: true,
+  a22: true,
+  a23: true,
+  a24: true,
+  a27: true,
+  a28: true,
+  a29: true,
+  s1: true,
+  s4: true,
+  s5: true,
+  s12: true,
+  s13: true,
+  s24: true,
+  s25: true,
+  s26: true,
+  s27: true,
+  s47: true,
+};

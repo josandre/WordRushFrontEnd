@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: Colors.text,
+    color: Colors.txt,
     marginBottom: 15,
   },
   row: {
@@ -52,11 +52,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
-    color: Colors.secondary,
+    color: Colors.primary,
   },
   value: {
     fontSize: 15,
     fontWeight: "600",
-    color: Colors.white,
+    color: Colors.txt,
   },
 });

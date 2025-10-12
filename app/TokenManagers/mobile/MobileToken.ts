@@ -17,7 +17,7 @@ export default class Storage<T> {
         return value ? JSON.parse(value) : null
     } 
 
-    async removeValue() {
-        return AsyncStorage.removeItem(this.key)
+    async removeValue(): Promise<void> {
+        return AsyncStorage.removeItem(this.key);
     }
 }
