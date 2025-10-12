@@ -23,7 +23,7 @@ import styles, {
   SUCCESS_SNACKBAR_COLOR,
 } from "../Login/styles";
 import { SnackBarProps } from "../Login/constants";
-
+import avatars, { AvatarId, getAvatarImage } from "@/assets/avatars";
 const width = Dimensions.get("screen").width;
 const height = Dimensions.get("screen").height;
 
@@ -37,36 +37,9 @@ export default function UpdateProfile() {
   React.useEffect(() => {
     getProfileUser({ userEmail: "taylor@gmail.com" });
   }, []);
-  const avatars: any = {
-    t4: require("../../../assets/image/t4.png"),
-    a5: require("../../../assets/image/a5.png"),
-    a6: require("../../../assets/image/a6.png"),
-    a12: require("../../../assets/image/a12.png"),
-    a14: require("../../../assets/image/a14.png"),
-    a16: require("../../../assets/image/a16.png"),
-    a18: require("../../../assets/image/a18.png"),
-    a19: require("../../../assets/image/a19.png"),
-    a20: require("../../../assets/image/a20.png"),
-    a21: require("../../../assets/image/a21.png"),
-    a22: require("../../../assets/image/a22.png"),
-    a23: require("../../../assets/image/a23.png"),
-    a24: require("../../../assets/image/a24.png"),
-    a27: require("../../../assets/image/a27.png"),
-    a28: require("../../../assets/image/a28.png"),
-    a29: require("../../../assets/image/a29.png"),
-    s1: require("../../../assets/image/s1.png"),
-    s4: require("../../../assets/image/s4.png"),
-    s5: require("../../../assets/image/s5.png"),
-    s12: require("../../../assets/image/s12.png"),
-    s13: require("../../../assets/image/s13.png"),
-    s24: require("../../../assets/image/s24.png"),
-    s25: require("../../../assets/image/s25.png"),
-    s26: require("../../../assets/image/s26.png"),
-    s27: require("../../../assets/image/s27.png"),
-    s47: require("../../../assets/image/s47.png"),
-  };
+
   const user = data;
-  const avatarSource = avatars[user?.avatar] || avatars["t4"];
+  const avatarSource = getAvatarImage(user?.avatar) || avatars["t4"];
   //   const handleSubmit = async (form: RegisterPayload) => {
   //     const payload = {
   //       userName: form.nickname,
@@ -121,16 +94,13 @@ export default function UpdateProfile() {
           />
 
           <UpdateForm
-            onLogin={() =>
-              navigation.navigate("Login", { fromRegisterSuccess: false })
-            }
+            onLogin={() => navigation.navigate("Profile")}
             onSubmit={() => {
               setSnackbar({
                 visible: true,
                 message: "Profile Updated Successfully",
                 color: SUCCESS_SNACKBAR_COLOR,
               });
-              //navigation.navigate("Profile");
             }}
           />
 
