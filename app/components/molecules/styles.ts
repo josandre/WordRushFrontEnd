@@ -88,7 +88,8 @@ export default StyleSheet.create({
         ...base.r14,
         flex: 1,
         marginBottom: -4,
-        marginLeft: 10
+        marginLeft: 10,
+        outline: 'none'
     },
     forgotLink: {
         ...base.m16,

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import mstyles from "./styles";
@@ -21,10 +21,21 @@ export default function InputField({
   leftIconName = "mail-outline",
   error,
 }: InputFieldProps) {
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <>
       <Text style={[mstyles.fieldLabel, { color: Colors.txt }]}>{label}</Text>
-      <View style={[mstyles.fieldContainer, { backgroundColor: Colors.bg }]}>
+      <View
+        style={[
+          mstyles.fieldContainer,
+          {
+            backgroundColor: Colors.bg,
+            borderWidth: isFocused ? 2 : 1,
+            borderColor: isFocused ? Colors.primary : "#E5E9EF",
+          },
+        ]}
+      >
         <Icon name={leftIconName} size={24} color={Colors.primary} />
         <TextInput
           placeholder={placeholder}
@@ -32,7 +43,9 @@ export default function InputField({
           selectionColor={Colors.primary}
           value={value}
           onChangeText={onChangeText}
-          style={[mstyles.textInput, { color: Colors.active }]}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          style={[mstyles.textInput, { color: Colors.active, outline: "none" }]}
         />
       </View>
       {!!error && <Text style={mstyles.errorText}>{error}</Text>}

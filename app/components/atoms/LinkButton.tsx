@@ -7,6 +7,7 @@ import {
   ViewStyle,
 } from "react-native";
 import atoms from "./styles";
+import { webButtonStyles, getWebPointerStyles } from "../../utils/webStyles";
 
 type LinkButtonProps = {
   title: string;
@@ -22,7 +23,10 @@ export default function LinkButton({
   textStyle,
 }: LinkButtonProps) {
   return (
-    <TouchableOpacity onPress={onPress} style={containerStyle}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[containerStyle, webButtonStyles, getWebPointerStyles()]}
+    >
       <Text style={[atoms.linkText, textStyle]}>{title}</Text>
     </TouchableOpacity>
   );

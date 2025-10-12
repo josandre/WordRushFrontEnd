@@ -10,9 +10,10 @@ import MyTabs from "@/app/navigator/BottomNavigator";
 import Profile from "@/app/screens/UserProfile/Profile";
 import SettingScreen from "@/app/screens/UserProfile/SettingScreen";
 import UpdateProfile from "@/app/screens/UserProfile/UpdateProfile";
-//import UpdateForm from "@/app/components/organisms/UpdateForm";
+import { Platform } from "react-native";
 
 const Stack = createNativeStackNavigator();
+const isWeb = Platform.OS === "web";
 
 export default function StackNavigator() {
   const [showSplashScreen, setshowSplashScreen] = useState(true);
@@ -33,11 +34,19 @@ export default function StackNavigator() {
           />
         ) : null}
 
-        <Stack.Screen
-          name="Introduction"
-          component={Introduction}
-          options={{ headerShown: false }}
-        />
+        {isWeb ? (
+          <Stack.Screen
+            name="Option"
+            component={Option}
+            options={{ headerShown: false }}
+          />
+        ) : (
+          <Stack.Screen
+            name="Introduction"
+            component={Introduction}
+            options={{ headerShown: false }}
+          />
+        )}
 
         <Stack.Screen
           name="MyTabs"
@@ -50,13 +59,6 @@ export default function StackNavigator() {
           component={Signup}
           options={{ headerShown: false }}
         />
-
-        <Stack.Screen
-          name="Option"
-          component={Option}
-          options={{ headerShown: false }}
-        />
-
         <Stack.Screen
           name="Login"
           component={Login}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import Icons from "react-native-vector-icons/MaterialCommunityIcons";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -22,12 +22,23 @@ export default function PasswordField({
   onToggleVisible,
   error,
 }: PasswordFieldProps) {
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <>
       <Text style={[mstyles.fieldLabel, { color: Colors.txt, marginTop: 20 }]}>
         {label}
       </Text>
-      <View style={[mstyles.fieldContainer, { backgroundColor: Colors.bg }]}>
+      <View
+        style={[
+          mstyles.fieldContainer,
+          {
+            backgroundColor: Colors.bg,
+            borderWidth: isFocused ? 2 : 1,
+            borderColor: isFocused ? Colors.primary : "#E5E9EF",
+          },
+        ]}
+      >
         <Icons name="lock-outline" size={24} color={Colors.primary} />
         <TextInput
           placeholder="Your password"
@@ -35,8 +46,10 @@ export default function PasswordField({
           selectionColor={Colors.primary}
           value={value}
           onChangeText={onChangeText}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           secureTextEntry={!visible}
-          style={[mstyles.textInput, { color: Colors.active }]}
+          style={[mstyles.textInput, { color: Colors.active, outline: "none" }]}
         />
         <TouchableOpacity onPress={onToggleVisible}>
           <Icon
