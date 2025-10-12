@@ -2,7 +2,7 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
-import reactNativePlugin from "eslint-plugin-react-native";
+import reactNativePlugin from "eslint-plugin-react-hooks";
 import prettierPlugin from "eslint-plugin-prettier";
 import prettierConfig from "eslint-config-prettier";
 import globals from "globals";
@@ -18,12 +18,10 @@ export default [
       "*.mjs",
       "eslint.config.mjs", // Exclude this config file from linting
     ],
-  },
+  }, // JavaScript recommended rules
 
-  // JavaScript recommended rules
-  js.configs.recommended,
+  js.configs.recommended, // TypeScript recommended rules
 
-  // TypeScript recommended rules
   ...tseslint.configs.recommended,
 
   {
@@ -49,42 +47,39 @@ export default [
     },
     rules: {
       // TypeScript
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_" },
+      ],
       "@typescript-eslint/explicit-module-boundary-types": "off",
-      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-explicit-any": "off", // React
 
-      // React
       "react/prop-types": "off",
-      "react/react-in-jsx-scope": "off",
+      "react/react-in-jsx-scope": "off", // React Hooks
 
-      // React Hooks
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/exhaustive-deps": "warn", // React Native
 
-      // React Native
       "react-native/no-unused-styles": "warn",
       "react-native/split-platform-components": "warn",
       "react-native/no-inline-styles": "off",
       "react-native/no-color-literals": "off",
-      "react-native/no-single-element-style-arrays": "warn",
+      "react-native/no-single-element-style-arrays": "warn", // General
 
-      // General
-      "no-console": "warn",      
-      "prettier/prettier": 
-            [ "warn",
-              "error",
-              {
-                "endOfLine": "lf"
-              }
-            ],
+      "no-console": "warn", // FIX: Changed the rule definition to [severity, options_object]
+      "prettier/prettier": [
+        "error", // Use "error" as severity
+        {
+          endOfLine: "lf",
+        },
+      ],
     },
     settings: {
       react: {
         version: "detect",
       },
     },
-  },
+  }, // Prettier config (disables conflicting rules)
 
-  // Prettier config (disables conflicting rules)
   prettierConfig,
 ];
