@@ -59,14 +59,14 @@ export default [
 
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn", // React Native
+      // Removed: "react-native/no-unused-styles": "warn",
 
-      "react-native/no-unused-styles": "warn",
       "react-native/split-platform-components": "warn",
       "react-native/no-inline-styles": "off",
       "react-native/no-color-literals": "off",
       "react-native/no-single-element-style-arrays": "warn", // General
 
-      "no-console": "warn", // FIX: Changed the rule definition to [severity, options_object]
+      "no-console": "warn",
       "prettier/prettier": [
         "error", // Use "error" as severity
         {
