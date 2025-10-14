@@ -10,7 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import style from "../../theme/style";
 import { Colors } from "../../theme/color";
 import { AppBar, Snackbar } from "@react-native-material/core";
-
+import { ProfileUserResponse } from "../../screens/UserProfile/services/useProfileUser";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import LoginForm from "../../components/organisms/LoginForm";
@@ -31,6 +31,15 @@ const clearPersistentStorage = async () => {
     await ProfileMobileTokenManager.clearProfile();
   }
 };
+async function saveProfile(profileData: ProfileUserResponse | undefined) {
+  await ProfileMobileTokenManager.saveProfile(profileData);
+  console.log("Profile saved successfully!");
+}
+
+async function logoutProfile() {
+  await ProfileMobileTokenManager.clearProfile();
+  console.log("Profile cleared.");
+}
 
 export default function Login() {
   const navigation = useNavigation<AppNavigation>();
@@ -52,17 +61,17 @@ export default function Login() {
 
     if (result.success) {
       const tokens = result.data;
-      await getProfileUser({ userEmail: form.email });
-      const user = pdata;
+      const user = await getProfileUser({ userEmail: form.email });
+      
 
       // TODO create centralize object to avoid branching
 
       if (isWeb) {
         await WebTokenManager.saveTokens(tokens);
-        await ProfileWebTokenManager.saveProfile(user);
+        saveProfile(user.data);
       } else {
         await MobileTokenManager.saveTokens(tokens);
-        await ProfileMobileTokenManager.saveProfile(user);
+        await ProfileMobileTokenManager.saveProfile(user.data);
       }
 
       navigation.navigate("MyTabs");

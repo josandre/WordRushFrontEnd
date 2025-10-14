@@ -33,7 +33,8 @@ export default function Profile() {
         ? ProfileWebTokenManager
         : ProfileMobileTokenManager;
       const userdata = await manager.getUserProfile();
-
+// this logic is flawed 
+//si ya tengo el perfil en memoria no necesito pedirlo otra vez
       if (userdata?.email) {
         await getProfileUser({ userEmail: userdata.email });
       } else {
