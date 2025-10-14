@@ -7,10 +7,10 @@ import Splash from '@/app/screens/Splash';
 import Introduction from '@/app/screens/Introduction/Introduction';
 import Signup from '@/app/screens/Login/Signup';
 import MyTabs from '@/app/navigator/BottomNavigator';
-import { Platform } from 'react-native';
+import { isWeb } from '../utils/envDetails';
+
 
 const Stack = createNativeStackNavigator();
-const isWeb = Platform.OS === 'web';
 
 export default function StackNavigator() {
 

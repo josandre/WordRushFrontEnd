@@ -1,11 +1,10 @@
+import { isWeb } from '@/app/utils/envDetails';
 import { StyleSheet, Dimensions, Platform } from 'react-native'
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('screen');
 const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
-const width = Platform.OS === 'web' ? windowWidth : screenWidth;
+const width = isWeb ? windowWidth : screenWidth;
 
-
-const isWeb = Platform.OS === 'web';
 const isDesktop = width > 1024;
 const maxContentWidth = isWeb && isDesktop ? 800 : width;
 

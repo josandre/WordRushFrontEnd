@@ -1,10 +1,10 @@
 import { Platform } from 'react-native'
 import WebTokenManager from '../TokenManagers/web/WebTokenManager'
 import MobileTokenManager from '../TokenManagers/mobile/MobileTokenManager'
+import { isWeb } from '../utils/envDetails'
 
 export class RequestCreator {
   private readonly baseUrl: string
-  private readonly isWeb = Platform.OS === 'web';
 
   constructor() {
     this.baseUrl =
@@ -37,7 +37,7 @@ export class RequestCreator {
     path: string,
     options: RequestInit
   ): Promise<{ success: boolean; data?: T; errorMessage?: string; status?: number; details?: unknown }> {
-    const token = this.isWeb ?
+    const token = isWeb ?
       await WebTokenManager.getAccessToken() :
       await MobileTokenManager.getAccessToken()
     
@@ -49,8 +49,6 @@ export class RequestCreator {
     }
 
     if (token) {
-      console.log('JAC', token)
-
       headers['Authorization'] = `Bearer ${token}`
     }
 

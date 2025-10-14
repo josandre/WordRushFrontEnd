@@ -14,10 +14,12 @@ import { Snackbar } from '@react-native-material/core'
 import styles, { ERROR_SNACKBAR_COLOR, SUCCESS_SNACKBAR_COLOR } from './styles'
 import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from './constants'
 
+
 export default function Signup() {
     const navigation = useNavigation<AppNavigation>();
     const { register, loading, error, data } = useRegisterUser()
     const [snackbar, setSnackbar] = useState<SnackBarProps>({ visible: false, message: '' })
+    
 
     const handleSubmit = async (form: RegisterPayload) => {
         const payload = {
@@ -25,7 +27,7 @@ export default function Signup() {
             email: form.email,
             password: form.password,
             nickname: form.nickname,
-            avatar: ''
+            avatar: form.avatar
         }
         const result = await register(payload)
         if (result.success) {

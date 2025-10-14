@@ -1,14 +1,15 @@
 import { Platform, ViewStyle } from 'react-native';
+import { isWeb } from './envDetails';
 
 export const getWebStyles = (webStyles: any): ViewStyle => {
-  if (Platform.OS === 'web') {
+  if (isWeb) {
     return webStyles as ViewStyle;
   }
   return {} as ViewStyle;
 };
 
 export const getWebPointerStyles = (): ViewStyle => {
-  if (Platform.OS === 'web') {
+  if (isWeb) {
     return {
       cursor: 'pointer',
       userSelect: 'none',
