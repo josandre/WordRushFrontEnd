@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native'
 import style from '../../theme/style'
 import { Colors } from '../../theme/color'
 import { AppBar, Snackbar} from '@react-native-material/core';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppNavigation } from '@/app/navigator/AppNavigationTypes'
 import LoginForm from '../../components/organisms/LoginForm'
@@ -13,8 +12,7 @@ import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from './constants'
 import styles, { ERROR_SNACKBAR_COLOR } from './styles'
 import WebTokenManager from '@/app/TokenManagers/web/WebTokenManager'
 import MobileTokenManager from '@/app/TokenManagers/mobile/MobileTokenManager'
-
-const isWeb = Platform.OS === 'web';
+import { isWeb } from '@/app/utils/envDetails'
 
 
 export default function Login() {
@@ -34,6 +32,7 @@ export default function Login() {
         if(result.success){
             const tokens = result.data
             
+            // TODO create centralize object to avoid branching
 
             if(isWeb){
                 await WebTokenManager.saveTokens(tokens)
@@ -43,7 +42,6 @@ export default function Login() {
             }
 
             navigation.navigate('MyTabs')
-            // Logic To save token
         }else {
             const errorSnackBar: SnackBarProps = {
                 visible: true,

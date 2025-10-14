@@ -1,30 +1,23 @@
-import { StyleSheet, Dimensions, Platform } from "react-native";
+import { StyleSheet, Dimensions} from "react-native";
 import { Colors } from "./color";
+import { isWeb } from "../utils/envDetails";
 
-// Get responsive dimensions that work on both mobile and web
 const { width: screenWidth, height: screenHeight } = Dimensions.get('screen');
 const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
 
-// Use window dimensions for web, screen for mobile
-const width = Platform.OS === 'web' ? windowWidth : screenWidth;
-const height = Platform.OS === 'web' ? windowHeight : screenHeight;
+const width = isWeb ? windowWidth : screenWidth;
 
-// Web-specific responsive breakpoints
-const isWeb = Platform.OS === 'web';
-const isTablet = width > 768;
 const isDesktop = width > 1024;
 
 export default StyleSheet.create({
     area: {
         flex: 1,
         backgroundColor: Colors.bg,
-        // Web-specific styles will be applied via conditional styling
     },
     main: {
         flex: 1,
         paddingHorizontal: isWeb && isDesktop ? 40 : 20,
         backgroundColor: Colors.bg,
-        // Web-specific container styles will be applied via conditional styling
     },
     title: {
         fontSize: isWeb && isDesktop ? 36 : 32,
@@ -219,7 +212,6 @@ export default StyleSheet.create({
         height: 56,
         borderRadius: 20,
         justifyContent: 'center',
-        // Web-specific button styles will be applied via conditional styling
     },
     btntxt: {
         fontSize: 16,

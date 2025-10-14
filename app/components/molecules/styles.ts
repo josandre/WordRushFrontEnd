@@ -1,6 +1,7 @@
-import { StyleSheet } from 'react-native'
+import { StyleSheet, Platform } from 'react-native'
 import { Colors } from '../../theme/color'
 import base from '../../theme/style'
+import { getWebStyles } from '../../utils/webStyles'
 
 export default StyleSheet.create({
     dotsContainer: {
@@ -89,7 +90,6 @@ export default StyleSheet.create({
         flex: 1,
         marginBottom: -4,
         marginLeft: 10,
-        outline: 'none'
     },
     forgotLink: {
         ...base.m16,
@@ -127,5 +127,64 @@ export default StyleSheet.create({
     },
     actionsContainer: {
         marginTop: 15
-    }
+    },
+    avatarSelectorContainer: {
+        marginTop: 20
+    },
+    avatarSelectorLabel: {
+        ...base.r14,
+        marginBottom: 12
+    },
+    avatarListContainer: {
+        paddingHorizontal: 5
+    },
+    avatarRow: {
+        justifyContent: 'space-between',
+        marginBottom: 12
+    },
+    avatarContainer: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        borderWidth: 2,
+        borderColor: '#E5E9EF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: Colors.bg,
+        position: 'relative'
+    },
+    avatarSelected: {
+        borderColor: Colors.primary,
+        borderWidth: 3
+    },
+    avatarImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30
+    },
+    avatarImageSelected: {
+        width: 58,
+        height: 58,
+        borderRadius: 29
+    },
+    avatarCheckmark: {
+        position: 'absolute',
+        top: 2,
+        right: 2,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: Colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    // Web-specific avatar styles
+    webAvatarRow: getWebStyles({
+        justifyContent: 'flex-start',
+        gap: '12px'
+    }),
+    webAvatarListContainer: getWebStyles({
+        paddingHorizontal: 0,
+        gap: '12px'
+    })
 })

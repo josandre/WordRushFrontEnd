@@ -15,9 +15,8 @@ export default function Home() {
       try {
         const res = await games()
         setResult(res.data)
-        console.log('JAC', res.data)
       } catch (err) {
-        console.error('Error fetching games:', err)
+        alert('Error fetching games:')
       }
     }
 

@@ -9,6 +9,7 @@ import OptionCard from '../../components/organisms/OptionCard'
 import { HELPER_TEXT, IMAGE_BG, IMAGE_BG_WITH_LOGO, TITLE } from './constants'
 import optionStyles from './styles'
 import { keyboardBehavior } from './helpers'
+import { isWeb } from '@/app/utils/envDetails'
 
 
 const width = Dimensions.get('screen').width
@@ -23,11 +24,11 @@ export default function Option() {
         <ImageBackground source={IMAGE_BG_WITH_LOGO} resizeMode='stretch' style={{ flex: 1,justifyContent:'center',alignItems:'center' }}>
 
             <ImageBackground
-                        source={Platform.OS === 'web' ? IMAGE_BG : IMAGE_BG_WITH_LOGO}
-                        resizeMode={Platform.OS === 'web' ? 'contain' : 'cover'}
+                        source={isWeb ? IMAGE_BG : IMAGE_BG_WITH_LOGO}
+                        resizeMode={isWeb ? 'contain' : 'cover'}
                         style={[
                             optionStyles.backgroundImage,
-                             Platform.OS === 'web' && { width, height },
+                             isWeb && { width, height },
                         ]}
                         >
 

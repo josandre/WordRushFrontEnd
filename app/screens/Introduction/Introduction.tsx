@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppNavigation } from '@/app/navigator/AppNavigationTypes';
 import IntroSlide from '../../components/organisms/IntroSlide';
 import { INTRO_BG, FIRST_SLICE_TITLE, SECOND_SLICE_TITLE } from './constants';
+import { isWeb } from '@/app/utils/envDetails';
 
 
 export default function Introduction() {
@@ -21,7 +22,7 @@ export default function Introduction() {
                 horizontal 
                 showsHorizontalScrollIndicator={false} 
                 pagingEnabled={true}
-                style={Platform.OS === 'web' ? { pointerEvents: 'auto' } : {}}
+                style={isWeb ? { pointerEvents: 'auto' } : {}}
             >
 
                     <IntroSlide
