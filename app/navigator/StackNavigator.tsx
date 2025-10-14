@@ -79,11 +79,13 @@ export default function StackNavigator() {
           component={UpdateProfile}
           options={{ headerShown: false }}
         />
-        {/* <Stack.Screen
-          name="Introduction"
-          component={Introduction}
-          options={{ headerShown: false }}
-        /> */}
+        {!isWeb && (
+          <Stack.Screen
+            name="Option"
+            component={Option}
+            options={{ headerShown: false }}
+          />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
