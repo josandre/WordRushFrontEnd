@@ -24,7 +24,7 @@ export type ProfileUserResult = {
 };
 
 export default function useProfileUser() {
-  const [data, setData] = useState<ProfileUserResponse | undefined>(undefined);
+  const [pdata, setData] = useState<ProfileUserResponse | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -62,11 +62,11 @@ export default function useProfileUser() {
     async (
       updates: Partial<ProfileUserResponse>
     ): Promise<ProfileUserResult> => {
-      if (!data?.id)
+      if (!pdata?.id)
         return { success: false, errorMessage: "User ID is missing" };
 
       const api = new RequestCreator();
-      const payload: ProfileUserResponse = { ...data, ...updates };
+      const payload: ProfileUserResponse = { ...pdata, ...updates };
       const result = await api.put<ProfileUserResponse>(UPDATE_PATH, payload);
 
       if (!result.success)
@@ -75,11 +75,11 @@ export default function useProfileUser() {
       setData(result.data);
       return { success: true, data: result.data };
     },
-    [data]
+    [pdata]
   );
 
   return {
-    data,
+    pdata,
     loading,
     error,
     getProfileUser,
