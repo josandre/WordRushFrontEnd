@@ -28,32 +28,23 @@ export default function Profile() {
   const { getProfileUser, pdata } = useProfileUser();
 
   useEffect(() => {
-    // Load stored user data and then fetch profile
-    const loadUserWebProfile = async () => {
-      const userdata = await ProfileWebTokenManager.getUserProfile();
+    const loadProfile = async () => {
+      const manager = isWeb
+        ? ProfileWebTokenManager
+        : ProfileMobileTokenManager;
+      const userdata = await manager.getUserProfile();
 
       if (userdata?.email) {
         await getProfileUser({ userEmail: userdata.email });
       } else {
-        console.warn("No stored user email found!");
-      }
-    };
-    const loadUserMobileProfile = async () => {
-      const userdata = await ProfileMobileTokenManager.getUserProfile();
-
-      if (userdata?.email) {
-        await getProfileUser({ userEmail: userdata.email });
-      } else {
-        console.warn("No stored user email found!");
+        console.log("No stored user email found!");
       }
     };
 
-    if (isWeb) loadUserWebProfile();
-    else loadUserMobileProfile();
-  }, []);
-
+    loadProfile();
+  }, [getProfileUser]); // include in deps
   const user = pdata;
-  const avatarSource = getAvatarImage(user?.avatar) || avatars["t4f"];
+  const avatarSource = getAvatarImage(user?.avatar) || avatars["default"];
 
   return (
     <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>

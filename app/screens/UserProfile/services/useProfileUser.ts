@@ -28,43 +28,62 @@ export default function useProfileUser() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const getProfileUser = useCallback(async (payload: ProfileUserPayload): Promise<ProfileUserResult> => {
-    setLoading(true);
-    setError(undefined);
-    setData(undefined);
+  const getProfileUser = useCallback(
+    async (payload: ProfileUserPayload): Promise<ProfileUserResult> => {
+      setLoading(true);
+      setError(undefined);
+      setData(undefined);
 
-    const api = new RequestCreator();
-    const result = await api.get<ProfileUserResponse>(`${GET_PATH}?userEmail=${payload.userEmail}`);
+      const api = new RequestCreator();
+      const result = await api.get<ProfileUserResponse>(
+        `${GET_PATH}?userEmail=${payload.userEmail}`
+      );
 
-    if (!result.success) {
-      setError(result.errorMessage);
+      if (!result.success) {
+        setError(result.errorMessage);
+        setLoading(false);
+        return { success: false, errorMessage: result.errorMessage };
+      }
+
+      setData(result.data);
       setLoading(false);
-      return { success: false, errorMessage: result.errorMessage };
-    }
-
-    setData(result.data);
-    setLoading(false);
-    return { success: true, data: result.data };
-  }, []);
+      return { success: true, data: result.data };
+    },
+    []
+  );
 
   // Update local state immediately
   const updateProfile = useCallback((updates: Partial<ProfileUserResponse>) => {
-    setData(prev => ({ ...prev, ...updates }));
+    setData((prev) => ({ ...prev, ...updates }));
   }, []);
 
   // Update server
-  const updateProfileAPI = useCallback(async (updates: Partial<ProfileUserResponse>): Promise<ProfileUserResult> => {
-    if (!pdata?.id) return { success: false, errorMessage: "User ID is missing" };
+  const updateProfileAPI = useCallback(
+    async (
+      updates: Partial<ProfileUserResponse>
+    ): Promise<ProfileUserResult> => {
+      if (!pdata?.id)
+        return { success: false, errorMessage: "User ID is missing" };
 
-    const api = new RequestCreator();
-    const payload: ProfileUserResponse = { ...pdata, ...updates };
-    const result = await api.put<ProfileUserResponse>(UPDATE_PATH, payload);
+      const api = new RequestCreator();
+      const payload: ProfileUserResponse = { ...pdata, ...updates };
+      const result = await api.put<ProfileUserResponse>(UPDATE_PATH, payload);
 
-    if (!result.success) return { success: false, errorMessage: result.errorMessage };
+      if (!result.success)
+        return { success: false, errorMessage: result.errorMessage };
 
-    setData(result.data);
-    return { success: true, data: result.data };
-  }, [pdata]);
+      setData(result.data);
+      return { success: true, data: result.data };
+    },
+    [pdata]
+  );
 
-  return { pdata, loading, error, getProfileUser, updateProfile, updateProfileAPI };
+  return {
+    pdata,
+    loading,
+    error,
+    getProfileUser,
+    updateProfile,
+    updateProfileAPI,
+  };
 }

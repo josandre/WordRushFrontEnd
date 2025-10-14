@@ -31,10 +31,8 @@ export default function Introduction() {
           dotsTotal={2}
           dotsActiveIndex={0}
           ctaTitle={FIRST_SLICE_TITLE}
-          onSignUp={() => navigation.navigate("Signup")}
-          onLogin={() =>
-            navigation.navigate("Login", { fromRegisterSuccess: false })
-          }
+          onSignUp={() => navigation.navigate("Option")}
+          onLogin={() => navigation.navigate("Option")}
           imageHeightRatio={3}
         />
         <IntroSlide

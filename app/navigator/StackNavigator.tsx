@@ -34,7 +34,7 @@ export default function StackNavigator() {
           />
         ) : null}
 
-        {!isWeb ? (
+        {isWeb ? (
           <Stack.Screen
             name="Option"
             component={Option}

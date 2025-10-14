@@ -10,6 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import style from "../../theme/style";
 import { Colors } from "../../theme/color";
 import { AppBar, Snackbar } from "@react-native-material/core";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import LoginForm from "../../components/organisms/LoginForm";
@@ -18,17 +19,30 @@ import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from "./constants";
 import styles, { ERROR_SNACKBAR_COLOR } from "./styles";
 import WebTokenManager from "@/app/TokenManagers/web/WebTokenManager";
 import MobileTokenManager from "@/app/TokenManagers/mobile/MobileTokenManager";
+import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileTokenManager";
+import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
+import useProfileUser from "../../screens/UserProfile/services/useProfileUser";
 import { isWeb } from "@/app/utils/envDetails";
+
+const clearPersistentStorage = async () => {
+  if (isWeb) {
+    await ProfileWebTokenManager.clearProfile();
+  } else {
+    await ProfileMobileTokenManager.clearProfile();
+  }
+};
 
 export default function Login() {
   const navigation = useNavigation<AppNavigation>();
   const { logIn, loading, error, data } = useLogIn();
+  const { getProfileUser, pdata } = useProfileUser();
   const [snackbar, setSnackbar] = useState<SnackBarProps>({
     visible: false,
     message: "",
   });
 
   const handleSubmit = async (form: LogInPayload) => {
+    //await clearPersistentStorage();
     const payload = {
       email: form.email,
       password: form.password,
@@ -38,13 +52,17 @@ export default function Login() {
 
     if (result.success) {
       const tokens = result.data;
+      await getProfileUser({ userEmail: form.email });
+      const user = pdata;
 
       // TODO create centralize object to avoid branching
 
       if (isWeb) {
         await WebTokenManager.saveTokens(tokens);
+        await ProfileWebTokenManager.saveProfile(user);
       } else {
         await MobileTokenManager.saveTokens(tokens);
+        await ProfileMobileTokenManager.saveProfile(user);
       }
 
       navigation.navigate("MyTabs");
