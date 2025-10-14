@@ -1,23 +1,22 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
 export default class Storage<T> {
-    key: string
+  key: string;
 
-    constructor(key: string){
-        this.key = key
-    }
+  constructor(key: string) {
+    this.key = key;
+  }
 
-    async setValue(value: T){
-        return AsyncStorage.setItem(this.key, JSON.stringify(value))
-    }
+  async setValue(value: T) {
+    return AsyncStorage.setItem(this.key, JSON.stringify(value));
+  }
 
-    async getValue(): Promise<T | null>{
-        const value = await AsyncStorage.getItem(this.key)
-        return value ? JSON.parse(value) : null
-    } 
+  async getValue(): Promise<T | null> {
+    const value = await AsyncStorage.getItem(this.key);
+    return value ? JSON.parse(value) : null;
+  }
 
-    async removeValue() {
-        return AsyncStorage.removeItem(this.key)
-    }
+  async removeValue() {
+    return AsyncStorage.removeItem(this.key);
+  }
 }
