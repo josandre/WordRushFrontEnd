@@ -25,7 +25,7 @@ const isWeb = Platform.OS === "web";
 
 export default function Profile() {
   const navigation = useNavigation<AppNavigation>();
-  const { getProfileUser, pdata } = useProfileUser();
+  const { getProfileUser, data } = useProfileUser();
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -43,7 +43,7 @@ export default function Profile() {
 
     loadProfile();
   }, [getProfileUser]); // include in deps
-  const user = pdata;
+  const user = data;
   const avatarSource = getAvatarImage(user?.avatar) || avatars["default"];
 
   return (
