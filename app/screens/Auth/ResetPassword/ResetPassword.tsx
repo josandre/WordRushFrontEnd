@@ -1,29 +1,49 @@
 import { View, Text, StatusBar, KeyboardAvoidingView, TouchableOpacity, Platform } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import style from '../../../theme/style'
 import { Colors } from '../../../theme/color'
 import Icon from 'react-native-vector-icons/Ionicons'
-import { AppBar } from '@react-native-material/core'
+import { AppBar, Snackbar } from '@react-native-material/core'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import ResetPasswordForm from '../../../components/organisms/ResetPasswordForm'
 import resetPasswordStyles from './ResetPasswordStyles'
 import { AppNavigation } from '../../../navigator/AppNavigationTypes'
+import useResetPassword, { ResetPasswordPayload } from './services/userResetPassword'
+import styles, { ERROR_SNACKBAR_COLOR, SUCCESS_SNACKBAR_COLOR } from '../styles'
+import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from '../constants'
 
-
-type ResetPasswordFormData = {
-  password: string
-  confirmPassword: string
-}
 
 export default function ResetPassword(): React.JSX.Element {
   const navigation = useNavigation<AppNavigation>()
+  const [snackbar, setSnackbar] = useState<SnackBarProps>({ visible: false, message: '' })
+  const { resetPassword, loading, error, data } = useResetPassword()
 
-  const handlePasswordReset = (data: ResetPasswordFormData) => {
-    // TODO: Implement password reset logic
-    console.log('Password reset data:', data)
-    // For now, navigate back to login
-    navigation.navigate('Login', { fromRegisterSuccess: false })
+  const handlePasswordReset = async (data: ResetPasswordPayload) => {
+    const payload = {
+      email: data.email,
+      newPassword: data.newPassword
+    }
+
+    const result = await resetPassword(payload)
+    
+    if(result.success){
+      const successSnackBar: SnackBarProps = {
+        visible: true,
+        message: result.data?.Message || 'Password changed',
+        color: SUCCESS_SNACKBAR_COLOR
+      }
+      setSnackbar(successSnackBar)
+      navigation.navigate('Login', { fromRegisterSuccess: true })                
+    }else {
+      const errorSnackBar: SnackBarProps = {
+        visible: true,
+        message: result.errorMessage,
+        color: ERROR_SNACKBAR_COLOR 
+      }
+
+      setSnackbar(errorSnackBar)              
+    }    
   }
 
   return (
@@ -32,7 +52,7 @@ export default function ResetPassword(): React.JSX.Element {
       <KeyboardAvoidingView style={resetPasswordStyles.keyboardAvoidingView} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={[style.main, resetPasswordStyles.main]}>
           <AppBar
-            title='New Password'
+            title='Reset Password'
             titleStyle={[style.apptitle, resetPasswordStyles.appTitle]}
             centerTitle={true}
             style={resetPasswordStyles.appBar}
@@ -45,6 +65,10 @@ export default function ResetPassword(): React.JSX.Element {
           />
 
           <ResetPasswordForm onSubmit={handlePasswordReset} />
+
+           {snackbar.visible && (
+              <Snackbar message={snackbar.message ?? FALLBACK_ERROR_MESSAGE} style={[styles.snackbarContainer, { backgroundColor: snackbar.color }]}/>
+           )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
