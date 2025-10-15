@@ -66,7 +66,7 @@ export default function Login() {
                         elevation={0}
                         leading={<TouchableOpacity onPress={() => navigation.navigate('Option')} />}
                     />
-                    <LoginForm onLogin={handleSubmit} onForgot={() => navigation.navigate('Reset')} loading={loading} />
+                    <LoginForm onLogin={handleSubmit} onForgot={() => navigation.navigate('ResetPassword')} loading={loading} />
                     
                     {snackbar.visible && (
                         <Snackbar message={snackbar.message ?? FALLBACK_ERROR_MESSAGE} style={[styles.snackbarContainer, { backgroundColor: snackbar.color }]}/>
