@@ -64,7 +64,7 @@ export default function ResetPassword(): React.JSX.Element {
             }
           />
 
-          <ResetPasswordForm onSubmit={handlePasswordReset} />
+          <ResetPasswordForm onSubmit={handlePasswordReset} loading={loading} />
 
            {snackbar.visible && (
               <Snackbar message={snackbar.message ?? FALLBACK_ERROR_MESSAGE} style={[styles.snackbarContainer, { backgroundColor: snackbar.color }]}/>
