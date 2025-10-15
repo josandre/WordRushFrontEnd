@@ -21,6 +21,3 @@ export default function OptionCard({ title, subtitle, onLogin, onSignup }: Optio
     )
 }
 
-
-
-
