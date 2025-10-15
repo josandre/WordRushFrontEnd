@@ -15,7 +15,6 @@ export default class ProfileWebTokenManager {
       const UserProfile = this.storage.getValue();
       return UserProfile ? UserProfile : null;
     } catch (error) {
-      console.error("Error getting profile:", error);
       return null;
     }
   }
@@ -24,7 +23,7 @@ export default class ProfileWebTokenManager {
     try {
       this.storage.removeValue();
     } catch (error) {
-      console.error("Error clearing profile:", error);
+      //console.error("Error clearing Web profile:", error);
     }
   }
 }

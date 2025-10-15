@@ -103,20 +103,4 @@ export class RequestCreator {
   ): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
     return this.request<T>(path, { method: "GET" });
   }
-
-  public async put<T>(
-    path: string,
-    payload: any
-  ): Promise<{
-    success: boolean;
-    data?: T;
-    errorMessage?: string;
-    status?: number;
-    details?: unknown;
-  }> {
-    return this.request<T>(path, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    });
-  }
 }

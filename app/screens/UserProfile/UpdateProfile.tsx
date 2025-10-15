@@ -59,7 +59,7 @@ export default function UpdateProfile() {
   const avatar: AvatarId =
     pdata?.avatar && Object.keys(avatars).includes(pdata.avatar)
       ? (pdata.avatar as AvatarId)
-      : "t4";
+      : "default";
 
   return (
     <SafeAreaView style={[style.area, { backgroundColor: Colors.bord }]}>

@@ -83,7 +83,7 @@ export default function useProfileUser() {
     loading,
     error,
     getProfileUser,
-    // updateProfile,
-    // updateProfileAPI,
+    updateProfile,
+    updateProfileAPI,
   };
 }

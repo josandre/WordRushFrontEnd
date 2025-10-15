@@ -1,20 +1,21 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  TouchableOpacity,
+  Text,
 } from "react-native";
 import { AppBar } from "@react-native-material/core";
 import { useNavigation } from "@react-navigation/native";
 import { Colors } from "../../theme/color";
 import style from "../../theme/style";
-import Icon from "react-native-vector-icons/Ionicons";
 import avatars, { getAvatarImage } from "@/assets/avatars";
-import useProfileUser from "./services/useProfileUser";
+import useProfileUser, { ProfileUserResponse } from "./services/useProfileUser";
 import ProfileHeader from "../../components/molecules/ProfileHeader";
-import RankSection from "../../components/molecules/RankSection";
-import ProfileTabs from "../../components/organisms/ProfileTabs";
+import SettingsHeader from "../../components/organisms/SettingsHeader";
+import SettingsList from "../../components/organisms/SettingsList";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
@@ -22,30 +23,27 @@ import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileT
 
 const Tab = createMaterialTopTabNavigator();
 const isWeb = Platform.OS === "web";
-
 export default function Profile() {
   const navigation = useNavigation<AppNavigation>();
   const { getProfileUser, pdata } = useProfileUser();
-
+  const [isEnabled, setIsEnabled] = useState(true);
   useEffect(() => {
     const loadProfile = async () => {
       const manager = isWeb
         ? ProfileWebTokenManager
         : ProfileMobileTokenManager;
       const userdata = await manager.getUserProfile();
-// this logic is flawed 
-//si ya tengo el perfil en memoria no necesito pedirlo otra vez
+
       if (userdata?.email) {
         await getProfileUser({ userEmail: userdata.email });
       } else {
         console.log("No stored user email found!");
       }
     };
-
     loadProfile();
-  }, [getProfileUser]); // include in deps
-  const user = pdata;
-  const avatarSource = getAvatarImage(user?.avatar) || avatars["default"];
+  }, [getProfileUser]);
+
+  const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
 
   return (
     <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
@@ -66,14 +64,6 @@ export default function Profile() {
             marginTop: Platform.OS === "ios" ? 10 : 30,
           }}
           elevation={0}
-          trailing={
-            <Icon
-              name="settings-sharp"
-              size={24}
-              color={Colors.secondary}
-              onPress={() => navigation.navigate("SettingScreen")}
-            />
-          }
         />
 
         <SafeAreaView
@@ -90,13 +80,36 @@ export default function Profile() {
             },
           ]}
         >
+          <SettingsHeader />
           <ProfileHeader
+            nickname={pdata?.nickname ?? "Guest"}
             avatar={avatarSource}
-            nickname={user?.nickname ?? "Guest"}
-            email={user?.email ?? "No email"}
           />
-          <RankSection />
-          <ProfileTabs />
+
+          <SettingsList
+            notificationEnabled={isEnabled}
+            onToggleNotification={() => setIsEnabled(!isEnabled)}
+            email={pdata?.email ?? ""}
+          />
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("Login", { fromRegisterSuccess: false })
+            }
+          >
+            <Text
+              style={[
+                style.m16,
+                {
+                  color: "#EB5757",
+                  textAlign: "center",
+                  marginTop: 30,
+                  marginBottom: 20,
+                },
+              ]}
+            >
+              Logout
+            </Text>
+          </TouchableOpacity>
         </SafeAreaView>
       </KeyboardAvoidingView>
     </SafeAreaView>

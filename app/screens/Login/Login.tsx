@@ -24,23 +24,13 @@ import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManag
 import useProfileUser from "../../screens/UserProfile/services/useProfileUser";
 import { isWeb } from "@/app/utils/envDetails";
 
-const clearPersistentStorage = async () => {
-  if (isWeb) {
-    await ProfileWebTokenManager.clearProfile();
-  } else {
-    await ProfileMobileTokenManager.clearProfile();
-  }
-};
 async function saveProfile(profileData: ProfileUserResponse | undefined) {
-  await ProfileMobileTokenManager.saveProfile(profileData);
-  console.log("Profile saved successfully!");
+  if (isWeb) {
+    await ProfileWebTokenManager.saveProfile(profileData);
+  } else {
+    await ProfileMobileTokenManager.saveProfile(profileData);
+  }
 }
-
-async function logoutProfile() {
-  await ProfileMobileTokenManager.clearProfile();
-  console.log("Profile cleared.");
-}
-
 export default function Login() {
   const navigation = useNavigation<AppNavigation>();
   const { logIn, loading, error, data } = useLogIn();
@@ -51,7 +41,6 @@ export default function Login() {
   });
 
   const handleSubmit = async (form: LogInPayload) => {
-    //await clearPersistentStorage();
     const payload = {
       email: form.email,
       password: form.password,
@@ -62,7 +51,6 @@ export default function Login() {
     if (result.success) {
       const tokens = result.data;
       const user = await getProfileUser({ userEmail: form.email });
-      
 
       // TODO create centralize object to avoid branching
 
@@ -71,7 +59,7 @@ export default function Login() {
         saveProfile(user.data);
       } else {
         await MobileTokenManager.saveTokens(tokens);
-        await ProfileMobileTokenManager.saveProfile(user.data);
+        saveProfile(user.data);
       }
 
       navigation.navigate("MyTabs");
