@@ -41,7 +41,7 @@ export default function AvatarPicker({ avatar, onChange }: Props) {
         viewPosition: 0.5,
       });
     }
-  }, [avatar]);
+  }, [avatar, avatarKeys]);
 
   return (
     <View style={{ marginVertical: 20 }}>

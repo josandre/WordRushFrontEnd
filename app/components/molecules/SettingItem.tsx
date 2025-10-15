@@ -33,7 +33,7 @@ export default function SettingItem({
       }}
     >
       <SettingIcon name={icon} type={iconType} />
-      <SettingTextBlock title={title} subtitle={subtitle} />
+      <SettingTextBlock title={title ?? "-"} subtitle={subtitle ?? "-"} />
       <Icon name="chevron-forward" size={20} color={Colors.txt} />
     </TouchableOpacity>
   );

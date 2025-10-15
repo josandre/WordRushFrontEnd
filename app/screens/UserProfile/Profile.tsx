@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   SafeAreaView,
   KeyboardAvoidingView,
@@ -8,11 +8,11 @@ import {
   Text,
 } from "react-native";
 import { AppBar } from "@react-native-material/core";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Colors } from "../../theme/color";
 import style from "../../theme/style";
 import avatars, { getAvatarImage } from "@/assets/avatars";
-import useProfileUser, { ProfileUserResponse } from "./services/useProfileUser";
+import useProfileUser from "./services/useProfileUser";
 import ProfileHeader from "../../components/molecules/ProfileHeader";
 import SettingsHeader from "../../components/organisms/SettingsHeader";
 import SettingsList from "../../components/organisms/SettingsList";
@@ -27,21 +27,22 @@ export default function Profile() {
   const navigation = useNavigation<AppNavigation>();
   const { getProfileUser, pdata } = useProfileUser();
   const [isEnabled, setIsEnabled] = useState(true);
-  useEffect(() => {
-    const loadProfile = async () => {
-      const manager = isWeb
-        ? ProfileWebTokenManager
-        : ProfileMobileTokenManager;
-      const userdata = await manager.getUserProfile();
+  useFocusEffect(
+    useCallback(() => {
+      const loadProfile = async () => {
+        const manager = isWeb
+          ? ProfileWebTokenManager
+          : ProfileMobileTokenManager;
+        const userdata = await manager.getUserProfile();
 
-      if (userdata?.email) {
-        await getProfileUser({ userEmail: userdata.email });
-      } else {
-        console.log("No stored user email found!");
-      }
-    };
-    loadProfile();
-  }, [getProfileUser]);
+        if (userdata?.email) {
+          await getProfileUser({ userEmail: userdata.email });
+        }
+      };
+
+      loadProfile();
+    }, [getProfileUser])
+  );
 
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
 

@@ -8,10 +8,10 @@ import Icon from "react-native-vector-icons/Ionicons";
 import style from "../../theme/style";
 import { Colors } from "../../theme/color";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
-import { keyboardBehavior } from "../Login/helpers";
+import { keyboardBehavior } from "../Auth/helpers";
 import UpdateForm from "@/app/components/organisms/UpdateForm";
-import styles, { SUCCESS_SNACKBAR_COLOR } from "../Login/styles";
-import { SnackBarProps } from "../Login/constants";
+import styles, { SUCCESS_SNACKBAR_COLOR } from "../Auth/styles";
+import { SnackBarProps } from "../Auth/constants";
 
 import avatars, { AvatarId } from "@/assets/avatars";
 import useProfileUser from "./services/useProfileUser";

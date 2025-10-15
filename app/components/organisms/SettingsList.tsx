@@ -38,7 +38,7 @@ export default function SettingsList({
         icon="lock-outline"
         iconType="Material"
         title="Change Password"
-        subtitle={email}
+        subtitle={email ?? "No Email"}
       />
 
       {/* <Text style={[style.m14, { color: Colors.disable, marginTop: 20 }]}>
