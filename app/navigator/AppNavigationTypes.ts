@@ -6,6 +6,7 @@ export type AppRoutes = {
   MyTabs: undefined;
   Option: undefined;
   Signup: undefined;
+  ResetPassword: undefined;
 };
 
 

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Login from '@/app/screens/Login/Login';
-import Option from '@/app/screens/Login/Option';
-import Splash from '@/app/screens/Splash';
-import Introduction from '@/app/screens/Introduction/Introduction';
-import Signup from '@/app/screens/Login/Signup';
-import MyTabs from '@/app/navigator/BottomNavigator';
+import Login from '../screens/Auth/Login';
+import Option from '../screens/Auth/Option';
+import Splash from '../screens/Splash';
+import Introduction from '../screens/Introduction/Introduction';
+import Signup from '../screens/Auth/Signup';
+import MyTabs from './BottomNavigator';
 import { isWeb } from '../utils/envDetails';
+import ResetPassword from '../screens/Auth/ResetPassword/ResetPassword';
 
 
 const Stack = createNativeStackNavigator();
@@ -57,6 +58,13 @@ export default function StackNavigator() {
           component={MyTabs}
           options={{ headerShown: false }} />
 
+
+      <Stack.Screen
+          name="ResetPassword"
+          component={ResetPassword}
+          options={{ headerShown: false }} />
+
+        
         <Stack.Screen
           name="Signup"
           component={Signup}
