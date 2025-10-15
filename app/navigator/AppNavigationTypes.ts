@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack';
+import { StackNavigationProp } from "@react-navigation/stack";
 
 export type AppRoutes = {
   Home: undefined;
@@ -46,6 +46,7 @@ export type AppRoutes = {
   InAppBrowser: { url: string };
   UpdateProfile: undefined;
   UpdateForm: undefined;
+  ResetPassword: undefined;
 };
 
 export type AppNavigation = StackNavigationProp<AppRoutes>;

@@ -105,7 +105,7 @@ export default function Login() {
           />
           <LoginForm
             onLogin={handleSubmit}
-            onForgot={() => navigation.navigate("Reset")}
+            onForgot={() => navigation.navigate("ResetPassword")}
             loading={loading}
           />
 
