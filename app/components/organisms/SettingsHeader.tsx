@@ -14,13 +14,13 @@ export default function SettingsHeader() {
 
   return (
     <AppBar
-      title="Settings"
-      titleStyle={[style.apptitle, { color: Colors.txt, marginLeft: 25 }]}
+      title="Profile Settings"
+      titleStyle={[style.apptitle, { color: Colors.txt, marginLeft: 0 }]}
       centerTitle={true}
       style={{ backgroundColor: "transparent" }}
       elevation={0}
       leading={
-        <TouchableOpacity onPress={() => navigation.navigate("MyTabs")}>
+        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
           <Icon name="arrow-back" size={24} color={Colors.txt} />
         </TouchableOpacity>
       }

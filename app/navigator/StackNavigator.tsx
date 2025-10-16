@@ -8,10 +8,11 @@ import Introduction from "../screens/Introduction/Introduction";
 import Signup from "../screens/Auth/Signup";
 import MyTabs from "./BottomNavigator";
 import Profile from "@/app/screens/UserProfile/Profile";
-import SettingScreen from "@/app/screens/UserProfile/SettingScreen";
 import UpdateProfile from "@/app/screens/UserProfile/UpdateProfile";
 import { isWeb } from "../utils/envDetails";
 import ResetPassword from "../screens/Auth/ResetPassword/ResetPassword";
+import ChangePassword from "../screens/UserProfile/ChangePassword";
+import Home from "../screens/Home/Home";
 
 const Stack = createNativeStackNavigator();
 
@@ -59,7 +60,11 @@ export default function StackNavigator() {
           component={ResetPassword}
           options={{ headerShown: false }}
         />
-
+        <Stack.Screen
+          name="ChangePassword"
+          component={ChangePassword}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="Signup"
           component={Signup}
@@ -76,11 +81,6 @@ export default function StackNavigator() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="SettingScreen"
-          component={SettingScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
           name="UpdateProfile"
           component={UpdateProfile}
           options={{ headerShown: false }}
@@ -92,6 +92,11 @@ export default function StackNavigator() {
             options={{ headerShown: false }}
           />
         )}
+        <Stack.Screen
+          name="Home"
+          component={Home}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

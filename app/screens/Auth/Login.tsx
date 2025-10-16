@@ -34,7 +34,7 @@ async function saveProfile(profileData: ProfileUserResponse | undefined) {
 export default function Login() {
   const navigation = useNavigation<AppNavigation>();
   const { logIn, loading, error, data } = useLogIn();
-  const { getProfileUser, pdata } = useProfileUser();
+  const { getProfileUser } = useProfileUser();
   const [snackbar, setSnackbar] = useState<SnackBarProps>({
     visible: false,
     message: "",
@@ -55,9 +55,11 @@ export default function Login() {
       // TODO create centralize object to avoid branching
 
       if (isWeb) {
+        await ProfileWebTokenManager.clearProfile();
         await WebTokenManager.saveTokens(tokens);
         saveProfile(user.data);
       } else {
+        await ProfileMobileTokenManager.clearProfile();
         await MobileTokenManager.saveTokens(tokens);
         saveProfile(user.data);
       }

@@ -99,10 +99,17 @@ export default function UpdateProfile() {
             user={pdata}
             avatar={avatar}
             onSubmit={async (updated) => {
-              updateProfile(updated); // live UI update
-              const result = await updateProfileAPI(updated); // server update
-              if (result.success) handleSuccess("Profile Updated Successfully");
-              else console.warn(result.errorMessage);
+              updateProfile(updated);
+              const result = await updateProfileAPI(updated);
+
+              if (result.success) {
+                handleSuccess("Profile Updated Successfully");
+                setTimeout(() => {
+                  navigation.goBack();
+                }, 800);
+              } else {
+                console.warn(result.errorMessage);
+              }
             }}
             onLogin={() => navigation.navigate("Profile")}
           />

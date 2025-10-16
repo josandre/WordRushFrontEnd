@@ -12,11 +12,7 @@ interface SettingsListProps {
   email: string;
 }
 
-export default function SettingsList({
-  notificationEnabled,
-  onToggleNotification,
-  email,
-}: SettingsListProps) {
+export default function SettingsList({ email }: SettingsListProps) {
   const navigation = useNavigation<AppNavigation>();
 
   return (
@@ -29,41 +25,13 @@ export default function SettingsList({
         subtitle="Update Email, Nickname and Avatar"
         onPress={() => navigation.navigate("UpdateProfile")}
       />
-      {/* <SettingItem
-        icon="mail-outline"
-        title="Change Email Address"
-        subtitle="madias@yahoo.com"
-      /> */}
       <SettingItem
         icon="lock-outline"
         iconType="Material"
         title="Change Password"
         subtitle={email ?? "No Email"}
+        onPress={() => navigation.navigate("ChangePassword")}
       />
-
-      {/* <Text style={[style.m14, { color: Colors.disable, marginTop: 20 }]}>
-        OTHER
-      </Text> */}
-
-      {/* <SettingsSwitch
-        label="Notifications Enabled"
-        value={notificationEnabled}
-        onValueChange={onToggleNotification}
-      /> */}
-
-      {/* <SettingItem
-        icon="people-outline"
-        title="Invite Friends"
-        subtitle="Easy, normal, hard"
-        onPress={() => navigation.navigate("InviteF")}
-      />
-
-      <SettingItem
-        icon="help-sharp"
-        title="FAQ"
-        subtitle="Most frequently asked question"
-        onPress={() => navigation.navigate("Faq")}
-      /> */}
     </ScrollView>
   );
 }
