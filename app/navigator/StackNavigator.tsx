@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Login from "@/app/screens/Login/Login";
-import Option from "@/app/screens/Login/Option";
-import Splash from "@/app/screens/Splash";
-import Introduction from "@/app/screens/Introduction/Introduction";
-import Signup from "@/app/screens/Login/Signup";
-import MyTabs from "@/app/navigator/BottomNavigator";
-import { Platform } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { isWeb } from '../utils/envDetails';
 
+import Login from '../screens/Auth/Login';
+import Option from '../screens/Auth/Option';
+import Splash from '../screens/Splash';
+import Introduction from '../screens/Introduction/Introduction';
+import Signup from '../screens/Auth/Signup';
+import MyTabs from './BottomNavigator';
+import ResetPassword from '../screens/Auth/ResetPassword/ResetPassword';
 import ConfigureLobby from "@/app/screens/Lobby/ConfigureLobby";
 import JoinLobby from "@/app/screens/Lobby/JoinLobby";
 import Lobby from "@/app/screens/Lobby/Lobby";
 
 const Stack = createNativeStackNavigator();
-const isWeb = Platform.OS === "web";
 
 export default function StackNavigator() {
   const [showSplashScreen, setshowSplashScreen] = useState(true);
@@ -52,8 +52,7 @@ export default function StackNavigator() {
         <Stack.Screen
           name="MyTabs"
           component={MyTabs}
-          options={{ headerShown: false }}
-        />
+          options={{ headerShown: false }} />
 
         <Stack.Screen
           name="ConfigureLobby"
@@ -72,7 +71,13 @@ export default function StackNavigator() {
           component={Lobby}
           options={{ headerShown: false }}
         />
+      
+      <Stack.Screen
+          name="ResetPassword"
+          component={ResetPassword}
+          options={{ headerShown: false }} />
 
+        
         <Stack.Screen
           name="Signup"
           component={Signup}

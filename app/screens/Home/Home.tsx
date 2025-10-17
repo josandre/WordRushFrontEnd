@@ -43,11 +43,10 @@ export default function Home() {
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const res = await games();
-        setResult(res.data);
-        console.log("JAC", res.data);
+        const res = await games()
+        setResult(res.data)
       } catch (err) {
-        console.error("Error fetching games:", err);
+        alert('Error fetching games:')
       }
     };
 

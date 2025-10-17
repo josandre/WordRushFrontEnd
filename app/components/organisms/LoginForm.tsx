@@ -3,15 +3,15 @@ import { ScrollView, View } from 'react-native'
 import EmailField from '../molecules/InputField'
 import PasswordField from '../molecules/PasswordField'
 import PrimaryButton from '../atoms/PrimaryButton'
-import { SnackBarProps } from '@/app/screens/Login/constants'
+import { SnackBarProps } from '@/app/screens/Auth/constants'
 import { RouteProp, useRoute } from '@react-navigation/native'
-import styles, { SUCCESS_SNACKBAR_COLOR } from '@/app/screens/Login/styles'
+import styles, { SUCCESS_SNACKBAR_COLOR } from '@/app/screens/Auth/styles'
 import { AppRoutes } from '@/app/navigator/AppNavigationTypes'
 import { Snackbar } from '@react-native-material/core'
 import TermsNotice from '../molecules/TermsNotice'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SNACKBAR_MESSAGES } from './constants'
-import { LogInPayload } from '@/app/screens/Login/services/useLogIn'
+import { LogInPayload } from '@/app/screens/Auth/services/useLogIn'
 
 
 type LoginRouteProp = RouteProp<AppRoutes, 'Login'>
