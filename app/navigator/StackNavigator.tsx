@@ -1,46 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Login from '@/app/screens/Login/Login';
-import Option from '@/app/screens/Login/Option';
-import Splash from '@/app/screens/Splash';
-import Introduction from '@/app/screens/Introduction/Introduction';
-import Signup from '@/app/screens/Login/Signup';
-import MyTabs from '@/app/navigator/BottomNavigator';
-import { Platform } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import Login from "@/app/screens/Login/Login";
+import Option from "@/app/screens/Login/Option";
+import Splash from "@/app/screens/Splash";
+import Introduction from "@/app/screens/Introduction/Introduction";
+import Signup from "@/app/screens/Login/Signup";
+import MyTabs from "@/app/navigator/BottomNavigator";
+import { Platform } from "react-native";
 
-import ConfigureLobby from '@/app/screens/Lobby/ConfigureLobby';
-import JoinLobby from '@/app/screens/Lobby/JoinLobby';
-import Lobby from '@/app/screens/Lobby/Lobby';
+import ConfigureLobby from "@/app/screens/Lobby/ConfigureLobby";
+import JoinLobby from "@/app/screens/Lobby/JoinLobby";
+import Lobby from "@/app/screens/Lobby/Lobby";
 
 const Stack = createNativeStackNavigator();
-const isWeb = Platform.OS === 'web';
+const isWeb = Platform.OS === "web";
 
 export default function StackNavigator() {
-
   const [showSplashScreen, setshowSplashScreen] = useState(true);
   useEffect(() => {
     setTimeout(() => {
       setshowSplashScreen(false);
     }, 4000);
-
-
-  }, [])
+  }, []);
 
   return (
-
     <NavigationContainer>
-
       <Stack.Navigator>
-
-        {
-          showSplashScreen ?
-            <Stack.Screen
-              name="Splash"
-              component={Splash}
-              options={{ headerShown: false }} />
-            : null
-        }
+        {showSplashScreen ? (
+          <Stack.Screen
+            name="Splash"
+            component={Splash}
+            options={{ headerShown: false }}
+          />
+        ) : null}
 
         {isWeb ? (
           <Stack.Screen
@@ -59,44 +52,47 @@ export default function StackNavigator() {
         <Stack.Screen
           name="MyTabs"
           component={MyTabs}
-          options={{ headerShown: false }} />
+          options={{ headerShown: false }}
+        />
 
         <Stack.Screen
           name="ConfigureLobby"
           component={ConfigureLobby}
-          options={{ headerShown: false }} />
-        
+          options={{ headerShown: false }}
+        />
+
         <Stack.Screen
           name="JoinLobby"
           component={JoinLobby}
-          options={{ headerShown: false }} />
-        
+          options={{ headerShown: false }}
+        />
+
         <Stack.Screen
           name="Lobby"
           component={Lobby}
-          options={{ headerShown: false }} />
+          options={{ headerShown: false }}
+        />
 
         <Stack.Screen
           name="Signup"
           component={Signup}
-          options={{ headerShown: false }} />
-
+          options={{ headerShown: false }}
+        />
 
         <Stack.Screen
           name="Login"
           component={Login}
-          options={{ headerShown: false }} />
+          options={{ headerShown: false }}
+        />
 
         {!isWeb && (
-         <Stack.Screen
+          <Stack.Screen
             name="Option"
             component={Option}
             options={{ headerShown: false }}
-          /> 
+          />
         )}
-
       </Stack.Navigator>
     </NavigationContainer>
-
-  )
+  );
 }
