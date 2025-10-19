@@ -1,14 +1,17 @@
-import React from 'react'
-import { Image } from 'react-native'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { Colors } from '@/app/theme/color'
+import React from "react";
+import { Image } from "react-native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Colors } from "@/app/theme/color";
 
-import Home from '@/app/screens/Home/Home'
+import Home from "@/app/screens/Home/Home";
+import Profile from "@/app/screens/UserProfile/Profile";
 
-const Tab = createBottomTabNavigator()
+const Tab = createBottomTabNavigator();
 
-import homeIcon from '@/assets/image/t1.png'
-import homeIconFocused from '@/assets/image/t1f.png'
+import homeIcon from "@/assets/image/t1.png";
+import homeIconFocused from "@/assets/image/t1f.png";
+import profileIcon from "@/assets/image/t4.png";
+import profileIconFocused from "@/assets/image/t4f.png";
 
 export default function MyTabs() {
   return (
@@ -16,7 +19,7 @@ export default function MyTabs() {
       screenOptions={{
         tabBarStyle: {
           height: 70,
-          backgroundColor: '#FFFFFF',
+          backgroundColor: "#FFFFFF",
           borderTopColor: Colors.bord,
           paddingTop: 12,
         },
@@ -38,6 +41,21 @@ export default function MyTabs() {
           headerShown: false,
         }}
       />
+      <Tab.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          tabBarShowLabel: false,
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={focused ? profileIconFocused : profileIcon}
+              resizeMode="stretch"
+              style={{ height: 26, width: 26, marginTop: 5 }}
+            />
+          ),
+          headerShown: false,
+        }}
+      />
     </Tab.Navigator>
-  )
+  );
 }
