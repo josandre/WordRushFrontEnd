@@ -11,8 +11,8 @@ import style from "@/app/theme/style";
 import atomStyles from "./styles";
 
 interface WelcomeTitleBarProperties {
-    username: string,
-    avatar?: ImageSourcePropType
+    username: string | undefined,
+    avatar?: ImageSourcePropType | undefined
 }
 
 export default function WelcomeTitleBar({ username, avatar }: WelcomeTitleBarProperties) {
