@@ -26,8 +26,10 @@ import { isWeb } from "@/app/utils/envDetails";
 
 async function saveProfile(profileData: ProfileUserResponse | undefined) {
   if (isWeb) {
+    await ProfileWebTokenManager.clearProfile();
     await ProfileWebTokenManager.saveProfile(profileData);
   } else {
+    await ProfileMobileTokenManager.clearProfile();
     await ProfileMobileTokenManager.saveProfile(profileData);
   }
 }
@@ -50,17 +52,21 @@ export default function Login() {
 
     if (result.success) {
       const tokens = result.data;
-      const user = await getProfileUser({ userEmail: form.email });
 
       // TODO create centralize object to avoid branching
 
+      // SAVE THE NEW TOKEN
       if (isWeb) {
-        await ProfileWebTokenManager.clearProfile();
         await WebTokenManager.saveTokens(tokens);
+      } else {
+        await MobileTokenManager.saveTokens(tokens);
+      }
+
+      // GET THE PROFILE USING THE NEW TOKEN
+      const user = await getProfileUser({ userEmail: form.email });
+      if (isWeb) {
         saveProfile(user.data);
       } else {
-        await ProfileMobileTokenManager.clearProfile();
-        await MobileTokenManager.saveTokens(tokens);
         saveProfile(user.data);
       }
 
