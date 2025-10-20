@@ -42,8 +42,7 @@ export default function Home() {
       ? ProfileWebTokenManager
       : ProfileMobileTokenManager;
     const userdata = await manager.getUserProfile();
-    userdata?.nickname;
-
+    
     if (userdata?.email) {
       await getProfileUser({ userEmail: userdata.email });
     }
