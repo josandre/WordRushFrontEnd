@@ -13,6 +13,9 @@ import { isWeb } from "../utils/envDetails";
 import ResetPassword from "../screens/Auth/ResetPassword/ResetPassword";
 import ChangePassword from "../screens/UserProfile/ChangePassword";
 import Home from "../screens/Home/Home";
+import ConfigureLobby from "@/app/screens/Lobby/ConfigureLobby";
+import JoinLobby from "@/app/screens/Lobby/JoinLobby";
+import Lobby from "@/app/screens/Lobby/Lobby";
 
 const Stack = createNativeStackNavigator();
 
@@ -95,6 +98,23 @@ export default function StackNavigator() {
         <Stack.Screen
           name="Home"
           component={Home}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ConfigureLobby"
+          component={ConfigureLobby}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="JoinLobby"
+          component={JoinLobby}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="Lobby"
+          component={Lobby}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
