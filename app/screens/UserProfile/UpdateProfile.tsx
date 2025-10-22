@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, StatusBar, KeyboardAvoidingView, Platform } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppBar, Snackbar } from "@react-native-material/core";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -30,28 +30,31 @@ export default function UpdateProfile() {
 
   const isWeb = Platform.OS === "web";
 
-  // 🔹 Load user profile depending on platform
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      const userdata = await (isWeb
-        ? ProfileWebTokenManager.getUserProfile()
-        : ProfileMobileTokenManager.getUserProfile());
+  // ✅ Load user profile only once when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      const loadUserProfile = async () => {
+        const userdata = await (isWeb
+          ? ProfileWebTokenManager.getUserProfile()
+          : ProfileMobileTokenManager.getUserProfile());
 
-      if (userdata?.email) {
-        await getProfileUser({ userEmail: userdata.email });
-      } else {
-        console.warn("No stored user email found!");
-      }
-    };
-    loadUserProfile();
-  });
+        if (userdata?.email) {
+          await getProfileUser({ userEmail: userdata.email });
+        } else {
+          console.warn("No stored user email found!");
+        }
+      };
+
+      loadUserProfile();
+    }, [isWeb, getProfileUser])
+  );
 
   // Snackbar handler
   const handleSuccess = (message: string) => {
     setSnackbar({ visible: true, message, color: SUCCESS_SNACKBAR_COLOR });
     setTimeout(
       () => setSnackbar((prev) => ({ ...prev, visible: false })),
-      2000,
+      2000
     );
   };
 
@@ -104,9 +107,7 @@ export default function UpdateProfile() {
 
               if (result.success) {
                 handleSuccess("Profile Updated Successfully");
-                setTimeout(() => {
-                  navigation.goBack();
-                }, 800);
+                setTimeout(() => navigation.goBack(), 800);
               } else {
                 console.warn(result.errorMessage);
               }
