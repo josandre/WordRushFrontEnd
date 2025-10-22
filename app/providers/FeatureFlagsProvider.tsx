@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { RequestCreator } from "../Request/RequestCreator";
 
-const path = '/api/config'
+const path = "/api/config";
 type FeatureFlags = Record<string, boolean>;
 
 interface FeatureFlagsContextType {
@@ -19,7 +19,7 @@ interface FeatureFlagsContextType {
 const FeatureFlagsContext = createContext<FeatureFlagsContextType>({
   flags: {},
   loading: true,
-  error: undefined
+  error: undefined,
 });
 
 export const useFeatureFlags = () => useContext(FeatureFlagsContext);
@@ -28,7 +28,7 @@ interface FeatureFlagsProviderProps {
   children: ReactNode;
 }
 
-export const FeatureFlagsProvider : React.FC<FeatureFlagsProviderProps> = ({
+export const FeatureFlagsProvider: React.FC<FeatureFlagsProviderProps> = ({
   children,
 }) => {
   const [flags, setFlags] = useState<FeatureFlags>({});
@@ -36,16 +36,16 @@ export const FeatureFlagsProvider : React.FC<FeatureFlagsProviderProps> = ({
   const [error, setError] = useState<string | undefined>();
 
   const fetchFlags = async (): Promise<void> => {
-    const api = new RequestCreator()
-        const result = await api.get<FeatureFlags>(path)
-    
-        if (!result.success) {
-          setError(result.errorMessage)
-          setLoading(false)
-        }
-    
-        setFlags(result.data ?? {})
-        setLoading(false)
+    const api = new RequestCreator();
+    const result = await api.get<FeatureFlags>(path);
+
+    if (!result.success) {
+      setError(result.errorMessage);
+      setLoading(false);
+    }
+
+    setFlags(result.data ?? {});
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -53,8 +53,8 @@ export const FeatureFlagsProvider : React.FC<FeatureFlagsProviderProps> = ({
   }, []);
 
   return (
-    <FeatureFlagsContext.Provider value= {{ flags, loading }}>
-      { children }
+    <FeatureFlagsContext.Provider value={{ flags, loading }}>
+      {children}
     </FeatureFlagsContext.Provider>
   );
-}
+};

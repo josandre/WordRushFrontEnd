@@ -20,7 +20,7 @@ export default function useResetPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [data, setData] = useState<ResetPasswordResponse | undefined>(
-    undefined
+    undefined,
   );
 
   const resetPassword = useCallback(async (payload: ResetPasswordPayload) => {

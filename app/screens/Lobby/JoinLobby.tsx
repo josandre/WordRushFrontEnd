@@ -1,8 +1,4 @@
-import { 
-  View, 
-  StatusBar, 
-  ScrollView 
-} from "react-native";
+import { View, StatusBar, ScrollView } from "react-native";
 import React, { useState } from "react";
 
 import { useNavigation } from "@react-navigation/native";

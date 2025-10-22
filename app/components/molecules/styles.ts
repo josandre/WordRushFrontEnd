@@ -193,16 +193,16 @@ export default StyleSheet.create({
     gap: "12px",
   }),
   welcomeTitleBar: {
-      flexDirection: "row",
-      alignItems: "center",
+    flexDirection: "row",
+    alignItems: "center",
 
-      marginTop: 30,
-      marginLeft: widthPercentage(8),
-      marginRight: widthPercentage(8),
-    },
-    screenTitleBar: {
-      marginTop: 30,
-      marginLeft: widthPercentage(5),
-      marginRight: widthPercentage(5),
-    },
+    marginTop: 30,
+    marginLeft: widthPercentage(8),
+    marginRight: widthPercentage(8),
+  },
+  screenTitleBar: {
+    marginTop: 30,
+    marginLeft: widthPercentage(5),
+    marginRight: widthPercentage(5),
+  },
 });

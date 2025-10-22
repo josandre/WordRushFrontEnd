@@ -36,7 +36,7 @@ export default function useProfileUser() {
 
       const api = new RequestCreator();
       const result = await api.get<ProfileUserResponse>(
-        `${GET_PATH}?userEmail=${payload.userEmail}`
+        `${GET_PATH}?userEmail=${payload.userEmail}`,
       );
 
       if (!result.success) {
@@ -49,7 +49,7 @@ export default function useProfileUser() {
       setLoading(false);
       return { success: true, data: result.data };
     },
-    []
+    [],
   );
 
   // Update local state immediately
@@ -60,7 +60,7 @@ export default function useProfileUser() {
   // Update server
   const updateProfileAPI = useCallback(
     async (
-      updates: Partial<ProfileUserResponse>
+      updates: Partial<ProfileUserResponse>,
     ): Promise<ProfileUserResult> => {
       if (!pdata?.id)
         return { success: false, errorMessage: "User ID is missing" };
@@ -75,7 +75,7 @@ export default function useProfileUser() {
       setData(result.data);
       return { success: true, data: result.data };
     },
-    [pdata]
+    [pdata],
   );
 
   return {

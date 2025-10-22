@@ -49,7 +49,7 @@ export default function Profile() {
       };
 
       loadProfile();
-    }, [getProfileUser])
+    }, [getProfileUser]),
   );
 
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
