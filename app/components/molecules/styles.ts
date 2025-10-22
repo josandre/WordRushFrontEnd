@@ -1,12 +1,9 @@
-import { StyleSheet, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 import { Colors } from "../../theme/color";
 import base from "../../theme/style";
 import { getWebStyles } from "../../utils/webStyles";
 
-import {
-  widthPercentage,
-  heightPercentage,
-} from "@/app/utils/responsiveStyles";
+import { widthPercentage } from "@/app/utils/responsiveStyles";
 
 export default StyleSheet.create({
   dotsContainer: {

@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  ImageBackground,
-  Image,
-  Dimensions,
-  ImageSourcePropType,
-} from "react-native";
+import { View, ImageBackground, ImageSourcePropType } from "react-native";
 import PaginationDots from "../molecules/PaginationDots";
 import AuthCTA from "../molecules/AuthCTA";
 import ostyles from "./styles";

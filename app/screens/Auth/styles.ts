@@ -1,4 +1,3 @@
-import { Snackbar } from "@react-native-material/core";
 import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({

@@ -1,6 +1,5 @@
 import React from "react";
 import { View } from "react-native";
-import { Colors } from "../../theme/color";
 import mstyles from "./styles";
 
 type PaginationDotsProps = {

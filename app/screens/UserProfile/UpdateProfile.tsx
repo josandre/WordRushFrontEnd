@@ -44,7 +44,7 @@ export default function UpdateProfile() {
       }
     };
     loadUserProfile();
-  }, []);
+  });
 
   // Snackbar handler
   const handleSuccess = (message: string) => {

@@ -1,4 +1,4 @@
-import { Platform, ViewStyle } from "react-native";
+import { ViewStyle } from "react-native";
 import { isWeb } from "./envDetails";
 
 export const getWebStyles = (webStyles: any): ViewStyle => {

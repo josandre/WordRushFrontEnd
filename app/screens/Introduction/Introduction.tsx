@@ -1,4 +1,4 @@
-import { Dimensions, StatusBar, ScrollView, Platform } from "react-native";
+import { StatusBar, ScrollView } from "react-native";
 import React from "react";
 import style from "../../theme/style";
 import { Colors } from "../../theme/color";

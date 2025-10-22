@@ -23,7 +23,7 @@ export default function AvatarSelector({
     if (!selectedAvatar) {
       onAvatarSelect(AVAILABLE_AVATARS[0]);
     }
-  }, []);
+  });
 
   const handleAvatarPress = (avatarName: string) => {
     setSelected(avatarName);

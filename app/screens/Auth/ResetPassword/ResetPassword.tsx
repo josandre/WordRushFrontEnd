@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   StatusBar,
   KeyboardAvoidingView,
   TouchableOpacity,

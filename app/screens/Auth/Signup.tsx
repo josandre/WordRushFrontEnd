@@ -1,10 +1,4 @@
-import {
-  View,
-  Dimensions,
-  StatusBar,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import { View, StatusBar, KeyboardAvoidingView, Platform } from "react-native";
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import style from "../../theme/style";
