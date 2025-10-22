@@ -1,12 +1,9 @@
-import { StyleSheet, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 import { Colors } from "../../theme/color";
 import base from "../../theme/style";
 import { getWebStyles } from "../../utils/webStyles";
 
-import {
-  widthPercentage,
-  heightPercentage,
-} from "@/app/utils/responsiveStyles";
+import { widthPercentage } from "@/app/utils/responsiveStyles";
 
 export default StyleSheet.create({
   dotsContainer: {
@@ -193,16 +190,16 @@ export default StyleSheet.create({
     gap: "12px",
   }),
   welcomeTitleBar: {
-      flexDirection: "row",
-      alignItems: "center",
+    flexDirection: "row",
+    alignItems: "center",
 
-      marginTop: 30,
-      marginLeft: widthPercentage(8),
-      marginRight: widthPercentage(8),
-    },
-    screenTitleBar: {
-      marginTop: 30,
-      marginLeft: widthPercentage(5),
-      marginRight: widthPercentage(5),
-    },
+    marginTop: 30,
+    marginLeft: widthPercentage(8),
+    marginRight: widthPercentage(8),
+  },
+  screenTitleBar: {
+    marginTop: 30,
+    marginLeft: widthPercentage(5),
+    marginRight: widthPercentage(5),
+  },
 });

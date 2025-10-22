@@ -1,5 +1,5 @@
-import { StyleSheet, Platform } from 'react-native'
-import { Colors } from '../../../theme/color'
+import { StyleSheet, Platform } from "react-native";
+import { Colors } from "../../../theme/color";
 
 export default StyleSheet.create({
   container: {
@@ -10,10 +10,10 @@ export default StyleSheet.create({
   },
   main: {
     backgroundColor: Colors.bord,
-    marginTop: Platform.OS === 'ios' ? 10 : 30,
+    marginTop: Platform.OS === "ios" ? 10 : 30,
   },
   appBar: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   appTitle: {
     color: Colors.txt,
@@ -25,4 +25,4 @@ export default StyleSheet.create({
   backButton: {
     // Additional styles for back button if needed
   },
-})
+});

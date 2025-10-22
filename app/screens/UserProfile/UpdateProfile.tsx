@@ -44,14 +44,14 @@ export default function UpdateProfile() {
       }
     };
     loadUserProfile();
-  }, []);
+  });
 
   // Snackbar handler
   const handleSuccess = (message: string) => {
     setSnackbar({ visible: true, message, color: SUCCESS_SNACKBAR_COLOR });
     setTimeout(
       () => setSnackbar((prev) => ({ ...prev, visible: false })),
-      2000
+      2000,
     );
   };
 

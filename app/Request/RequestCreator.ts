@@ -35,7 +35,7 @@ export class RequestCreator {
 
   private async request<T>(
     path: string,
-    options: RequestInit
+    options: RequestInit,
   ): Promise<{
     success: boolean;
     data?: T;
@@ -90,7 +90,7 @@ export class RequestCreator {
 
   public async post<T>(
     path: string,
-    payload: any
+    payload: any,
   ): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
     return this.request<T>(path, {
       method: "POST",
@@ -100,7 +100,7 @@ export class RequestCreator {
 
   public async put<T>(
     path: string,
-    payload: any
+    payload: any,
   ): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
     return this.request<T>(path, {
       method: "PUT",
@@ -109,7 +109,7 @@ export class RequestCreator {
   }
 
   public async get<T>(
-    path: string
+    path: string,
   ): Promise<{ success: boolean; data?: T; errorMessage?: string }> {
     return this.request<T>(path, { method: "GET" });
   }

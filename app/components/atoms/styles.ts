@@ -1,10 +1,7 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "../../theme/color";
 import base from "../../theme/style";
-import {
-  widthPercentage,
-  heightPercentage,
-} from "@/app/utils/responsiveStyles";
+import { widthPercentage } from "@/app/utils/responsiveStyles";
 
 // Reuse base styles where possible; expose semantic classes for atoms
 export default StyleSheet.create({

@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, View, ScrollView, ActivityIndicator } from "react-native";
+import {
+  SafeAreaView,
+  View,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 
 import style from "@/app/theme/style";
 import { Colors } from "@/app/theme/color";
@@ -38,11 +43,9 @@ export default function Home() {
 
   async function retrieveProfile() {
     setLoading(true);
-    const manager = isWeb
-      ? ProfileWebTokenManager
-      : ProfileMobileTokenManager;
+    const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
     const userdata = await manager.getUserProfile();
-    
+
     if (userdata?.email) {
       await getProfileUser({ userEmail: userdata.email });
     }
@@ -59,14 +62,10 @@ export default function Home() {
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
 
   if (loading) {
-      return (
-      <SafeAreaView 
-        style={[style.area, { backgroundColor: Colors.primary }]}
-      >
+    return (
+      <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
         <View style={{ marginTop: 80 }}>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-          >
+          <ScrollView showsVerticalScrollIndicator={false}>
             <ContentCard
               title="Loading..."
               content={
@@ -78,17 +77,17 @@ export default function Home() {
           </ScrollView>
         </View>
       </SafeAreaView>
-      );
+    );
   } else {
     return (
       <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
-
         <View style={{ marginTop: 40 }}>
-          <WelcomeTitleBar username={pdata?.nickname} avatar={avatarSource}></WelcomeTitleBar>
+          <WelcomeTitleBar
+            username={pdata?.nickname}
+            avatar={avatarSource}
+          ></WelcomeTitleBar>
 
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-          >
+          <ScrollView showsVerticalScrollIndicator={false}>
             <ContentCard
               title="Game"
               content={

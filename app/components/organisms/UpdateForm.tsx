@@ -26,7 +26,7 @@ export default function UpdateForm({
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarId>(
-    avatar ?? "default"
+    avatar ?? "default",
   );
 
   // Preload current user info, including avatar

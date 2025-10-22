@@ -20,11 +20,9 @@ import ProfileHeader from "../../components/molecules/ProfileHeader";
 import SettingsHeader from "../../components/organisms/SettingsHeader";
 import SettingsList from "../../components/organisms/SettingsList";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
 import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileTokenManager";
 
-const Tab = createMaterialTopTabNavigator();
 const isWeb = Platform.OS === "web";
 
 export default function Profile() {
@@ -49,7 +47,7 @@ export default function Profile() {
       };
 
       loadProfile();
-    }, [getProfileUser])
+    }, [getProfileUser]),
   );
 
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];

@@ -2,8 +2,8 @@ import { StyleSheet, Dimensions } from "react-native";
 import { Colors } from "./color";
 import { isWeb } from "../utils/envDetails";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get("screen");
-const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
+const { width: screenWidth } = Dimensions.get("screen");
+const { width: windowWidth } = Dimensions.get("window");
 
 const width = isWeb ? windowWidth : screenWidth;
 

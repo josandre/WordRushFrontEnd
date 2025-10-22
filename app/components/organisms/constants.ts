@@ -1,9 +1,8 @@
-
-export const SIGN_UP_TITLE = "Sign Up"
+export const SIGN_UP_TITLE = "Sign Up";
 
 export enum SNACKBAR_MESSAGES {
   WelcomeMessage = "You’re all set! Log in to start playing WordRush.",
-  DefaultRegisterSuccess = "Register succes!"
+  DefaultRegisterSuccess = "Register succes!",
 }
 
 export enum ERROR_FORM_MESSAGES {
