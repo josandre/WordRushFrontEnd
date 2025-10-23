@@ -181,7 +181,12 @@ export default StyleSheet.create({
     fontWeight: isWeb ? "600" : "normal",
     color: Colors.active,
   },
-
+  text: {
+    fontSize: 15,
+    fontFamily: isWeb ? "Rubik, sans-serif" : "Rubik-Regular",
+    fontWeight: isWeb ? "400" : "normal",
+    color: Colors.active,
+  },
   modalcontainer: {
     flex: 1,
     borderRadius: 20,
@@ -352,4 +357,40 @@ export default StyleSheet.create({
     marginBottom: 0,
     justifyContent: "space-between",
   },
+  // ========== Multiplayer / GameRoom Styles ==========
+  gameContainer: {
+    flex: 1,
+    backgroundColor: Colors.bg,
+    padding: 16,
+  },
+  gameStatus: {
+    fontWeight: "600",
+    fontSize: 16,
+    marginBottom: 6,
+    color: Colors.active,
+  },
+  gameLabel: {
+    fontSize: 15,
+    color: Colors.active,
+    marginBottom: 4,
+  },
+  chatBox: {
+    flex: 1,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    backgroundColor: Colors.secondary,
+    padding: 8,
+  },
+  userListLabel: {
+    fontWeight: "600",
+    fontSize: 16,
+    color: Colors.active,
+    marginBottom: 6,
+  },
+  inputSection: {
+    marginTop: 10,
+  },
+  // ========== End GameRoom Styles ==========
 });
