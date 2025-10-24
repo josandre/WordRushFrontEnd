@@ -24,4 +24,6 @@ export const Colors = {
   success: "#2ECC71", // success state (connected)
   error: "#E74C3C", // error/disconnected state
   info: "#3498DB", // informational state (optional)
+  warning: "#FFC107", // optional
+  card: "##f6f6f8", // optional
 };

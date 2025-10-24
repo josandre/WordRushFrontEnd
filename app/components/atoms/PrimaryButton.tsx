@@ -5,6 +5,7 @@ import {
   GestureResponderEvent,
   TextStyle,
   ActivityIndicator,
+  ViewStyle,
 } from "react-native";
 import style from "../../theme/style";
 import { Colors } from "../../theme/color";
@@ -16,6 +17,7 @@ type PrimaryButtonProps = {
   textStyle?: TextStyle;
   disabled?: boolean;
   loading?: boolean;
+  style?: ViewStyle; // ✅ new optional style prop
 };
 
 export default function PrimaryButton({
@@ -24,6 +26,7 @@ export default function PrimaryButton({
   textStyle,
   disabled,
   loading,
+  style: customStyle, // renamed to avoid collision
 }: PrimaryButtonProps) {
   return (
     <TouchableOpacity
@@ -34,6 +37,7 @@ export default function PrimaryButton({
         style.container,
         webButtonStyles,
         getWebPointerStyles(),
+        customStyle, // ✅ allows external styles like marginTop
         disabled || loading ? { opacity: 0.5 } : null,
       ]}
     >

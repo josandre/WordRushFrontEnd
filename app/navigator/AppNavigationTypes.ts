@@ -47,7 +47,11 @@ export type AppRoutes = {
   UpdateProfile: undefined;
   UpdateForm: undefined;
   ResetPassword: undefined;
-  GameRoom: { roomId: string; isOwner: boolean };
+  GameRoom: {
+    roomId: string;
+    isOwner: boolean;
+    players?: any[];
+  };
   Lobby: undefined;
   ConfigureLobby: undefined;
   JoinLobby: undefined;

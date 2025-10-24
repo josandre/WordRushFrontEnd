@@ -118,6 +118,7 @@ export default function StackNavigator() {
           component={Lobby}
           options={{ headerShown: false }}
         />
+
         <Stack.Screen
           name="GameRoom"
           component={GameRoom}

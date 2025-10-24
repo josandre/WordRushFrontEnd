@@ -1,114 +1,168 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   StatusBar,
   ScrollView,
-  Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import * as Clipboard from "expo-clipboard";
-import style from "@/app/theme/style";
 import { Colors } from "@/app/theme/color";
-import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
+import style from "@/app/theme/style";
 import ScreenTitleBar from "@/app/components/molecules/ScreenTitleBar";
 import ContentCard from "@/app/components/atoms/ContentCard";
 import PrimaryButton from "@/app/components/atoms/PrimaryButton";
+import PlayerCard from "@/app/components/molecules/PlayerCard";
+import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
+import { getStoredProfile } from "../../screens/UserProfile/services/usetStoredProfile";
+import { SocketStore } from "@/app/utils/socketStore";
 
 export default function Lobby() {
   const navigation = useNavigation<AppNavigation>();
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [roomId, setRoomId] = useState<string>("");
+  const [roomId, setRoomId] = useState<string | null>(null);
   const [players, setPlayers] = useState<any[]>([]);
-  const [isOwner, setIsOwner] = useState<boolean>(true);
+  const [connected, setConnected] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+  const [storedProfile, setStoredProfile] = useState<any>(null);
 
-  // --- Exit Lobby ---
-  function exitLobby(): void {
-    socket?.close();
-    navigation.navigate("MyTabs");
-  }
+  // ✅ confirm leaving (on hardware or header back)
+  useFocusEffect(
+    useCallback(() => {
+      const onBeforeRemove = (e: any) => {
+        e.preventDefault();
+        Alert.alert("Leave Lobby", "Do you want to close this room?", [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Yes",
+            style: "destructive",
+            onPress: () => {
+              const ws = socket || SocketStore.getSocket();
+              if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send("CLOSE_GAMEROOM");
+                ws.close();
+              }
+              Alert.alert(
+                "Lobby Closed",
+                "The room has been closed for all players."
+              );
+              navigation.dispatch(e.data.action);
+            },
+          },
+        ]);
+      };
 
-  // --- Start Game ---
-  function onStartGame(): void {
-    if (!socket) return;
-    socket.send("START_GAME");
-  }
+      navigation.addListener("beforeRemove", onBeforeRemove);
+      return () => navigation.removeListener("beforeRemove", onBeforeRemove);
+    }, [socket, navigation])
+  );
 
-  // --- Copy Room Link (Cross-platform) ---
-  async function copyToClipboard() {
-    if (!roomId) return;
-
-    const link = `ws://localhost:5178/ws`;
-    const text = `Share this room ID: ${roomId}\nConnect using ${link}`;
-
-    if (Platform.OS === "web") {
-      await navigator.clipboard.writeText(text);
-    } else {
-      await Clipboard.setStringAsync(text);
-    }
-
-    Alert.alert("Copied!", "Room link copied to clipboard.");
-  }
-
-  // --- Initialize WebSocket ---
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:5178/ws"); // Change to your backend address
-    setSocket(ws);
+    const loadProfile = async () => {
+      const profile = await getStoredProfile();
+      setStoredProfile(profile);
+    };
+    loadProfile();
 
+    const ws = new WebSocket("ws://localhost:5178/ws");
     ws.onopen = () => {
-      console.log("Connected to WebSocket");
+      console.log("Connected to WebSocket (Lobby)");
+      SocketStore.setSocket(ws);
+      setConnected(true);
       ws.send("CREATE_GAMEROOM");
     };
 
-    ws.onmessage = (event) => {
-      console.log("Received:", event.data);
+    ws.onmessage = async (event) => {
+      const data = event.data?.trim();
+      if (!data) return;
+      console.log("Lobby message:", data);
 
-      // Match "Room created! Room ID: XXXXX"
-      const roomMatch = event.data.match(/Room ID:\s*(.+)$/);
-      if (roomMatch) {
-        const id = roomMatch[1].trim();
+      if (data.toLowerCase().startsWith("room_created:")) {
+        const id = data.split(":")[1]?.trim();
         setRoomId(id);
-        setIsOwner(true);
-      }
 
-      // Handle user list updates
-      if (event.data.startsWith("USER_LIST_JSON:")) {
-        try {
-          const list = JSON.parse(
-            event.data.substring("USER_LIST_JSON:".length)
-          );
-          setPlayers(list);
-        } catch {
-          console.warn("Failed to parse user list");
+        const stored = await getStoredProfile();
+        if (stored) {
+          const payload = {
+            Nickname: stored.nickname ?? "Player",
+            Avatar: stored.avatar ?? "default",
+            Email: stored.email ?? "",
+          };
+          ws.send(`UPDATE_PROFILE:${JSON.stringify(payload)}`);
         }
+        return;
       }
 
-      // Room closed events
-      if (
-        event.data === "ROOM_CLOSED_BY_OWNER" ||
-        event.data === "ROOM_CLOSED"
-      ) {
+      if (data.startsWith("USER_LIST_JSON:")) {
+        try {
+          const json = data.substring("USER_LIST_JSON:".length);
+          const parsed = JSON.parse(json);
+          if (Array.isArray(parsed)) setPlayers(parsed);
+        } catch (err) {
+          console.error("Parse error:", err, data);
+        }
+        return;
+      }
+
+      if (data === "GAME_STARTING") {
+        navigation.navigate("GameRoom", {
+          roomId: roomId ?? "",
+          isOwner: true,
+          players,
+        });
+        return;
+      }
+
+      if (data === "ROOM_CLOSED_BY_OWNER" || data === "Room closed by owner.") {
         Alert.alert("Room Closed", "The host closed the room.");
         ws.close();
         navigation.navigate("MyTabs");
-      }
-
-      // Game starting
-      if (event.data === "GAME_STARTING") {
-        navigation.navigate("GameRoom", { roomId, isOwner });
+        return;
       }
     };
 
-    ws.onclose = () => console.log("Disconnected from WebSocket");
-
-    return () => {
-      ws.close();
-    };
+    ws.onclose = () => console.log("WebSocket closed (Lobby)");
+    setSocket(ws);
+    return () => ws.close();
   }, []);
 
-  // --- Render ---
+  const handleToggleReady = () => {
+    const ws = socket || SocketStore.getSocket();
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send("TOGGLE_READY");
+  };
+
+  const handleCopyCode = async () => {
+    if (roomId) {
+      await Clipboard.setStringAsync(roomId);
+      Alert.alert("Copied", `Room ID ${roomId} copied to clipboard.`);
+    }
+  };
+
+  const handleStartGame = () => {
+    if (socket && connected && roomId) {
+      setIsStarting(true);
+      socket.send("START_GAME");
+    }
+  };
+
+  const handleCloseRoom = () => {
+    const ws = socket || SocketStore.getSocket();
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send("CLOSE_GAMEROOM");
+      ws.close();
+    }
+    Alert.alert(
+      "Lobby Closed",
+      "The game room has been closed for all players."
+    );
+    navigation.navigate("MyTabs");
+  };
+
+  const allReady = players.length > 0 && players.every((p) => p.IsReady);
+
   return (
     <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
       <StatusBar
@@ -116,63 +170,97 @@ export default function Lobby() {
         backgroundColor="transparent"
         barStyle="light-content"
       />
-
-      <ScreenTitleBar screenName="Game Lobby" onGoBackPress={exitLobby} />
+      <ScreenTitleBar screenName="Game Lobby" onGoBackPress={handleCloseRoom} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ marginTop: 10 }}
       >
         <ContentCard
-          title=""
+          title="Lobby"
           content={
             <View>
-              <Text
-                style={[
-                  style.subtitle,
-                  { color: Colors.txt, marginBottom: 10 },
-                ]}
-              >
-                {roomId ? `Room ID: ${roomId}` : "Creating room..."}
-              </Text>
-
-              {roomId && (
-                <PrimaryButton
-                  title="Copy Room Link"
-                  onPress={copyToClipboard}
-                  disabled={false}
-                />
+              {roomId ? (
+                <>
+                  <Text
+                    style={[
+                      style.subtitle,
+                      { color: Colors.txt, textAlign: "center" },
+                    ]}
+                  >
+                    Room ID: {roomId}
+                  </Text>
+                  <PrimaryButton
+                    title="Copy Room Code"
+                    onPress={handleCopyCode}
+                  />
+                </>
+              ) : (
+                <ActivityIndicator size="large" color={Colors.secondary} />
               )}
 
-              <PrimaryButton
-                title="Start Game"
-                onPress={onStartGame}
-                disabled={!isOwner}
-              />
-
-              <View style={{ marginTop: 20 }}>
-                <Text
-                  style={[
-                    style.subtitle,
-                    { color: Colors.txt, marginBottom: 10 },
-                  ]}
-                >
-                  Players in Room:
-                </Text>
+              <View style={{ marginTop: 15 }}>
                 {players.length > 0 ? (
-                  players.map((p, i) => (
-                    <Text key={i} style={[style.r16, { color: Colors.txt }]}>
-                      {p.nickname ?? p.userId}
-                      {p.isOwner ? " (Host)" : ""}
-                      {p.isReady ? " ✅" : ""}
-                    </Text>
-                  ))
+                  players.map((p) => {
+                    const myEmail = storedProfile?.email?.toLowerCase();
+                    const myNickname = storedProfile?.nickname
+                      ?.trim()
+                      ?.toLowerCase();
+                    const isMe =
+                      p.Email?.toLowerCase() === myEmail ||
+                      p.Nickname?.trim()?.toLowerCase() === myNickname;
+
+                    return (
+                      <PlayerCard
+                        key={p.UserId}
+                        nickname={p.Nickname}
+                        avatar={p.Avatar}
+                        isReady={p.IsReady}
+                        isOwner={p.IsOwner}
+                        readyLabel={p.IsReady ? "Ready" : "Not Ready"}
+                        showReadyButton={isMe}
+                        onToggleReady={handleToggleReady}
+                      />
+                    );
+                  })
                 ) : (
-                  <Text style={[style.r16, { color: Colors.txt }]}>
+                  <Text style={{ color: Colors.txt, textAlign: "center" }}>
                     Waiting for players...
                   </Text>
                 )}
               </View>
+
+              {players.length > 0 && (
+                <View style={{ marginTop: 30, alignItems: "center" }}>
+                  <Text
+                    style={{
+                      color: "black",
+                      fontWeight: "bold",
+                      fontSize: 16,
+                      marginBottom: 12,
+                    }}
+                  >
+                    {allReady
+                      ? "✅ All players are ready!"
+                      : "Waiting for all players to be ready..."}
+                  </Text>
+
+                  <PrimaryButton
+                    title="   Start Game   "
+                    onPress={handleStartGame}
+                    disabled={!connected || isStarting || !allReady}
+                    loading={isStarting}
+                  />
+
+                  <View style={{ marginTop: 12 }}>
+                    <PrimaryButton
+                      title="   Close Room   "
+                      onPress={handleCloseRoom}
+                      disabled={!connected}
+                    />
+                  </View>
+                </View>
+              )}
             </View>
           }
         />

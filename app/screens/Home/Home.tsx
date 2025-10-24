@@ -33,13 +33,15 @@ export default function Home() {
   const { getProfileUser, pdata } = useProfileUser();
 
   function hostGame(): void {
-    // TODO: Actually create a lobby for other players to join
-    navigation.navigate("Lobby");
-  }
+  navigation.navigate("Lobby", {
+    isOwner: true,
+    roomId: null, // Will be created on connection
+  });
+}
 
   function joinGame(): void {
-    navigation.navigate("JoinLobby");
-  }
+  navigation.navigate("JoinLobby"); // or directly to Lobby with roomId
+}
 
   async function retrieveProfile() {
     setLoading(true);

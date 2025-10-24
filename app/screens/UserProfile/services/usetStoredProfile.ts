@@ -15,11 +15,11 @@ export async function getStoredProfile(): Promise<StoredProfile | null> {
     const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
     const userdata = await manager.getUserProfile();
 
-    if (userdata?.email || userdata?.nickname) {
+    if (userdata?.nickname || userdata?.email) {
       return {
-        nickname: userdata.nickname ?? "Guest",
+        nickname: userdata.nickname ?? "Player",
         email: userdata.email ?? "",
-        avatar: userdata.avatar ?? "",
+        avatar: userdata.avatar ?? "default",
       };
     }
     return null;
