@@ -19,7 +19,6 @@ import PlayerCard from "@/app/components/molecules/PlayerCard";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import { getStoredProfile } from "../../screens/UserProfile/services/usetStoredProfile";
 import { SocketStore } from "@/app/utils/socketStore";
-
 export default function JoinLobby() {
   const navigation = useNavigation<AppNavigation>();
   const [socket, setSocket] = useState<WebSocket | null>(null);

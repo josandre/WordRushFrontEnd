@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import * as Clipboard from "expo-clipboard";
+//import * as Clipboard from "expo-clipboard";
 import { Colors } from "@/app/theme/color";
 import style from "@/app/theme/style";
 import ScreenTitleBar from "@/app/components/molecules/ScreenTitleBar";
@@ -19,8 +19,10 @@ import PlayerCard from "@/app/components/molecules/PlayerCard";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import { getStoredProfile } from "../../screens/UserProfile/services/usetStoredProfile";
 import { SocketStore } from "@/app/utils/socketStore";
+import { useClipboard } from "@/app/utils/useClipboard";
 
 export default function Lobby() {
+  const { copyToClipboard } = useClipboard();
   const navigation = useNavigation<AppNavigation>();
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -134,12 +136,12 @@ export default function Lobby() {
     if (ws && ws.readyState === WebSocket.OPEN) ws.send("TOGGLE_READY");
   };
 
-  const handleCopyCode = async () => {
-    if (roomId) {
-      await Clipboard.setStringAsync(roomId);
-      Alert.alert("Copied", `Room ID ${roomId} copied to clipboard.`);
-    }
-  };
+  // const handleCopyCode = async () => {
+  //   if (roomId) {
+  //     await Clipboard.setStringAsync(roomId);
+  //     Alert.alert("Copied", `Room ID ${roomId} copied to clipboard.`);
+  //   }
+  // };
 
   const handleStartGame = () => {
     if (socket && connected && roomId) {
@@ -192,7 +194,7 @@ export default function Lobby() {
                   </Text>
                   <PrimaryButton
                     title="Copy Room Code"
-                    onPress={handleCopyCode}
+                    onPress={() => copyToClipboard(roomId ?? "")}
                   />
                 </>
               ) : (
