@@ -4,7 +4,6 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppBar, Snackbar } from "@react-native-material/core";
 import Icon from "react-native-vector-icons/Ionicons";
-
 import style from "../../theme/style";
 import { Colors } from "../../theme/color";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
@@ -29,6 +28,7 @@ export default function UpdateProfile() {
   });
 
   const isWeb = Platform.OS === "web";
+
   async function saveProfile(profileData: ProfileUserResponse | undefined) {
     if (isWeb) {
       await ProfileWebTokenManager.clearProfile();
@@ -38,7 +38,8 @@ export default function UpdateProfile() {
       await ProfileMobileTokenManager.saveProfile(profileData);
     }
   }
-  // ✅ Load user profile only once when screen gains focus
+
+  // ✅ Load user profile when screen gains focus
   useFocusEffect(
     useCallback(() => {
       const loadUserProfile = async () => {
@@ -58,7 +59,6 @@ export default function UpdateProfile() {
     }, [isWeb, getProfileUser])
   );
 
-  // Snackbar handler
   const handleSuccess = (message: string) => {
     setSnackbar({ visible: true, message, color: SUCCESS_SNACKBAR_COLOR });
     setTimeout(
@@ -67,7 +67,7 @@ export default function UpdateProfile() {
     );
   };
 
-  // Preselected avatar logic
+  // ✅ Preselect avatar safely
   const avatar: AvatarId =
     pdata?.avatar && Object.keys(avatars).includes(pdata.avatar)
       ? (pdata.avatar as AvatarId)
@@ -115,6 +115,8 @@ export default function UpdateProfile() {
               const result = await updateProfileAPI(updated);
 
               if (result.success) {
+                // ✅ Save the new profile locally so Lobby/Home reflect instantly
+                await saveProfile(result.data);
                 handleSuccess("Profile Updated Successfully");
                 setTimeout(() => navigation.goBack(), 800);
               } else {

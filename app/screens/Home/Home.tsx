@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   SafeAreaView,
   View,
@@ -18,56 +18,57 @@ import ContentCard from "@/app/components/atoms/ContentCard";
 import DescriptionButton from "@/app/components/atoms/DescriptionButton";
 
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 import hostGameIcon from "@/assets/image/s43.png";
 import joinGameIcon from "@/assets/image/s39.png";
-
+import { ProfileUserResponse } from "../../screens/UserProfile/services/useProfileUser";
 import avatars, { getAvatarImage } from "@/assets/avatars";
 import useProfileUser from "@/app/screens/UserProfile/services/useProfileUser";
 
 export default function Home() {
   const navigation = useNavigation<AppNavigation>();
-
   const [loading, setLoading] = useState(true);
   const { getProfileUser, pdata } = useProfileUser();
 
-  function hostGame(): void {
-    navigation.navigate("Lobby", {
-      isOwner: true,
-      roomId: null, // Will be created on connection
-    });
-  }
+  const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
 
-  function joinGame(): void {
-    navigation.navigate("JoinLobby"); // or directly to Lobby with roomId
-  }
-
-  async function retrieveProfile() {
-    setLoading(true);
-    const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
-
-    // Small delay only for mobile (to ensure storage is ready)
-    if (!isWeb) {
-      await new Promise((resolve) => setTimeout(resolve, 200));
+  async function saveProfile(profileData: ProfileUserResponse | undefined) {
+    if (isWeb) {
+      await ProfileWebTokenManager.clearProfile();
+      await ProfileWebTokenManager.saveProfile(profileData);
+    } else {
+      await ProfileMobileTokenManager.clearProfile();
+      await ProfileMobileTokenManager.saveProfile(profileData);
     }
+  }
 
-    const userdata = await manager.getUserProfile();
-    console.log("Retrieved stored profile:", userdata);
+  const retrieveProfile = useCallback(async () => {
+    setLoading(true);
 
-    if (userdata?.email) {
-      await getProfileUser({ userEmail: userdata.email });
+    // Small delay only for mobile
+    if (!isWeb) await new Promise((r) => setTimeout(r, 200));
+
+    const stored = await manager.getUserProfile();
+    console.log("Retrieved stored profile:", stored);
+
+    if (stored?.email) {
+      // Refresh from API and update local cache
+      const result = await getProfileUser({ userEmail: stored.email });
+      if (result.success) await saveProfile(result.data);
     } else {
       console.warn("No stored profile found on device.");
     }
 
     setLoading(false);
-  }
+  }, [getProfileUser]);
 
-  // THIS IS JUST FOR TESTING AUTH INTERCEPTOR< IT SHOULD BE REMOVED
-  useEffect(() => {
-    retrieveProfile();
-  }, []); // ✅ Only once when Home mounts
+  // ✅ Run on focus (so updated profiles are reflected when user returns)
+  useFocusEffect(
+    useCallback(() => {
+      retrieveProfile();
+    }, [retrieveProfile])
+  );
 
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
 
@@ -83,44 +84,44 @@ export default function Home() {
                   <ActivityIndicator size="large" color={Colors.primary} />
                 </View>
               }
-            ></ContentCard>
-          </ScrollView>
-        </View>
-      </SafeAreaView>
-    );
-  } else {
-    return (
-      <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
-        <View style={{ marginTop: 40 }}>
-          <WelcomeTitleBar
-            username={pdata?.nickname}
-            avatar={avatarSource}
-          ></WelcomeTitleBar>
-
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <ContentCard
-              title="Game"
-              content={
-                <View>
-                  <DescriptionButton
-                    title="Host Game"
-                    description="Create a Lobby to play with your friends"
-                    icon={hostGameIcon}
-                    onPress={hostGame}
-                  ></DescriptionButton>
-
-                  <DescriptionButton
-                    title="Join Game"
-                    description="Join into an existing Lobby to play with your friends"
-                    icon={joinGameIcon}
-                    onPress={joinGame}
-                  ></DescriptionButton>
-                </View>
-              }
-            ></ContentCard>
+            />
           </ScrollView>
         </View>
       </SafeAreaView>
     );
   }
+
+  return (
+    <SafeAreaView style={[style.area, { backgroundColor: Colors.primary }]}>
+      <View style={{ marginTop: 40 }}>
+        <WelcomeTitleBar username={pdata?.nickname} avatar={avatarSource} />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <ContentCard
+            title="Game"
+            content={
+              <View>
+                <DescriptionButton
+                  title="Host Game"
+                  description="Create a Lobby to play with your friends"
+                  icon={hostGameIcon}
+                  onPress={() =>
+                    navigation.navigate("Lobby", {
+                      isOwner: true,
+                      roomId: null,
+                    })
+                  }
+                />
+                <DescriptionButton
+                  title="Join Game"
+                  description="Join into an existing Lobby to play with your friends"
+                  icon={joinGameIcon}
+                  onPress={() => navigation.navigate("JoinLobby")}
+                />
+              </View>
+            }
+          />
+        </ScrollView>
+      </View>
+    </SafeAreaView>
+  );
 }
