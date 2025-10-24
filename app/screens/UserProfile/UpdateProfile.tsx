@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, StatusBar, KeyboardAvoidingView, Platform } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppBar, Snackbar } from "@react-native-material/core";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -12,7 +12,7 @@ import { keyboardBehavior } from "../Auth/helpers";
 import UpdateForm from "@/app/components/organisms/UpdateForm";
 import styles, { SUCCESS_SNACKBAR_COLOR } from "../Auth/styles";
 import { SnackBarProps } from "../Auth/constants";
-
+import { ProfileUserResponse } from "../../screens/UserProfile/services/useProfileUser";
 import avatars, { AvatarId } from "@/assets/avatars";
 import useProfileUser from "./services/useProfileUser";
 import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
@@ -29,29 +29,41 @@ export default function UpdateProfile() {
   });
 
   const isWeb = Platform.OS === "web";
+  async function saveProfile(profileData: ProfileUserResponse | undefined) {
+    if (isWeb) {
+      await ProfileWebTokenManager.clearProfile();
+      await ProfileWebTokenManager.saveProfile(profileData);
+    } else {
+      await ProfileMobileTokenManager.clearProfile();
+      await ProfileMobileTokenManager.saveProfile(profileData);
+    }
+  }
+  // ✅ Load user profile only once when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      const loadUserProfile = async () => {
+        const userdata = await (isWeb
+          ? ProfileWebTokenManager.getUserProfile()
+          : ProfileMobileTokenManager.getUserProfile());
 
-  // 🔹 Load user profile depending on platform
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      const userdata = await (isWeb
-        ? ProfileWebTokenManager.getUserProfile()
-        : ProfileMobileTokenManager.getUserProfile());
+        if (userdata?.email) {
+          const user = await getProfileUser({ userEmail: userdata.email });
+          await saveProfile(user.data);
+        } else {
+          console.warn("No stored user email found!");
+        }
+      };
 
-      if (userdata?.email) {
-        await getProfileUser({ userEmail: userdata.email });
-      } else {
-        console.warn("No stored user email found!");
-      }
-    };
-    loadUserProfile();
-  });
+      loadUserProfile();
+    }, [isWeb, getProfileUser])
+  );
 
   // Snackbar handler
   const handleSuccess = (message: string) => {
     setSnackbar({ visible: true, message, color: SUCCESS_SNACKBAR_COLOR });
     setTimeout(
       () => setSnackbar((prev) => ({ ...prev, visible: false })),
-      2000,
+      2000
     );
   };
 
@@ -104,9 +116,7 @@ export default function UpdateProfile() {
 
               if (result.success) {
                 handleSuccess("Profile Updated Successfully");
-                setTimeout(() => {
-                  navigation.goBack();
-                }, 800);
+                setTimeout(() => navigation.goBack(), 800);
               } else {
                 console.warn(result.errorMessage);
               }

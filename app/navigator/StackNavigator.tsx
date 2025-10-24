@@ -16,7 +16,7 @@ import Home from "../screens/Home/Home";
 import ConfigureLobby from "@/app/screens/Lobby/ConfigureLobby";
 import JoinLobby from "@/app/screens/Lobby/JoinLobby";
 import Lobby from "@/app/screens/Lobby/Lobby";
-
+import GameRoom from "@/app/screens/GameRoom/GameRoomScreen";
 const Stack = createNativeStackNavigator();
 
 export default function StackNavigator() {
@@ -115,6 +115,12 @@ export default function StackNavigator() {
         <Stack.Screen
           name="Lobby"
           component={Lobby}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="GameRoom"
+          component={GameRoom}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

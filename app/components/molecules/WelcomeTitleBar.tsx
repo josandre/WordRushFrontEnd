@@ -19,8 +19,8 @@ export default function WelcomeTitleBar({
       <View style={atomStyles.welcomeTitleBar}>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={[style.m12, { color: Colors.lpink, marginLeft: 5 }]}>
-              GOOD MORNING
+            <Text style={[style.m12, { color: Colors.lpink, marginLeft: 0 }]}>
+              Welcome to WordRush!
             </Text>
           </View>
           <Text style={[style.apptitle, { color: Colors.secondary }]}>

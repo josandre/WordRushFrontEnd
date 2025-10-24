@@ -47,6 +47,17 @@ export type AppRoutes = {
   UpdateProfile: undefined;
   UpdateForm: undefined;
   ResetPassword: undefined;
+  GameRoom: {
+    roomId: string;
+    isOwner: boolean;
+    players?: any[];
+  };
+  Lobby: {
+    isOwner: boolean;
+    roomId: string | null;
+  };
+  ConfigureLobby: undefined;
+  JoinLobby: undefined;
 };
 
 export type AppNavigation = StackNavigationProp<AppRoutes>;

@@ -33,31 +33,41 @@ export default function Home() {
   const { getProfileUser, pdata } = useProfileUser();
 
   function hostGame(): void {
-    // TODO: Actually create a lobby for other players to join
-    navigation.navigate("Lobby");
+    navigation.navigate("Lobby", {
+      isOwner: true,
+      roomId: null, // Will be created on connection
+    });
   }
 
   function joinGame(): void {
-    navigation.navigate("JoinLobby");
+    navigation.navigate("JoinLobby"); // or directly to Lobby with roomId
   }
 
   async function retrieveProfile() {
     setLoading(true);
     const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
+
+    // Small delay only for mobile (to ensure storage is ready)
+    if (!isWeb) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+
     const userdata = await manager.getUserProfile();
+    console.log("Retrieved stored profile:", userdata);
 
     if (userdata?.email) {
       await getProfileUser({ userEmail: userdata.email });
+    } else {
+      console.warn("No stored profile found on device.");
     }
+
     setLoading(false);
   }
 
   // THIS IS JUST FOR TESTING AUTH INTERCEPTOR< IT SHOULD BE REMOVED
   useEffect(() => {
-    if (loading) {
-      retrieveProfile();
-    }
-  });
+    retrieveProfile();
+  }, []); // ✅ Only once when Home mounts
 
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
 

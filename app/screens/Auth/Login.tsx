@@ -64,12 +64,7 @@ export default function Login() {
 
       // GET THE PROFILE USING THE NEW TOKEN
       const user = await getProfileUser({ userEmail: form.email });
-      if (isWeb) {
-        saveProfile(user.data);
-      } else {
-        saveProfile(user.data);
-      }
-
+      await saveProfile(user.data); // ✅ Wait for AsyncStorage to finish
       navigation.navigate("MyTabs");
     } else {
       const errorSnackBar: SnackBarProps = {
