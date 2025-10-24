@@ -12,7 +12,7 @@ import { keyboardBehavior } from "../Auth/helpers";
 import UpdateForm from "@/app/components/organisms/UpdateForm";
 import styles, { SUCCESS_SNACKBAR_COLOR } from "../Auth/styles";
 import { SnackBarProps } from "../Auth/constants";
-
+import { ProfileUserResponse } from "../../screens/UserProfile/services/useProfileUser";
 import avatars, { AvatarId } from "@/assets/avatars";
 import useProfileUser from "./services/useProfileUser";
 import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
@@ -29,7 +29,15 @@ export default function UpdateProfile() {
   });
 
   const isWeb = Platform.OS === "web";
-
+  async function saveProfile(profileData: ProfileUserResponse | undefined) {
+    if (isWeb) {
+      await ProfileWebTokenManager.clearProfile();
+      await ProfileWebTokenManager.saveProfile(profileData);
+    } else {
+      await ProfileMobileTokenManager.clearProfile();
+      await ProfileMobileTokenManager.saveProfile(profileData);
+    }
+  }
   // ✅ Load user profile only once when screen gains focus
   useFocusEffect(
     useCallback(() => {
@@ -39,7 +47,8 @@ export default function UpdateProfile() {
           : ProfileMobileTokenManager.getUserProfile());
 
         if (userdata?.email) {
-          await getProfileUser({ userEmail: userdata.email });
+          const user = await getProfileUser({ userEmail: userdata.email });
+          await saveProfile(user.data);
         } else {
           console.warn("No stored user email found!");
         }

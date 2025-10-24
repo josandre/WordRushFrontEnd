@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-//import * as Clipboard from "expo-clipboard";
 import { Colors } from "@/app/theme/color";
 import style from "@/app/theme/style";
 import ScreenTitleBar from "@/app/components/molecules/ScreenTitleBar";
@@ -20,6 +19,7 @@ import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import { getStoredProfile } from "../../screens/UserProfile/services/usetStoredProfile";
 import { SocketStore } from "@/app/utils/socketStore";
 import { useClipboard } from "@/app/utils/useClipboard";
+import { WS_URL } from "@/app/utils/wsConfig";
 
 export default function Lobby() {
   const { copyToClipboard } = useClipboard();
@@ -31,7 +31,7 @@ export default function Lobby() {
   const [isStarting, setIsStarting] = useState(false);
   const [storedProfile, setStoredProfile] = useState<any>(null);
 
-  // ✅ confirm leaving (on hardware or header back)
+  // Confirm leaving (Android back or header)
   useFocusEffect(
     useCallback(() => {
       const onBeforeRemove = (e: any) => {
@@ -63,90 +63,102 @@ export default function Lobby() {
   );
 
   useEffect(() => {
-    const loadProfile = async () => {
+    let ws: WebSocket;
+    let isProfileReady = false;
+
+    const setupSocket = async () => {
       const profile = await getStoredProfile();
       setStoredProfile(profile);
-    };
-    loadProfile();
+      isProfileReady = true;
 
-    const ws = new WebSocket("ws://localhost:5178/ws");
-    ws.onopen = () => {
-      console.log("Connected to WebSocket (Lobby)");
-      SocketStore.setSocket(ws);
-      setConnected(true);
-      ws.send("CREATE_GAMEROOM");
-    };
+      ws = new WebSocket(WS_URL);
+      if (!ws) return;
 
-    ws.onmessage = async (event) => {
-      const data = event.data?.trim();
-      if (!data) return;
-      console.log("Lobby message:", data);
+      ws.onopen = () => {
+        console.log("Connected to WebSocket (Lobby)");
+        SocketStore.setSocket(ws);
+        setConnected(true);
 
-      if (data.toLowerCase().startsWith("room_created:")) {
-        const id = data.split(":")[1]?.trim();
-        setRoomId(id);
+        // Create the room once connection and profile are ready
+        if (isProfileReady) ws.send("CREATE_GAMEROOM");
+      };
 
-        const stored = await getStoredProfile();
-        if (stored) {
-          const payload = {
-            Nickname: stored.nickname ?? "Player",
-            Avatar: stored.avatar ?? "default",
-            Email: stored.email ?? "",
-          };
-          ws.send(`UPDATE_PROFILE:${JSON.stringify(payload)}`);
+      ws.onmessage = async (event) => {
+        const data = event.data?.trim();
+        if (!data) return;
+        console.log("Lobby message:", data);
+
+        // Handle room created
+        if (data.toLowerCase().startsWith("room_created:")) {
+          const id = data.split(":")[1]?.trim();
+          setRoomId(id);
+
+          if (profile) {
+            const payload = {
+              Nickname: profile.nickname ?? "Player",
+              Avatar: profile.avatar ?? "default",
+              Email: profile.email ?? "",
+            };
+            ws?.send(`UPDATE_PROFILE:${JSON.stringify(payload)}`);
+          }
+          return;
         }
-        return;
-      }
 
-      if (data.startsWith("USER_LIST_JSON:")) {
-        try {
-          const json = data.substring("USER_LIST_JSON:".length);
-          const parsed = JSON.parse(json);
-          if (Array.isArray(parsed)) setPlayers(parsed);
-        } catch (err) {
-          console.error("Parse error:", err, data);
+        // Handle user list
+        if (data.startsWith("USER_LIST_JSON:")) {
+          try {
+            const json = data.substring("USER_LIST_JSON:".length);
+            const parsed = JSON.parse(json);
+            if (Array.isArray(parsed)) setPlayers(parsed);
+          } catch (err) {
+            console.error("Parse error:", err, data);
+          }
+          return;
         }
-        return;
-      }
 
-      if (data === "GAME_STARTING") {
-        navigation.navigate("GameRoom", {
-          roomId: roomId ?? "",
-          isOwner: true,
-          players,
-        });
-        return;
-      }
+        // Game starting
+        if (data === "GAME_STARTING") {
+          navigation.navigate("GameRoom", {
+            roomId: roomId ?? "",
+            isOwner: true,
+            players,
+          });
+          return;
+        }
 
-      if (data === "ROOM_CLOSED_BY_OWNER" || data === "Room closed by owner.") {
-        Alert.alert("Room Closed", "The host closed the room.");
-        ws.close();
-        navigation.navigate("MyTabs");
-        return;
-      }
+        // Room closed
+        if (
+          data === "ROOM_CLOSED_BY_OWNER" ||
+          data === "Room closed by owner."
+        ) {
+          Alert.alert("Room Closed", "The host closed the room.");
+          ws?.close();
+          navigation.navigate("MyTabs");
+          return;
+        }
+      };
+
+      ws.onclose = () => console.log("WebSocket closed (Lobby)");
+      setSocket(ws);
     };
 
-    ws.onclose = () => console.log("WebSocket closed (Lobby)");
-    setSocket(ws);
-    return () => ws.close();
-  }, []);
+    setupSocket();
+
+    return () => {
+      if (ws) ws.close();
+    };
+  }, [navigation]);
 
   const handleToggleReady = () => {
     const ws = socket || SocketStore.getSocket();
     if (ws && ws.readyState === WebSocket.OPEN) ws.send("TOGGLE_READY");
   };
 
-  // const handleCopyCode = async () => {
-  //   if (roomId) {
-  //     await Clipboard.setStringAsync(roomId);
-  //     Alert.alert("Copied", `Room ID ${roomId} copied to clipboard.`);
-  //   }
-  // };
-
   const handleStartGame = () => {
-    if (socket && connected && roomId) {
+    const ws = socket || SocketStore.getSocket();
+    if (ws && connected && roomId) {
       setIsStarting(true);
-      socket.send("START_GAME");
+      ws.send("START_GAME");
     }
   };
 
@@ -246,19 +258,24 @@ export default function Lobby() {
                       ? "✅ All players are ready!"
                       : "Waiting for all players to be ready..."}
                   </Text>
-
-                  <PrimaryButton
-                    title="   Start Game   "
-                    onPress={handleStartGame}
-                    disabled={!connected || isStarting || !allReady}
-                    loading={isStarting}
-                  />
-
-                  <View style={{ marginTop: 12 }}>
+                  <View
+                    style={{
+                      flexDirection: "row", // arrange buttons horizontally
+                      justifyContent: "space-between", // space them out evenly
+                      padding: 10,
+                      gap: 12,
+                    }}
+                  >
                     <PrimaryButton
                       title="   Close Room   "
                       onPress={handleCloseRoom}
                       disabled={!connected}
+                    />
+                    <PrimaryButton
+                      title="   Start Game   "
+                      onPress={handleStartGame}
+                      disabled={!connected || isStarting || !allReady}
+                      loading={isStarting}
                     />
                   </View>
                 </View>

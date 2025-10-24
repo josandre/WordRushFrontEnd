@@ -7,6 +7,7 @@ export default class ProfileMobileTokenManager {
   static saveProfile = async (UserProfile?: ProfileUserResponse) => {
     if (UserProfile) {
       await this.storage.setValue(UserProfile);
+      console.log(UserProfile);
     }
   };
   static async getUserProfile() {

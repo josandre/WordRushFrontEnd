@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Image } from "react-native";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 import PrimaryButton from "@/app/components/atoms/PrimaryButton";
 import { Colors } from "@/app/theme/color";
 import style from "@/app/theme/style";
@@ -32,18 +33,24 @@ export default function PlayerCard({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: Colors.card ?? "#fff",
+        backgroundColor: "#f4f4f4ff",
         borderRadius: 16,
         padding: 12,
         marginBottom: 10,
         shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        //elevation: 20,
       }}
     >
       {/* Avatar and info */}
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
         <Image
           source={avatarImage}
           style={{
@@ -55,8 +62,9 @@ export default function PlayerCard({
           }}
         />
         <View>
+          <Text>{isOwner ? "👑 " : ""}</Text>
           <Text style={[style.subtitle, { color: Colors.txt }]}>
-            {nickname} {isOwner ? "(Host)" : ""}
+            {nickname}
           </Text>
           <Text
             style={{

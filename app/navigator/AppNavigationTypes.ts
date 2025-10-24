@@ -52,7 +52,10 @@ export type AppRoutes = {
     isOwner: boolean;
     players?: any[];
   };
-  Lobby: undefined;
+  Lobby: {
+    isOwner: boolean;
+    roomId: string | null;
+  };
   ConfigureLobby: undefined;
   JoinLobby: undefined;
 };

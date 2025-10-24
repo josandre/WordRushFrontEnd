@@ -93,7 +93,6 @@ export default function GameRoom() {
         backgroundColor="transparent"
         barStyle="light-content"
       />
-      <ScreenTitleBar screenName="Game Room" onGoBackPress={exitGameRoom} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
