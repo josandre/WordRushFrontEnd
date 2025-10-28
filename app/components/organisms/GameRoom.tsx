@@ -1,99 +1,92 @@
-import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
-import { Colors } from "@/app/theme/color";
-import style from "@/app/theme/style";
-import { getAvatarImage } from "@/assets/avatars";
+import React from 'react'
+import { View } from 'react-native'
+import ContentCard from '../atoms/ContentCard'
+import RoomInfo from '../atoms/RoomInfo'
+import CurrentPlayerCard from '../molecules/CurrentPlayerCard'
+import PlayerList from '../molecules/PlayerList'
+import GameActions from '../molecules/GameActions'
+import styles from './GameRoomStyles'
 
-type PlayerCardProps = {
-  nickname: string;
-  avatar: string;
-  isReady: boolean;
-  isOwner?: boolean;
-  readyLabel?: string; // ✅ explicit prop
-};
-
-export default function PlayerCard({
-  nickname,
-  avatar,
-  isReady,
-  isOwner,
-  readyLabel,
-}: PlayerCardProps) {
-  const avatarSource = getAvatarImage(avatar);
-
-  return (
-    <View style={[styles.card, { backgroundColor: Colors.bg1 }]}>
-      <Image source={avatarSource} style={styles.avatar} />
-
-      <View style={styles.info}>
-        <View style={styles.nameRow}>
-          <Text style={[styles.name, { color: Colors.txt }]}>{nickname}</Text>
-          {isOwner && (
-            <Text style={[styles.badge, { backgroundColor: Colors.primary }]}>
-              Host
-            </Text>
-          )}
-        </View>
-
-        {readyLabel && (
-          <Text
-            style={[
-              styles.status,
-              {
-                color: isReady ? Colors.success : Colors.warning,
-              },
-            ]}
-          >
-            {readyLabel}
-          </Text>
-        )}
-      </View>
-    </View>
-  );
+type Player = {
+  UserId: string
+  Nickname: string
+  Avatar: string
+  IsReady: boolean
+  IsOwner: boolean
+  Email?: string
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 10,
-  },
-  info: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 2,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  badge: {
-    marginLeft: 8,
-    fontSize: 12,
-    color: "#fff",
-    fontWeight: "bold",
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  status: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-});
+type UserProfile = {
+  nickname?: string
+  avatar?: string
+  email?: string
+}
+
+type GameRoomProps = {
+  roomId: string
+  isOwner: boolean
+  players: Player[]
+  myPlayer?: Player
+  userProfile?: UserProfile
+  onEndGame: () => void
+  onStartGame?: () => void
+  canStartGame?: boolean
+}
+
+export default function GameRoomContent({
+  roomId,
+  isOwner,
+  players,
+  myPlayer,
+  userProfile,
+  onEndGame,
+  onStartGame,
+  canStartGame = false
+}: GameRoomProps) {
+  // Filter out current user from other players list
+  const otherPlayers = players.filter(
+    (p) =>
+      !userProfile?.email ||
+      p.Email?.toLowerCase() !== userProfile.email.toLowerCase()
+  )
+
+  return (
+    <View style={styles.gameRoomContainer}>
+      <ContentCard
+        title=""
+        content={
+          <View style={styles.content}>
+            <View style={styles.section}>
+              <RoomInfo roomId={roomId} isOwner={isOwner} />
+            </View>
+            
+            <View style={styles.section}>
+              <CurrentPlayerCard
+                myPlayer={myPlayer}
+                userProfile={userProfile}
+                isOwner={isOwner}
+              />
+            </View>
+
+            <View style={styles.section}>
+              <PlayerList
+                players={otherPlayers}
+                currentUserEmail={userProfile?.email}
+                showReadyButtons={false}
+              />
+            </View>
+
+            <View style={styles.lastSection}>
+              <GameActions
+                isOwner={isOwner}
+                onEndGame={onEndGame}
+                onStartGame={onStartGame}
+                canStartGame={canStartGame}
+              />
+            </View>
+          </View>
+        }
+      />
+    </View>
+  )
+}

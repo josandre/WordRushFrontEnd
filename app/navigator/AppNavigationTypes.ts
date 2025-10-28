@@ -57,6 +57,7 @@ export type AppRoutes = {
     roomId: string | null;
   };
   ConfigureLobby: undefined;
+  GameConfiguration: undefined;
   JoinLobby: undefined;
 };
 
