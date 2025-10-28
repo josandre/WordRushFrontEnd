@@ -13,10 +13,10 @@ import { isWeb } from "../utils/envDetails";
 import ResetPassword from "../screens/Auth/ResetPassword/ResetPassword";
 import ChangePassword from "../screens/UserProfile/ChangePassword";
 import Home from "../screens/Home/Home";
-import ConfigureLobby from "@/app/screens/Lobby/ConfigureLobby";
+import GameConfiguration from "@/app/screens/Lobby/GameConfiguration";
 import JoinLobby from "@/app/screens/Lobby/JoinLobby";
 import Lobby from "@/app/screens/Lobby/Lobby";
-import GameRoom from "@/app/screens/GameRoom/GameRoomScreen";
+import GameRoom from "@/app/screens/GameRoom/GameRoom";
 const Stack = createNativeStackNavigator();
 
 export default function StackNavigator() {
@@ -100,9 +100,10 @@ export default function StackNavigator() {
           component={Home}
           options={{ headerShown: false }}
         />
+
         <Stack.Screen
-          name="ConfigureLobby"
-          component={ConfigureLobby}
+          name="GameConfiguration"
+          component={GameConfiguration}
           options={{ headerShown: false }}
         />
 
