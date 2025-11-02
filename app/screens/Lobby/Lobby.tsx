@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { StatusBar, ScrollView } from "react-native";
+import { StatusBar, ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import ScreenTitleBar from "@/app/components/molecules/ScreenTitleBar";
@@ -14,12 +14,31 @@ import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from "../Auth/constants";
 import { ERROR_SNACKBAR_COLOR, SUCCESS_SNACKBAR_COLOR } from "../Auth/styles";
 import styles from "./styles";
 
+import { useRoute } from '@react-navigation/native';
+import webSocketService from "@/app/services/webSocketService";
+
+type RouteParams = { 
+  isOwner: boolean; 
+  roomId: string; 
+};
+
+type RoomPlayerSnapshot = {
+    UserId: string;
+    Nickname: string;
+    Avatar: string;
+    IsReady: boolean;
+    isOwner: boolean;
+}
+
+type RoomData = {
+  Players: RoomPlayerSnapshot[]
+}
+
 export default function Lobby() {
   const { copyToClipboard } = useClipboard();
   const navigation = useNavigation<AppNavigation>();
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [roomId, setRoomId] = useState<string | null>(null);
-  const [players, setPlayers] = useState<any[]>([]);
+  const [players, setPlayers] = useState<RoomPlayerSnapshot[]>([]);
   const [connected, setConnected] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [storedProfile, setStoredProfile] = useState<any>(null);
@@ -28,6 +47,25 @@ export default function Lobby() {
     message: "",
   });
 
+  const route = useRoute();
+  const { isOwner, roomId } = route.params as RouteParams;
+
+  // Called when the room info is updated from the server
+  function onRoomInfoRequested(data: any) {
+    var roomData = JSON.parse(data.JsonData) as RoomData;
+    setPlayers(roomData.Players);
+  }
+
+  function onRoomClosed(data: any) {
+    const errorSnackBar: SnackBarProps = {
+      visible: true,
+      message: "The host closed the room",
+      color: ERROR_SNACKBAR_COLOR,
+    };
+
+    setSnackbar(errorSnackBar);
+    navigation.navigate("MyTabs");
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -53,6 +91,29 @@ export default function Lobby() {
   );
 
   useEffect(() => {
+    // Web Socket callbacks setup
+    webSocketService.connect();
+    webSocketService.addCallbacks("GAME_ROOM|DATA_UPDATED", onRoomInfoRequested);
+    webSocketService.addCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
+
+    // When joining the lobby, inmediatelly request the room data to update the visuals
+    webSocketService.sendMessage({
+      Type: "GAME_ROOM|REQUEST_DATA",
+      Data: {}
+    });
+
+    // Used to retrieve the stored profile, so it is acccesible from other subcomponents
+    const setup = async () => {
+      const profile = await getStoredProfile();
+      setStoredProfile(profile);
+    }
+
+    setup();
+    return () => {
+      webSocketService.removeCallbacks("GAME_ROOM|DATA_UPDATED", onRoomInfoRequested);
+      webSocketService.removeCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
+    };
+    
     let ws: WebSocket;
     let isProfileReady = false;
 
@@ -77,7 +138,6 @@ export default function Lobby() {
 
         if (data.toLowerCase().startsWith("room_created:")) {
           const id = data.split(":")[1]?.trim();
-          setRoomId(id);
 
           if (profile) {
             const payload = {
@@ -142,12 +202,26 @@ export default function Lobby() {
     };
   }, [navigation]);
 
+  const handleCopyToClipboard = () => {
+    copyToClipboard(roomId ?? "");
+
+    const successSnackBar: SnackBarProps = {
+      visible: true,
+      message: "Game Room Code copied",
+      color: SUCCESS_SNACKBAR_COLOR,
+    };
+    setSnackbar(successSnackBar);
+  }
+
   const handleToggleReady = () => {
-    const ws = socket || SocketStore.getSocket();
-    if (ws && ws.readyState === WebSocket.OPEN) ws.send("TOGGLE_READY");
+    webSocketService.sendMessage({
+      Type: "GAME_ROOM|TOGGLE_READY",
+      Data: {}
+    });
   };
 
   const handleStartGame = () => {
+    // TODO:
     const ws = socket || SocketStore.getSocket();
     if (ws && connected && roomId) {
       setIsStarting(true);
@@ -155,12 +229,12 @@ export default function Lobby() {
     }
   };
 
-  const handleCloseRoom = () => {
-    const ws = socket || SocketStore.getSocket();
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send("CLOSE_GAMEROOM");
-      ws.close();
-    }
+  const handleGoBack = () => {
+    webSocketService.sendMessage({
+      Type: "GAME_ROOM|LEAVE",
+      Data: {}
+    });
+
     const successSnackBar: SnackBarProps = {
       visible: true,
       message: "Lobby closed for all players",
@@ -171,11 +245,12 @@ export default function Lobby() {
   };
 
   const handleOpenConfigure = () => {
-    navigation.navigate("GameConfiguration");
+    navigation.navigate("GameConfiguration", {
+      roomId: roomId,
+    });
   }
 
-
-  const allReady = players.length > 0 && players.every((p) => p.IsReady);
+  const allReady = players.length > 1 && players.every((p) => p.IsReady);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -184,7 +259,7 @@ export default function Lobby() {
         backgroundColor={styles.statusBar.backgroundColor}
         barStyle="light-content"
       />
-      <ScreenTitleBar screenName="Game Lobby" onGoBackPress={handleCloseRoom} />
+      <ScreenTitleBar screenName="Game Lobby" onGoBackPress={handleGoBack} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -193,14 +268,13 @@ export default function Lobby() {
       >
         <LobbyContent
           roomId={roomId}
+          isOwner={isOwner}
           players={players}
           storedProfile={storedProfile}
           isStarting={isStarting}
           allReady={allReady}
-          connected={connected}
-          onCopyRoomCode={() => copyToClipboard(roomId ?? "")}
+          onCopyRoomCode={handleCopyToClipboard}
           onToggleReady={handleToggleReady}
-          onCloseRoom={handleCloseRoom}
           onStartGame={handleStartGame}
           onOpenConfigure={handleOpenConfigure}
         />

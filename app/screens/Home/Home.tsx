@@ -26,6 +26,8 @@ import { ProfileUserResponse } from "../../screens/UserProfile/services/useProfi
 import avatars, { getAvatarImage } from "@/assets/avatars";
 import useProfileUser from "@/app/screens/UserProfile/services/useProfileUser";
 
+import webSocketService from "@/app/services/webSocketService";
+
 export default function Home() {
   const navigation = useNavigation<AppNavigation>();
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,8 @@ export default function Home() {
     if (stored?.email) {
       // Refresh from API and update local cache
       const result = await getProfileUser({ userEmail: stored.email });
-      if (result.success) await saveProfile(result.data);
+      if (result.success) 
+        await saveProfile(result.data);
     } else {
       console.warn("No stored profile found on device.");
     }
@@ -63,10 +66,51 @@ export default function Home() {
     setLoading(false);
   }, [getProfileUser]);
 
-  // ✅ Run on focus (so updated profiles are reflected when user returns)
+  // Called when pressing the Create Room button, it simply tells the server to generate a new room
+  function createRoom() {
+    //console.log("Vamos a crear el room");
+    const jsonData = {
+      PlayerProfile: {
+        Nickname: pdata?.nickname,
+        Avatar: pdata?.avatar,
+        Email: pdata?.email 
+        }
+    };
+
+    webSocketService.sendMessage({
+      Type: "GAME_ROOM|CREATE",
+      JsonData: JSON.stringify(jsonData)
+    });
+  }
+
+  // Called when the Room creation has been confirmed from the server
+  function onRoomCreated(data: any) {
+    var jsonData = JSON.parse(data.JsonData);
+
+    // The player is automatically added to the room when it is created
+    // So, just redirect to the screen and request the info later
+    navigation.navigate("Lobby", {
+      isOwner: true,
+      roomId: jsonData.GameRoomID,
+    });
+  }
+
+  // Called when pressing the Join Room button
+  function joinRoom() {
+    navigation.navigate("JoinLobby")
+  }
+
+  // Run on focus (so updated profiles are reflected when user returns)
   useFocusEffect(
     useCallback(() => {
       retrieveProfile();
+
+      webSocketService.connect();
+      webSocketService.addCallbacks("GAME_ROOM|CREATED", onRoomCreated);
+
+      return () => {
+        webSocketService.removeCallbacks("GAME_ROOM|CREATED", onRoomCreated);
+      };
     }, [retrieveProfile])
   );
 
@@ -104,18 +148,13 @@ export default function Home() {
                   title="Host Game"
                   description="Create a Lobby to play with your friends"
                   icon={hostGameIcon}
-                  onPress={() =>
-                    navigation.navigate("Lobby", {
-                      isOwner: true,
-                      roomId: null,
-                    })
-                  }
+                  onPress={createRoom}
                 />
                 <DescriptionButton
                   title="Join Game"
                   description="Join into an existing Lobby to play with your friends"
                   icon={joinGameIcon}
-                  onPress={() => navigation.navigate("JoinLobby")}
+                  onPress={joinRoom}
                 />
               </View>
             }

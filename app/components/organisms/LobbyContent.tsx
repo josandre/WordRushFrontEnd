@@ -4,33 +4,30 @@ import ContentCard from '../atoms/ContentCard'
 import PrimaryButton from '../atoms/PrimaryButton'
 import PlayerCard from '../molecules/PlayerCard'
 import { Colors } from '../../theme/color'
-import style from '../../theme/style'
 import styles from './LobbyStyles'
 
 type LobbyContentProps = {
   roomId: string | null
+  isOwner: boolean
   players: any[]
   storedProfile: any
   isStarting: boolean
   allReady: boolean
-  connected: boolean
   onCopyRoomCode: () => void
   onToggleReady: () => void
-  onCloseRoom: () => void
   onStartGame: () => void
   onOpenConfigure: () => void
 }
 
 export default function LobbyContent({
   roomId,
+  isOwner,
   players,
   storedProfile,
   isStarting,
   allReady,
-  connected,
   onCopyRoomCode,
   onToggleReady,
-  onCloseRoom,
   onStartGame,
   onOpenConfigure
 }: LobbyContentProps) {
@@ -41,7 +38,7 @@ export default function LobbyContent({
         content={
           <View style={styles.content}>
             {roomId ? (
-              <>
+              <View>
                 <Text style={styles.roomIdText}>
                   Room ID: {roomId}
                 </Text>
@@ -49,7 +46,19 @@ export default function LobbyContent({
                   title="Copy Room Code"
                   onPress={onCopyRoomCode}
                 />
-              </>
+
+                {isOwner ? (
+                  <View>
+                    <PrimaryButton
+                      title="Configure Game Rules"
+                      onPress={onOpenConfigure}
+                      disabled={false}
+                    />
+                  </View>
+                ) : (
+                  <View></View>
+                )}
+              </View>
             ) : (
               <ActivityIndicator size="large" color={Colors.secondary} />
             )}
@@ -84,39 +93,34 @@ export default function LobbyContent({
                 </Text>
               )}
             </View>
-
-            {players.length > 0 && (
+            
+            {players.length > 1 ? (
               <View style={styles.statusContainer}>
                 <Text style={styles.statusText}>
                   {allReady
                     ? "✅ All players are ready!"
                     : "Waiting for all players to be ready..."}
                 </Text>
-                <View style={styles.buttonsContainer}>
-                  <View style={styles.buttonWrapper}>
-                    <PrimaryButton
-                      title="Close Room"
-                      onPress={onCloseRoom}
-                      disabled={!connected}
-                    />
-                  </View>
-                  <View style={styles.buttonWrapper}>
-                    <PrimaryButton
-                      title="Start Game"
-                      onPress={onStartGame}
-                      disabled={!connected || isStarting || !allReady}
-                      loading={isStarting}
-                    />
-                  </View>
-                  <View style={styles.buttonWrapper}>
-                    <PrimaryButton
-                      title="Configure"
-                      onPress={onOpenConfigure}
-                      disabled={false}
-                    />
-                  </View>
-                </View>
               </View>
+            ) : (
+              <View style={styles.statusContainer}>
+                <Text style={styles.statusText}>
+                  There are not enough players in the GameRoom to start
+                </Text>
+              </View>
+            )}
+
+            {isOwner ? (
+              <View>
+                <PrimaryButton
+                  title="Start Game"
+                  onPress={onStartGame}
+                  disabled={isStarting || !allReady}
+                  loading={isStarting}
+                />
+              </View>
+            ) : (
+              <View></View>
             )}
           </View>
         }

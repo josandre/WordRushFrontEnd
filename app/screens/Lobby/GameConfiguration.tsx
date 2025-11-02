@@ -7,12 +7,17 @@ import ScreenTitleBar from '../../components/molecules/ScreenTitleBar'
 import GameConfigurationContent from '../../components/organisms/GameConfigurationContent'
 import styles from './styles'
 
+import { useRoute } from '@react-navigation/native';
+
 type GameConfigurationData = {
   timeLimit: number
   selectedLetters: string[]
   letterOrder: 'ascending' | 'descending'
 }
 
+type RouteParams = {
+  roomId: string; 
+};
 
 export default function GameConfiguration() {
   const navigation = useNavigation<AppNavigation>()
@@ -21,6 +26,9 @@ export default function GameConfiguration() {
   const [timeLimit, setTimeLimit] = useState<number>(45)
   const [selectedLetters, setSelectedLetters] = useState<string[]>(['A'])
   const [letterOrder, setLetterOrder] = useState<'ascending' | 'descending'>('ascending')
+
+  const route = useRoute();
+  const { roomId } = route.params as RouteParams;
 
   const handleLetterToggle = (letter: string) => {
     setSelectedLetters(prev => {
@@ -45,7 +53,9 @@ export default function GameConfiguration() {
     // TODO: Save configuration to state management or send to server
     setTimeout(() => {
       setLoading(false)
-      navigation.navigate('Lobby', { isOwner: true, roomId: null })
+      navigation.navigate('Lobby', { 
+        isOwner: true, 
+        roomId: roomId })
     }, 1000)
   }
 
@@ -54,7 +64,10 @@ export default function GameConfiguration() {
     setTimeLimit(45)
     setSelectedLetters(['A'])
     setLetterOrder('ascending')
-    navigation.navigate('Lobby', { isOwner: true, roomId: null })
+    navigation.navigate('Lobby', { 
+      isOwner: true, 
+      roomId: roomId 
+    })
   }
 
   return (
@@ -67,7 +80,9 @@ export default function GameConfiguration() {
 
       <ScreenTitleBar
         screenName="Configure Game"
-        onGoBackPress={() => navigation.navigate('Lobby', { isOwner: true, roomId: null })}
+        onGoBackPress={() => navigation.navigate('Lobby', { 
+          isOwner: true, 
+          roomId: roomId })}
       />
 
       <ScrollView
