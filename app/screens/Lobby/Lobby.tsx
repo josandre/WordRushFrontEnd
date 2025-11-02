@@ -1,14 +1,12 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { StatusBar, ScrollView, Text } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StatusBar, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import ScreenTitleBar from "@/app/components/molecules/ScreenTitleBar";
 import LobbyContent from "@/app/components/organisms/LobbyContent";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import { getStoredProfile } from "../../screens/UserProfile/services/usetStoredProfile";
-import { SocketStore } from "@/app/utils/socketStore";
 import { useClipboard } from "@/app/utils/useClipboard";
-import { WS_URL } from "@/app/utils/wsConfig";
 import { Snackbar } from "@react-native-material/core";
 import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from "../Auth/constants";
 import { ERROR_SNACKBAR_COLOR, SUCCESS_SNACKBAR_COLOR } from "../Auth/styles";
@@ -37,9 +35,7 @@ type RoomData = {
 export default function Lobby() {
   const { copyToClipboard } = useClipboard();
   const navigation = useNavigation<AppNavigation>();
-  const [socket, setSocket] = useState<WebSocket | null>(null);
   const [players, setPlayers] = useState<RoomPlayerSnapshot[]>([]);
-  const [connected, setConnected] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [storedProfile, setStoredProfile] = useState<any>(null);
   const [snackbar, setSnackbar] = useState<SnackBarProps>({
@@ -67,29 +63,6 @@ export default function Lobby() {
     navigation.navigate("MyTabs");
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      const onBeforeRemove = (e: any) => {
-        e.preventDefault();
-        const ws = socket || SocketStore.getSocket();
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send("CLOSE_GAMEROOM");
-          ws.close();
-        }
-        const successSnackBar: SnackBarProps = {
-          visible: true,
-          message: "Lobby closed for all players",
-          color: SUCCESS_SNACKBAR_COLOR,
-        };
-        setSnackbar(successSnackBar);
-        navigation.dispatch(e.data.action);
-      };
-
-      navigation.addListener("beforeRemove", onBeforeRemove);
-      return () => navigation.removeListener("beforeRemove", onBeforeRemove);
-    }, [socket, navigation])
-  );
-
   useEffect(() => {
     // Web Socket callbacks setup
     webSocketService.connect();
@@ -113,93 +86,6 @@ export default function Lobby() {
       webSocketService.removeCallbacks("GAME_ROOM|DATA_UPDATED", onRoomInfoRequested);
       webSocketService.removeCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
     };
-    
-    let ws: WebSocket;
-    let isProfileReady = false;
-
-    const setupSocket = async () => {
-      const profile = await getStoredProfile();
-      setStoredProfile(profile);
-      isProfileReady = true;
-
-      ws = new WebSocket(WS_URL);
-      if (!ws) return;
-
-      ws.onopen = () => {
-        SocketStore.setSocket(ws);
-        setConnected(true);
-
-        if (isProfileReady) ws.send("CREATE_GAMEROOM");
-      };
-
-      ws.onmessage = async (event) => {
-        const data = event.data?.trim();
-        if (!data) return;
-
-        if (data.toLowerCase().startsWith("room_created:")) {
-          const id = data.split(":")[1]?.trim();
-
-          if (profile) {
-            const payload = {
-              Nickname: profile.nickname ?? "Player",
-              Avatar: profile.avatar ?? "default",
-              Email: profile.email ?? "",
-            };
-            ws?.send(`UPDATE_PROFILE:${JSON.stringify(payload)}`);
-          }
-          return;
-        }
-
-        if (data.startsWith("USER_LIST_JSON:")) {
-          try {
-            const json = data.substring("USER_LIST_JSON:".length);
-            const parsed = JSON.parse(json);
-            if (Array.isArray(parsed)) setPlayers(parsed);
-          } catch (err) {
-             const errorSnackBar: SnackBarProps = {
-              visible: true,
-              message: "Parse error:",
-              color: SUCCESS_SNACKBAR_COLOR,
-            };
-            setSnackbar(errorSnackBar);
-          }
-          return;
-        }
-
-        if (data === "GAME_STARTING") {
-          navigation.navigate("GameRoom", {
-            roomId: roomId ?? "",
-            isOwner: true,
-            players,
-          });
-          return;
-        }
-
-        if (
-          data === "ROOM_CLOSED_BY_OWNER" ||
-          data === "Room closed by owner."
-        ) {
-          const errorSnackBar: SnackBarProps = {
-            visible: true,
-            message: "The host closed the room",
-            color: ERROR_SNACKBAR_COLOR,
-          };
-          setSnackbar(errorSnackBar);
-          ws?.close();
-          navigation.navigate("MyTabs");
-          return;
-        }
-      };
-
-      ws.onclose = () => console.log("WebSocket closed (Lobby)");
-      setSocket(ws);
-    };
-
-    setupSocket();
-
-    return () => {
-      if (ws) ws.close();
-    };
   }, [navigation]);
 
   const handleCopyToClipboard = () => {
@@ -221,12 +107,9 @@ export default function Lobby() {
   };
 
   const handleStartGame = () => {
-    // TODO:
-    const ws = socket || SocketStore.getSocket();
-    if (ws && connected && roomId) {
-      setIsStarting(true);
-      ws.send("START_GAME");
-    }
+    // TODO: Notify the server about the game session start
+    // Then wait for the confirmation for all the players that are in the GameRoom so that the first round can start
+    // When all the players are ready
   };
 
   const handleGoBack = () => {
