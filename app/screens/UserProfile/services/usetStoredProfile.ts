@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
-import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
-import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileTokenManager";
+import ProfileWebTokenManager from "@/app/StorageManager/ProfileManager/web/WebProfileManager";
+import ProfileMobileTokenManager from "@/app/StorageManager/ProfileManager/mobile/MobileProfileManager";
 
 const isWeb = Platform.OS === "web";
 
@@ -9,6 +9,10 @@ export type StoredProfile = {
   email?: string;
   avatar?: string;
 };
+
+
+//TODO
+//Change this implementation this is not a hook is a normal function
 
 export async function getStoredProfile(): Promise<StoredProfile | null> {
   try {

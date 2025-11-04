@@ -1,19 +1,22 @@
 import React, { useState } from 'react'
 import { StatusBar, ScrollView } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { Snackbar } from '@react-native-material/core'
 import { AppNavigation } from '../../navigator/AppNavigationTypes'
 import ScreenTitleBar from '../../components/molecules/ScreenTitleBar'
 import GameConfigurationContent from '../../components/organisms/GameConfigurationContent'
-import styles from './styles'
+import useUpdateGameSettings from './services/useUpdateGameSettings'
+import { GameOrder } from './services/constants'
+import styles, { ERROR_SNACKBAR_COLOR } from './styles'
 
-import { useRoute } from '@react-navigation/native';
+type SnackBarProps = {
+  visible: boolean;
+  message?: string;
+  color?: string;
+};
 
-type GameConfigurationData = {
-  timeLimit: number
-  selectedLetters: string[]
-  letterOrder: 'ascending' | 'descending'
-}
+const FALLBACK_ERROR_MESSAGE = "An error occurred updating game settings";
 
 type RouteParams = {
   roomId: string; 
@@ -21,14 +24,17 @@ type RouteParams = {
 
 export default function GameConfiguration() {
   const navigation = useNavigation<AppNavigation>()
-  const [loading, setLoading] = useState(false)
+  const route = useRoute();
+  const { roomId } = (route.params as RouteParams) || { roomId: '' };
+  const { updateGameSettings, loading } = useUpdateGameSettings()
+  const [snackbar, setSnackbar] = useState<SnackBarProps>({
+    visible: false,
+    message: "",
+  })
 
   const [timeLimit, setTimeLimit] = useState<number>(45)
   const [selectedLetters, setSelectedLetters] = useState<string[]>(['A'])
   const [letterOrder, setLetterOrder] = useState<'ascending' | 'descending'>('ascending')
-
-  const route = useRoute();
-  const { roomId } = route.params as RouteParams;
 
   const handleLetterToggle = (letter: string) => {
     setSelectedLetters(prev => {
@@ -41,34 +47,47 @@ export default function GameConfiguration() {
     })
   }
 
-  const handleSaveConfiguration = () => {
-    setLoading(true)
-    const configuration: GameConfigurationData = {
-      timeLimit,
-      selectedLetters,
-      letterOrder,
-    }
+  const handleSaveConfiguration = async () => {
     
-    console.log('Game Configuration:', configuration)
-    // TODO: Save configuration to state management or send to server
-    setTimeout(() => {
-      setLoading(false)
+    const gameOrder = letterOrder === 'ascending' 
+      ? GameOrder.Ascending 
+      : GameOrder.Descending
+
+    const payload = {
+      RoomId: roomId,
+      Settings: {
+        Letters: selectedLetters,
+        TimeLimit: timeLimit,
+        Order: gameOrder,
+      },
+    }
+
+    const result = await updateGameSettings(payload)
+
+    if (result.success) {
       navigation.navigate('Lobby', { 
         isOwner: true, 
-        roomId: roomId })
-    }, 1000)
+        roomId: roomId 
+      })
+    } else {
+      const errorSnackBar: SnackBarProps = {
+        visible: true,
+        message: result.errorMessage,
+        color: ERROR_SNACKBAR_COLOR,
+      };
+      setSnackbar(errorSnackBar);
+    }
   }
 
   const handleDiscardChanges = () => {
-    // Reset to default values
     setTimeLimit(45)
     setSelectedLetters(['A'])
     setLetterOrder('ascending')
     navigation.navigate('Lobby', { 
       isOwner: true, 
       roomId: roomId 
-    })
-  }
+      })
+    }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -103,6 +122,16 @@ export default function GameConfiguration() {
           disabled={loading}
         />
       </ScrollView>
+
+      {snackbar.visible && (
+        <Snackbar
+          message={snackbar.message ?? FALLBACK_ERROR_MESSAGE}
+          style={[
+            styles.snackbarContainer,
+            { backgroundColor: snackbar.color },
+          ]}
+        />
+      )}
     </SafeAreaView>
   )
 }

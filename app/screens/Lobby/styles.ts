@@ -74,3 +74,5 @@ export const CONFIGURE_LOBBY_SCREEN_COLORS = {
   success: Colors.success,
   warning: Colors.warning,
 }
+
+export const ERROR_SNACKBAR_COLOR = "#d32f2f";

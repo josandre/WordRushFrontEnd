@@ -17,10 +17,10 @@ import LoginForm from "../../components/organisms/LoginForm";
 import useLogIn, { LogInPayload } from "./services/useLogIn";
 import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from "./constants";
 import styles, { ERROR_SNACKBAR_COLOR } from "./styles";
-import WebTokenManager from "@/app/TokenManagers/web/WebTokenManager";
-import MobileTokenManager from "@/app/TokenManagers/mobile/MobileTokenManager";
-import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileTokenManager";
-import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
+import WebTokenManager from "@/app/StorageManager/TokenManagers/web/WebTokenManager";
+import MobileTokenManager from "@/app/StorageManager/TokenManagers/mobile/MobileTokenManager";
+import ProfileMobileTokenManager from "@/app/StorageManager/ProfileManager/mobile/MobileProfileManager";
+import ProfileWebTokenManager from "@/app/StorageManager/ProfileManager/web/WebProfileManager";
 import useProfileUser from "../../screens/UserProfile/services/useProfileUser";
 import { isWeb } from "@/app/utils/envDetails";
 
@@ -62,9 +62,9 @@ export default function Login() {
         await MobileTokenManager.saveTokens(tokens);
       }
 
-      // GET THE PROFILE USING THE NEW TOKEN
+  
       const user = await getProfileUser({ userEmail: form.email });
-      await saveProfile(user.data); // ✅ Wait for AsyncStorage to finish
+      await saveProfile(user.data); 
       navigation.navigate("MyTabs");
     } else {
       const errorSnackBar: SnackBarProps = {
