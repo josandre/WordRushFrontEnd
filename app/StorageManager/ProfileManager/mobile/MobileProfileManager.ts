@@ -1,5 +1,5 @@
-import { ProfileUserResponse } from "../../screens/UserProfile/services/useProfileUser";
-import Storage from "./MobileToken";
+import { ProfileUserResponse } from "../../../screens/UserProfile/services/useProfileUser";
+import Storage from "../../Storages/MobileStorage";
 
 export default class ProfileMobileTokenManager {
   private static storage = new Storage<ProfileUserResponse>("UserProfile");

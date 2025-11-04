@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
-import WebTokenManager from "../TokenManagers/web/WebTokenManager";
-import MobileTokenManager from "../TokenManagers/mobile/MobileTokenManager";
 import { isWeb } from "../utils/envDetails";
+import WebTokenManager from "../StorageManager/TokenManagers/web/WebTokenManager";
+import MobileTokenManager from "../StorageManager/TokenManagers/mobile/MobileTokenManager";
 
 export class RequestCreator {
   private readonly baseUrl: string;
@@ -10,7 +10,7 @@ export class RequestCreator {
     this.baseUrl =
       (process.env.EXPO_PUBLIC_API_BASE as string) ||
       (Platform.OS === "android"
-        ? "http://10.0.2.2:5178"
+        ? "http://10.0.2.2:5178" //TODO add this into a env file
         : "http://127.0.0.1:5178");
   }
 

@@ -1,12 +1,12 @@
 import { Tokens } from "../constants";
-import Storage from "./WebToken";
+import Storage from "../../Storages/MobileStorage";
 
-export default class WebTokenManager {
+export default class MobileTokenManager {
   private static storage = new Storage<Tokens>("tokens");
 
   static saveTokens = async (tokens?: Tokens) => {
     if (tokens) {
-      this.storage.setValue(tokens);
+      await this.storage.setValue(tokens);
     }
   };
 

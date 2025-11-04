@@ -30,6 +30,7 @@ type GameRoomProps = {
   userProfile?: UserProfile
   onEndGame: () => void
   onStartGame?: () => void
+  onConfigure?: () => void
   canStartGame?: boolean
 }
 
@@ -41,9 +42,10 @@ export default function GameRoomContent({
   userProfile,
   onEndGame,
   onStartGame,
+  onConfigure,
   canStartGame = false
 }: GameRoomProps) {
-  // Filter out current user from other players list
+
   const otherPlayers = players.filter(
     (p) =>
       !userProfile?.email ||
@@ -81,6 +83,7 @@ export default function GameRoomContent({
                 isOwner={isOwner}
                 onEndGame={onEndGame}
                 onStartGame={onStartGame}
+                onConfigure={onConfigure}
                 canStartGame={canStartGame}
               />
             </View>

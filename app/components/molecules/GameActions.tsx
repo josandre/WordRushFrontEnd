@@ -7,13 +7,15 @@ type GameActionsProps = {
   isOwner: boolean
   onEndGame: () => void
   onStartGame?: () => void
+  onConfigure?: () => void
   canStartGame?: boolean
 }
 
 export default function GameActions({ 
   isOwner, 
   onEndGame, 
-  onStartGame, 
+  onStartGame,
+  onConfigure,
   canStartGame = false 
 }: GameActionsProps) {
   if (!isOwner) return null
@@ -25,6 +27,14 @@ export default function GameActions({
           <PrimaryButton 
             title="Start Game" 
             onPress={onStartGame} 
+          />
+        </View>
+      )}
+      {onConfigure && (
+        <View style={styles.actionButton}>
+          <PrimaryButton 
+            title="Configure Game" 
+            onPress={onConfigure} 
           />
         </View>
       )}

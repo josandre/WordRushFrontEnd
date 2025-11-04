@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Image,
   ImageSourcePropType,
+  ActivityIndicator,
 } from "react-native";
 
 import Icon from "react-native-vector-icons/Ionicons";
@@ -18,6 +19,8 @@ interface DescriptionButtonProperties {
   description: string;
   icon?: ImageSourcePropType;
   onPress?: () => void;
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 // Used as a main option in some screens, it shows a  container with an icon, a title and a description
@@ -27,12 +30,19 @@ export default function DescriptionButton({
   description,
   icon,
   onPress,
+  loading = false,
+  disabled = false,
 }: DescriptionButtonProperties) {
   return (
     <View>
       <TouchableOpacity
         onPress={onPress}
-        style={[style.box, atomStyles.descriptionButton]}
+        disabled={disabled || loading}
+        style={[
+          style.box,
+          atomStyles.descriptionButton,
+          (disabled || loading) ? { opacity: 0.6 } : null,
+        ]}
       >
         <Image
           source={icon}
@@ -45,7 +55,11 @@ export default function DescriptionButton({
             {description}
           </Text>
         </View>
-        <Icon name="chevron-forward" size={24} color={Colors.primary} />
+        {loading ? (
+          <ActivityIndicator size="small" color={Colors.primary} />
+        ) : (
+          <Icon name="chevron-forward" size={24} color={Colors.primary} />
+        )}
       </TouchableOpacity>
     </View>
   );

@@ -128,9 +128,11 @@ export default function Lobby() {
   };
 
   const handleOpenConfigure = () => {
-    navigation.navigate("GameConfiguration", {
-      roomId: roomId,
-    });
+    if (roomId) {
+      navigation.navigate("GameConfiguration", {
+        roomId: roomId,
+      });
+    }
   }
 
   const allReady = players.length > 1 && players.every((p) => p.IsReady);

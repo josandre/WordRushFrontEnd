@@ -14,8 +14,8 @@ import { SnackBarProps } from "../Auth/constants";
 import { ProfileUserResponse } from "../../screens/UserProfile/services/useProfileUser";
 import avatars, { AvatarId } from "@/assets/avatars";
 import useProfileUser from "./services/useProfileUser";
-import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
-import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileTokenManager";
+import ProfileWebTokenManager from "@/app/StorageManager/ProfileManager/web/WebProfileManager";
+import ProfileMobileTokenManager from "@/app/StorageManager/ProfileManager/mobile/MobileProfileManager";
 
 export default function UpdateProfile() {
   const navigation = useNavigation<AppNavigation>();

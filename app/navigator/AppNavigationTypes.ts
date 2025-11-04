@@ -51,14 +51,16 @@ export type AppRoutes = {
     roomId: string;
     isOwner: boolean;
     players?: any[];
+    roomData?: any; //TODO change this to the type
   };
   Lobby: {
     isOwner: boolean;
     roomId: string | null;
+    roomData?: any; //TODO change this to the type
   };
   ConfigureLobby: undefined;
   GameConfiguration: {
-    roomId: string | null;
+    roomId: string;
   };
   JoinLobby: undefined;
 };

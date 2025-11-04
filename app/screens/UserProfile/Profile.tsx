@@ -20,8 +20,8 @@ import ProfileHeader from "../../components/molecules/ProfileHeader";
 import SettingsHeader from "../../components/organisms/SettingsHeader";
 import SettingsList from "../../components/organisms/SettingsList";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
-import ProfileWebTokenManager from "@/app/TokenManagers/web/ProfileWebTokenManager";
-import ProfileMobileTokenManager from "@/app/TokenManagers/mobile/ProfileMobileTokenManager";
+import ProfileWebTokenManager from "@/app/StorageManager/ProfileManager/web/WebProfileManager";
+import ProfileMobileTokenManager from "@/app/StorageManager/ProfileManager/mobile/MobileProfileManager";
 
 const isWeb = Platform.OS === "web";
 

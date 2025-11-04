@@ -97,6 +97,12 @@ export default function GameRoom() {
     navigation.navigate("MyTabs");
   }
 
+  function handleConfigureGame() {
+    navigation.navigate("GameConfiguration", {
+      roomId: roomId,
+    });
+  }
+
   const myPlayer = players.find(
     (p) =>
       p.Email &&
@@ -124,6 +130,7 @@ export default function GameRoom() {
           myPlayer={myPlayer}
           userProfile={userProfile}
           onEndGame={exitGameRoom}
+          onConfigure={handleConfigureGame}
         />
       </ScrollView>
       
