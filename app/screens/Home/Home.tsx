@@ -92,8 +92,6 @@ export default function Home() {
       Settings: jsonData.Settings,
       CategoryType: jsonData.CategoryType
     };
-
-    console.log('JAC Categories normalized:', jsonData.CategoryType);
     
     const gameManager = new GameManager();
 
