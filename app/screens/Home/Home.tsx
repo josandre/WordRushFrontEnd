@@ -21,7 +21,7 @@ import { ProfileUserResponse } from "../../screens/UserProfile/services/useProfi
 import avatars, { getAvatarImage } from "@/assets/avatars";
 import useProfileUser from "@/app/screens/UserProfile/services/useProfileUser";
 import webSocketService from "@/app/services/webSocketService";
-import { GameRoomData, WebSocketRoomCreatedEvent } from "./constants";
+import { GameRoomData, WebSocketRoomCreatedEvent, Category } from "./constants";
 import GameManager from "@/app/StorageManager/GameManager/GameManager";
 import { Snackbar } from "@react-native-material/core";
 import { SnackBarProps, FALLBACK_ERROR_MESSAGE } from "@/app/screens/Auth/constants";
@@ -90,7 +90,10 @@ export default function Home() {
     const roomData: GameRoomData = {
       GameRoomID: jsonData.GameRoomID,
       Settings: jsonData.Settings,
+      CategoryType: jsonData.CategoryType
     };
+
+    console.log('JAC Categories normalized:', jsonData.CategoryType);
     
     const gameManager = new GameManager();
 
