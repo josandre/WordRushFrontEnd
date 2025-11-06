@@ -55,7 +55,7 @@ export default function Lobby() {
       
       // Update players if present
       if (jsonData.Players) {
-        var roomData = jsonData as RoomData;
+        let roomData = jsonData as RoomData;
         setPlayers(roomData.Players);
       }
       
@@ -98,7 +98,7 @@ export default function Lobby() {
       console.error('Error handling room data update:', error);
       // Fallback to original behavior
       try {
-        var roomData = JSON.parse(data.JsonData) as RoomData;
+        let roomData = JSON.parse(data.JsonData) as RoomData;
         if (roomData.Players) {
           setPlayers(roomData.Players);
         }
