@@ -173,6 +173,7 @@ export default function Lobby() {
     webSocketService.connect();
     webSocketService.addCallbacks("GAME_ROOM|DATA_UPDATED", onRoomInfoRequested);
     webSocketService.addCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
+    webSocketService.addCallbacks("GAME_ROOM|GAME_STARTED", onGameStarted);
     
     // Listen for room data broadcasts (when settings are updated)
     // Note: The message type may need to be adjusted based on what the backend actually sends

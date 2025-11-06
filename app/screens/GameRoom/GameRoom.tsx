@@ -153,10 +153,11 @@ export default function GameRoom() {
     const setup = async () => {
       const gameManager = new GameManager();
       const gameData = await gameManager.getGameRoomData();
+      console.log(gameData);
 
       // TODO: Update categories here from the data in local storage, for now just force it
       let totalCategories: number = 4;
-      setCategories(["Name", "Country", "Food", "Thing"]);
+      setCategories(["Name", "Country", "Food", "Animal", "Thing"]);
       setAnswers(new Array(totalCategories).fill(""));
 
       // Wait a random number of seconds before confirming the ready state
