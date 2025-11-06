@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { StatusBar, ScrollView } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -7,8 +7,10 @@ import { AppNavigation } from '../../navigator/AppNavigationTypes'
 import ScreenTitleBar from '../../components/molecules/ScreenTitleBar'
 import GameConfigurationContent from '../../components/organisms/GameConfigurationContent'
 import useUpdateGameSettings from './services/useUpdateGameSettings'
-import { GameOrder } from './services/constants'
+import { LetterOrder, gameOrderToLetterOrder, letterOrderToGameOrder } from './services/constants'
 import styles, { ERROR_SNACKBAR_COLOR } from './styles'
+import GameManager from '../../StorageManager/GameManager/GameManager'
+import { GameRoomData } from '../Home/constants'
 
 type SnackBarProps = {
   visible: boolean;
@@ -31,58 +33,127 @@ export default function GameConfiguration() {
     visible: false,
     message: "",
   })
+  const [gameRoomData, setGameRoomData] = useState<GameRoomData | null>(null)
+  const [loadingData, setLoadingData] = useState(true)
 
   const [timeLimit, setTimeLimit] = useState<number>(45)
   const [selectedLetters, setSelectedLetters] = useState<string[]>(['A'])
-  const [letterOrder, setLetterOrder] = useState<'ascending' | 'descending'>('ascending')
+  const [letterOrder, setLetterOrder] = useState<LetterOrder>(LetterOrder.Ascending)
+
+  const sortLettersByOrder = (letters: string[], order: LetterOrder): string[] => {
+    const sorted = [...letters].sort()
+    return order === LetterOrder.Descending ? sorted.reverse() : sorted
+  }
+
+  useEffect(() => {
+    const loadGameRoomData = async () => {
+      setLoadingData(true)
+      const gameManager = new GameManager()
+      const data = await gameManager.getGameRoomData()
+      
+      if (data) {
+        setGameRoomData(data)
+        if (data.Settings) {
+          setTimeLimit(data.Settings.TimeLimit)
+          const order = gameOrderToLetterOrder(data.Settings.Order)
+          setLetterOrder(order)
+          
+          const lettersFromStorage = data.Settings.Letters ? [...data.Settings.Letters] : ['A']
+          const sortedLetters = sortLettersByOrder(lettersFromStorage, order)
+          setSelectedLetters(sortedLetters)
+        }
+      }
+      setLoadingData(false)
+    }
+
+    loadGameRoomData()
+  }, [])
 
   const handleLetterToggle = (letter: string) => {
     setSelectedLetters(prev => {
       if (prev.includes(letter)) {
-        return prev.filter(l => l !== letter)
+        const newLetters = prev.filter(l => l !== letter)
+        return sortLettersByOrder(newLetters, letterOrder)
       } else if (prev.length < 5) {
-        return [...prev, letter]
+        const newLetters = [...prev, letter]
+        return sortLettersByOrder(newLetters, letterOrder)
       }
       return prev
     })
   }
 
-  const handleSaveConfiguration = async () => {
-    
-    const gameOrder = letterOrder === 'ascending' 
-      ? GameOrder.Ascending 
-      : GameOrder.Descending
+  const handleOrderChange = (newOrder: LetterOrder) => {
+    setLetterOrder(newOrder)
+    setSelectedLetters(prev => sortLettersByOrder(prev, newOrder))
+  }
 
+  const handleSaveConfiguration = async () => {
+    const lettersToSave = sortLettersByOrder(selectedLetters, letterOrder)
+    
     const payload = {
       RoomId: roomId,
       Settings: {
-        Letters: selectedLetters,
+        Letters: lettersToSave,
         TimeLimit: timeLimit,
-        Order: gameOrder,
+        Order: letterOrderToGameOrder(letterOrder),
       },
     }
 
-    const result = await updateGameSettings(payload)
-
-    if (result.success) {
-      navigation.navigate('Lobby', { 
-        isOwner: true, 
-        roomId: roomId 
+    updateGameSettings(payload)
+      .then((result) => {
+          if (gameRoomData) {
+        
+            const updatedGameRoomData: GameRoomData = {
+              ...gameRoomData,
+              Settings: {
+                Letters: lettersToSave,
+                TimeLimit: timeLimit,
+                Order: letterOrderToGameOrder(letterOrder),
+              },
+            }
+            
+            const gameManager = new GameManager()
+            gameManager.saveGameRoomData(updatedGameRoomData).then( () => {
+              setSelectedLetters([...lettersToSave])
+            }).catch((error) => {
+              const errorSnackBar: SnackBarProps = {
+                visible: true,
+                message: error.message || FALLBACK_ERROR_MESSAGE,
+                color: ERROR_SNACKBAR_COLOR,
+              };
+              setSnackbar(errorSnackBar);
+            })
+            
+          }
       })
-    } else {
-      const errorSnackBar: SnackBarProps = {
-        visible: true,
-        message: result.errorMessage,
-        color: ERROR_SNACKBAR_COLOR,
-      };
-      setSnackbar(errorSnackBar);
-    }
+      .then(() => {
+        navigation.navigate('Lobby', { 
+          isOwner: true, 
+          roomId: roomId 
+        })
+      })
+      .catch((error) => {
+        const errorSnackBar: SnackBarProps = {
+          visible: true,
+          message: error.message || FALLBACK_ERROR_MESSAGE,
+          color: ERROR_SNACKBAR_COLOR,
+        };
+        setSnackbar(errorSnackBar);
+      })
   }
 
   const handleDiscardChanges = () => {
-    setTimeLimit(45)
-    setSelectedLetters(['A'])
-    setLetterOrder('ascending')
+    if (gameRoomData?.Settings) {
+      setTimeLimit(gameRoomData.Settings.TimeLimit)
+      const order = gameOrderToLetterOrder(gameRoomData.Settings.Order)
+      setLetterOrder(order)
+      const letters = gameRoomData.Settings.Letters ? [...gameRoomData.Settings.Letters] : ['A']
+      setSelectedLetters(sortLettersByOrder(letters, order))
+    } else {
+      setTimeLimit(45)
+      setSelectedLetters(['A'])
+      setLetterOrder(LetterOrder.Ascending)
+    }
     navigation.navigate('Lobby', { 
       isOwner: true, 
       roomId: roomId 
@@ -115,11 +186,12 @@ export default function GameConfiguration() {
           letterOrder={letterOrder}
           onTimeLimitChange={setTimeLimit}
           onLetterToggle={handleLetterToggle}
-          onOrderChange={setLetterOrder}
+          onOrderChange={handleOrderChange}
           onSaveConfiguration={handleSaveConfiguration}
           onDiscardChanges={handleDiscardChanges}
           loading={loading}
-          disabled={loading}
+          disabled={loading || loadingData}
+          gameRoomData={gameRoomData}
         />
       </ScrollView>
 

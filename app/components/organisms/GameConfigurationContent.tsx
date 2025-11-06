@@ -1,31 +1,29 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { View, Text } from 'react-native'
 import ContentCard from '../atoms/ContentCard'
 import Select from '../atoms/Select'
 import LetterSelector from '../molecules/LetterSelector'
 import OrderSelector from '../molecules/OrderSelector'
+import CategorySelector from '../molecules/CategorySelector'
 import PrimaryButton from '../atoms/PrimaryButton'
 import { Colors } from '../../theme/color'
 import style from '../../theme/style'
 import styles from './GameConfigurationStyles'
-
-type GameConfigurationData = {
-  timeLimit: number
-  selectedLetters: string[]
-  letterOrder: 'ascending' | 'descending'
-}
+import { GameRoomData, Category } from '../../screens/Home/constants'
+import { LetterOrder } from '../../screens/Lobby/services/constants'
 
 type GameConfigurationContentProps = {
   timeLimit: number
   selectedLetters: string[]
-  letterOrder: 'ascending' | 'descending'
+  letterOrder: LetterOrder
   onTimeLimitChange: (value: number) => void
   onLetterToggle: (letter: string) => void
-  onOrderChange: (order: 'ascending' | 'descending') => void
+  onOrderChange: (order: LetterOrder) => void
   onSaveConfiguration: () => void
   onDiscardChanges: () => void
   loading?: boolean
   disabled?: boolean
+  gameRoomData?: GameRoomData | null
 }
 
 // Time options from 45 to 60 seconds in increments of 5
@@ -46,9 +44,36 @@ export default function GameConfigurationContent({
   onSaveConfiguration,
   onDiscardChanges,
   loading = false,
-  disabled = false
+  disabled = false,
+  gameRoomData
 }: GameConfigurationContentProps) {
   const isConfigurationValid = selectedLetters.length > 0
+  
+  const categoryType = gameRoomData?.CategoryType as any
+  const rawCategories = categoryType?.CategoryColumns || categoryType?.categoryColumns || []
+  
+  const categories: Category[] = rawCategories.map((cat: any) => ({
+    id: cat.Id ?? cat.id,
+    column: cat.Column ?? cat.column
+  }))
+  
+  const [selectedCategories, setSelectedCategories] = React.useState<Category[]>([])
+
+  useEffect(() => {
+    if (categories.length > 0 && selectedCategories.length === 0) {
+      setSelectedCategories([...categories])
+    }
+  }, [categories, selectedCategories.length])
+
+  const handleCategoryToggle = (category: Category) => {
+    setSelectedCategories(prev => {
+      if (prev.some(cat => cat.id === category.id)) {
+        return prev.filter(cat => cat.id !== category.id)
+      } else {
+        return [...prev, category]
+      }
+    })
+  }
 
   return (
     <View style={styles.container}>
@@ -56,7 +81,6 @@ export default function GameConfigurationContent({
         title="Game Settings"
         content={
           <View style={styles.content}>
-            {/* Time Limit Selection */}
             <View style={styles.section}>
               <Select
                 label="Time Limit"
@@ -66,8 +90,6 @@ export default function GameConfigurationContent({
                 placeholder="Select time limit"
               />
             </View>
-
-            {/* Letter Selection */}
             <View style={styles.section}>
               <LetterSelector
                 selectedLetters={selectedLetters}
@@ -75,14 +97,39 @@ export default function GameConfigurationContent({
                 maxSelection={5}
               />
             </View>
-
-            {/* Letter Order Selection */}
             <View style={styles.section}>
               <OrderSelector
                 selectedOrder={letterOrder}
                 onOrderChange={onOrderChange}
               />
             </View>
+            {gameRoomData?.CategoryType && (
+              <View style={styles.section}>
+                <CategorySelector
+                  categories={categories}
+                />
+              </View>
+            )}
+
+            {/* Current Settings Display */}
+            {gameRoomData?.Settings && (
+              <View style={styles.section}>
+                <Text style={[style.r16, { color: Colors.txt, marginBottom: 8 }]}>
+                  Current Settings
+                </Text>
+                <View style={[styles.summaryContainer, { backgroundColor: Colors.bord, padding: 12, borderRadius: 8 }]}>
+                  <Text style={[style.r14, { color: Colors.txt, marginBottom: 4 }]}>
+                    Time Limit: {gameRoomData.Settings.TimeLimit} seconds
+                  </Text>
+                  <Text style={[style.r14, { color: Colors.txt, marginBottom: 4 }]}>
+                    Letters: {gameRoomData.Settings.Letters.join(', ')}
+                  </Text>
+                  <Text style={[style.r14, { color: Colors.txt }]}>
+                    Order: {gameRoomData.Settings.Order}
+                  </Text>
+                </View>
+              </View>
+            )}
 
             {/* Configuration Summary */}
             <View style={styles.summaryContainer}>
@@ -96,8 +143,13 @@ export default function GameConfigurationContent({
                 Selected Letters: {selectedLetters.join(', ')}
               </Text>
               <Text style={styles.summaryText}>
-                Order: {letterOrder === 'ascending' ? 'A-Z' : 'Z-A'}
+                Order: {letterOrder === LetterOrder.Ascending ? 'A-Z' : 'Z-A'}
               </Text>
+              {selectedCategories.length > 0 && (
+                <Text style={styles.summaryText}>
+                  Selected Categories: {selectedCategories.map(c => c.column).join(', ')}
+                </Text>
+              )}
             </View>
 
             {/* Action Buttons */}
