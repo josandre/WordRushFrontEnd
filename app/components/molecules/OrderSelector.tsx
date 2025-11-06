@@ -4,22 +4,21 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import { Colors } from '../../theme/color'
 import style from '../../theme/style'
 import moleculeStyles from './styles'
-
-type OrderType = 'ascending' | 'descending'
+import { LetterOrder } from '../../screens/Lobby/services/constants'
 
 type OrderSelectorProps = {
-  selectedOrder: OrderType
-  onOrderChange: (order: OrderType) => void
+  selectedOrder: LetterOrder
+  onOrderChange: (order: LetterOrder) => void
 }
 
 const ORDER_OPTIONS = [
   {
-    value: 'ascending' as OrderType,
+    value: LetterOrder.Ascending,
     label: 'Ascending (A-Z)',
     icon: 'arrow-up',
   },
   {
-    value: 'descending' as OrderType,
+    value: LetterOrder.Descending,
     label: 'Descending (Z-A)',
     icon: 'arrow-down',
   },

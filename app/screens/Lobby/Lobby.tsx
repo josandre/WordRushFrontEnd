@@ -14,6 +14,8 @@ import styles from "./styles";
 
 import { useRoute } from '@react-navigation/native';
 import webSocketService from "@/app/services/webSocketService";
+import { GameRoomData, WebSocketRoomCreatedEvent } from "../Home/constants";
+import GameManager from "@/app/StorageManager/GameManager/GameManager";
 
 type RouteParams = { 
   isOwner: boolean; 
@@ -47,9 +49,106 @@ export default function Lobby() {
   const { isOwner, roomId } = route.params as RouteParams;
 
   // Called when the room info is updated from the server
-  function onRoomInfoRequested(data: any) {
-    var roomData = JSON.parse(data.JsonData) as RoomData;
-    setPlayers(roomData.Players);
+  async function onRoomInfoRequested(data: any) {
+    try {
+      const jsonData = JSON.parse(data.JsonData);
+      
+      // Update players if present
+      if (jsonData.Players) {
+        let roomData = jsonData as RoomData;
+        setPlayers(roomData.Players);
+      }
+      
+      // Check if Settings are included in the broadcast (settings updated)
+      if (jsonData.Settings) {
+        const gameManager = new GameManager();
+        
+        // Load existing room data to preserve GameRoomID and CategoryType
+        const existingRoomData = await gameManager.getGameRoomData();
+        
+        if (existingRoomData) {
+          // Merge new Settings with existing room data
+          const updatedRoomData: GameRoomData = {
+            GameRoomID: existingRoomData.GameRoomID, // Preserve existing GameRoomID
+            Settings: jsonData.Settings, // Use new Settings from broadcast
+            CategoryType: existingRoomData.CategoryType // Preserve existing CategoryType
+          };
+          
+          await gameManager.saveGameRoomData(updatedRoomData);
+          console.log('Game room data updated from DATA_UPDATED - Settings:', jsonData.Settings);
+        } else {
+          // If no existing data, we still need GameRoomID and CategoryType
+          // Try to get GameRoomID from route params or use roomId from broadcast if available
+          if (jsonData.GameRoomID || roomId) {
+            const roomData: GameRoomData = {
+              GameRoomID: jsonData.GameRoomID || roomId,
+              Settings: jsonData.Settings,
+              CategoryType: jsonData.CategoryType || {
+                id: 0,
+                name: "Default",
+                CategoryColumns: []
+              }
+            };
+            await gameManager.saveGameRoomData(roomData);
+            console.log('Game room data saved from DATA_UPDATED (no existing data)');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error handling room data update:', error);
+      // Fallback to original behavior
+      try {
+        let roomData = JSON.parse(data.JsonData) as RoomData;
+        if (roomData.Players) {
+          setPlayers(roomData.Players);
+        }
+      } catch (e) {
+        console.error('Error parsing room data:', e);
+      }
+    }
+  }
+
+  // Called when the backend broadcasts room data (including settings) to all players
+  // This happens when settings are updated, so all players get the latest room data
+  async function onRoomDataBroadcast(data: WebSocketRoomCreatedEvent) {
+    try {
+      const jsonData = JSON.parse(data.JsonData);
+      
+      const gameManager = new GameManager();
+      
+      // Load existing room data to preserve GameRoomID and CategoryType
+      const existingRoomData = await gameManager.getGameRoomData();
+      
+      // Check if this is full GameRoomData or just Settings update
+      if (jsonData.GameRoomID && jsonData.Settings && jsonData.CategoryType) {
+        // Full room data - use it directly
+        const roomData: GameRoomData = {
+          GameRoomID: jsonData.GameRoomID,
+          Settings: jsonData.Settings,
+          CategoryType: jsonData.CategoryType
+        };
+        
+        await gameManager.saveGameRoomData(roomData);
+        console.log('Game room data updated from broadcast (full data):', roomData);
+      } else if (jsonData.Settings && existingRoomData) {
+        // Just Settings update - merge with existing data
+        const updatedRoomData: GameRoomData = {
+          GameRoomID: existingRoomData.GameRoomID,
+          Settings: jsonData.Settings,
+          CategoryType: existingRoomData.CategoryType
+        };
+        
+        await gameManager.saveGameRoomData(updatedRoomData);
+        console.log('Game room data updated from broadcast - Settings:', jsonData.Settings);
+      }
+      
+      // Also update players if the broadcast includes player data
+      if (jsonData.Players) {
+        setPlayers(jsonData.Players);
+      }
+    } catch (error) {
+      console.error('Error updating game room data from broadcast:', error);
+    }
   }
 
   function onRoomClosed(data: any) {
@@ -68,6 +167,12 @@ export default function Lobby() {
     webSocketService.connect();
     webSocketService.addCallbacks("GAME_ROOM|DATA_UPDATED", onRoomInfoRequested);
     webSocketService.addCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
+    
+    // Listen for room data broadcasts (when settings are updated)
+    // Note: The message type may need to be adjusted based on what the backend actually sends
+    // Common patterns: "GAME_ROOM|ROOM_DATA_BROADCAST", "GAME_ROOM|SETTINGS_UPDATED", "GAME_ROOM|ROOM_UPDATED"
+    // If the backend reuses "GAME_ROOM|DATA_UPDATED" but includes full room data, we can handle it there too
+    webSocketService.addCallbacks("GAME_ROOM|ROOM_DATA_BROADCAST", onRoomDataBroadcast);
 
     // When joining the lobby, inmediatelly request the room data to update the visuals
     webSocketService.sendMessage({
@@ -85,6 +190,7 @@ export default function Lobby() {
     return () => {
       webSocketService.removeCallbacks("GAME_ROOM|DATA_UPDATED", onRoomInfoRequested);
       webSocketService.removeCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
+      webSocketService.removeCallbacks("GAME_ROOM|ROOM_DATA_BROADCAST", onRoomDataBroadcast);
     };
   }, [navigation]);
 
