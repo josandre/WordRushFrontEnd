@@ -123,11 +123,6 @@ export default function Home() {
 
       webSocketService.connect();
       webSocketService.addCallbacks("GAME_ROOM|CREATED", onRoomCreated);
-
-      return () => {
-        webSocketService.removeCallbacks("GAME_ROOM|CREATED", onRoomCreated);
-        
-      };
     }, [retrieveProfile])
   );
 

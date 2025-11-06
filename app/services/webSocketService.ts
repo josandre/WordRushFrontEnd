@@ -49,6 +49,10 @@ class WebSocketService {
     
     // Creates the connection to the WebSocket
     public connect(): void {
+        // Clear active callbacks, just for safety, prevent calling duplicate functions or something strange
+        // A simple callback per message
+        this.callbacks = {};
+
         if (this.socketRef && this.isConnected) return;
 
         this.socketRef = new WebSocket(WEB_SOCKET_URL);
@@ -115,7 +119,7 @@ class WebSocketService {
     public sendMessage(data: object): boolean {
         if (this.socketRef && this.isConnected) {
             console.log(data);
-            console.log(JSON.stringify(data))
+            console.log("[WEBSOCKET] - Sending message: ", JSON.stringify(data))
             this.socketRef.send(JSON.stringify(data));
             return true;
         }
@@ -140,8 +144,10 @@ class WebSocketService {
         if (!this.callbacks[messageType]) {
             this.callbacks[messageType] = [];
         }
+        
+        this.callbacks[messageType] = [callback];
 
-        this.callbacks[messageType].push(callback);
+        console.log("[WEBSOCKET] - Adding callback: ", messageType, this.callbacks);
     }
 
     // Used to unsubscribe from the WebSocket messages
@@ -151,12 +157,14 @@ class WebSocketService {
                 (cb) => cb !== callback    
             );
         }
+
+        console.log("[WEBSOCKET] - Removing callback: ", messageType, this.callbacks);
     }
 
     // Called every time a WebSocket message is received
     // This function checks the type of every subscribed callback, so it notifies only the required functions
     private executeCallback(messageType: string, data: any): void {
-        console.log("EXECUTING CALLBACK", messageType, data);
+        console.log("[WEB SOCKET] - Executing callback: ", messageType, data);
 
         if (this.callbacks[messageType]) {
             this.callbacks[messageType].forEach((callback) => callback(data));

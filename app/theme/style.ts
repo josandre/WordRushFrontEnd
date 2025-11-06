@@ -10,6 +10,12 @@ const width = isWeb ? windowWidth : screenWidth;
 const isDesktop = width > 1024;
 
 export default StyleSheet.create({
+  visible: {
+    display: 'flex',
+  },
+  hidden: {
+    display: 'none',
+  },
   area: {
     flex: 1,
     backgroundColor: Colors.bg,
@@ -246,7 +252,7 @@ export default StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     borderWidth: 1,
-    borderColor: "#E5E9EF",
+    borderColor: "#bfc6d1ff",
     borderRadius: 20,
     backgroundColor: "#FFFFFF",
   },

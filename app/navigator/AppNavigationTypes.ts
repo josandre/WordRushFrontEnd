@@ -49,8 +49,6 @@ export type AppRoutes = {
   ResetPassword: undefined;
   GameRoom: {
     roomId: string;
-    isOwner: boolean;
-    players?: any[];
     roomData?: any; //TODO change this to the type
   };
   Lobby: {

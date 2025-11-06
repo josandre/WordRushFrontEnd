@@ -24,7 +24,7 @@ export default StyleSheet.create({
   // Room code input styling
   roomCodeInput: {
     borderWidth: 1,
-    borderColor: Colors.secondary,
+    borderColor: '#d1d1d1ff',
     borderRadius: 8,
     padding: 10,
     color: Colors.txt,

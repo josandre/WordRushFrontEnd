@@ -1,9 +1,12 @@
 import React from 'react'
 import { View, Text, TextInput } from 'react-native'
+
+import style from "@/app/theme/style";
+import styles from './JoinLobbyStyles'
+import { Colors } from "@/app/theme/color";
+
 import ContentCard from '../atoms/ContentCard'
 import PrimaryButton from '../atoms/PrimaryButton'
-import { Colors } from '../../theme/color'
-import styles from './JoinLobbyStyles'
 
 type JoinLobbyContentProps = {
   roomCode: string
@@ -34,7 +37,7 @@ export default function JoinLobbyContent({
               onChangeText={onRoomCodeChange}
               placeholder="e.g. abcd1234"
               placeholderTextColor={Colors.disable}
-              style={styles.roomCodeInput}
+              style={style.txtinput}
             />
             <PrimaryButton
               title="Join Game Room"
