@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { StatusBar, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -17,17 +17,17 @@ import webSocketService from "@/app/services/webSocketService";
 import { GameRoomData, WebSocketRoomCreatedEvent } from "../Home/constants";
 import GameManager from "@/app/StorageManager/GameManager/GameManager";
 
-type RouteParams = { 
-  isOwner: boolean; 
-  roomId: string; 
+type RouteParams = {
+  isOwner: boolean;
+  roomId: string;
 };
 
 type RoomPlayerSnapshot = {
-    UserId: string;
-    Nickname: string;
-    Avatar: string;
-    IsReady: boolean;
-    isOwner: boolean;
+  UserId: string;
+  Nickname: string;
+  Avatar: string;
+  IsReady: boolean;
+  isOwner: boolean;
 }
 
 type RoomData = {
@@ -151,7 +151,7 @@ export default function Lobby() {
     }
   }
 
-  function onRoomClosed(data: any) {
+  const onRoomClosed = (data: any): void => {
     const errorSnackBar: SnackBarProps = {
       visible: true,
       message: "The host closed the room",
@@ -162,11 +162,18 @@ export default function Lobby() {
     navigation.navigate("MyTabs");
   }
 
+  const onGameStarted = (data: any): void => {
+    navigation.navigate("GameRoom", {
+      roomId: roomId
+    })
+  }
+
   useEffect(() => {
     // Web Socket callbacks setup
     webSocketService.connect();
     webSocketService.addCallbacks("GAME_ROOM|DATA_UPDATED", onRoomInfoRequested);
     webSocketService.addCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
+    webSocketService.addCallbacks("GAME_ROOM|GAME_STARTED", onGameStarted);
     
     // Listen for room data broadcasts (when settings are updated)
     // Note: The message type may need to be adjusted based on what the backend actually sends
@@ -177,7 +184,7 @@ export default function Lobby() {
     // When joining the lobby, inmediatelly request the room data to update the visuals
     webSocketService.sendMessage({
       Type: "GAME_ROOM|REQUEST_DATA",
-      Data: {}
+      JsonData: "{}"
     });
 
     // Used to retrieve the stored profile, so it is acccesible from other subcomponents
@@ -187,11 +194,6 @@ export default function Lobby() {
     }
 
     setup();
-    return () => {
-      webSocketService.removeCallbacks("GAME_ROOM|DATA_UPDATED", onRoomInfoRequested);
-      webSocketService.removeCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
-      webSocketService.removeCallbacks("GAME_ROOM|ROOM_DATA_BROADCAST", onRoomDataBroadcast);
-    };
   }, [navigation]);
 
   const handleCopyToClipboard = () => {
@@ -208,20 +210,26 @@ export default function Lobby() {
   const handleToggleReady = () => {
     webSocketService.sendMessage({
       Type: "GAME_ROOM|TOGGLE_READY",
-      Data: {}
+      JsonData: "{}"
     });
   };
 
   const handleStartGame = () => {
-    // TODO: Notify the server about the game session start
+    // Notify the server about the game session start
     // Then wait for the confirmation for all the players that are in the GameRoom so that the first round can start
     // When all the players are ready
+    webSocketService.sendMessage({
+      Type: "GAME_ROOM|START_GAME",
+      JsonData: "{}"
+    });
+
+    setIsStarting(true);
   };
 
   const handleGoBack = () => {
     webSocketService.sendMessage({
       Type: "GAME_ROOM|LEAVE",
-      Data: {}
+      JsonData: "{}"
     });
 
     const successSnackBar: SnackBarProps = {
@@ -270,7 +278,7 @@ export default function Lobby() {
           onOpenConfigure={handleOpenConfigure}
         />
       </ScrollView>
-      
+
       {snackbar.visible && (
         <Snackbar
           message={snackbar.message ?? FALLBACK_ERROR_MESSAGE}

@@ -93,11 +93,6 @@ export default function JoinLobby() {
     webSocketService.connect();
     webSocketService.addCallbacks("GAME_ROOM|JOINED", onJoinedRoom);
     webSocketService.addCallbacks("GAME_ROOM|JOINED_NON_EXISTING_ROOM", onJoinedNonExistingRoom);
-
-    return () => {
-      webSocketService.removeCallbacks("GAME_ROOM|JOINED", onJoinedRoom);
-      webSocketService.removeCallbacks("GAME_ROOM|JOINED_NON_EXISTING_ROOM", onJoinedNonExistingRoom);
-    };
   });
 
   const handleJoinRoom = async () => {

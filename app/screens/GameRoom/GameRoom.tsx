@@ -1,114 +1,270 @@
-import React, { useEffect, useState } from "react";
-import { ScrollView, StatusBar } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { ScrollView, StatusBar, View, Text, TextInput, ActivityIndicator } from "react-native";
+import style from "@/app/theme/style";
+import { Colors } from "@/app/theme/color";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import GameRoomContent from "@/app/components/organisms/GameRoom";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
-import { getStoredProfile } from "../UserProfile/services/usetStoredProfile";
-import { SocketStore } from "@/app/utils/socketStore";
+import ScreenTitleBar from "@/app/components/molecules/ScreenTitleBar";
 import { Snackbar } from "@react-native-material/core";
 import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from "../Auth/constants";
-import { ERROR_SNACKBAR_COLOR } from "../Auth/styles";
+import { ERROR_SNACKBAR_COLOR, SUCCESS_SNACKBAR_COLOR } from "../Auth/styles";
 import styles from "./styles";
+
+import webSocketService from "@/app/services/webSocketService";
+import GameManager from "@/app/StorageManager/GameManager/GameManager";
+
+import ContentCard from "@/app/components/atoms/ContentCard";
+import PrimaryButton from "@/app/components/atoms/PrimaryButton";
+import { useFocusEffect } from "expo-router";
+
 
 type GameRoomRouteParams = {
   roomId: string;
-  isOwner: boolean;
-  players?: any[];
+  roomData?: any; //TODO change this to the type
 };
+
+enum SessionState {
+  JOINING,
+  WAITING_ROUND_START,
+  IN_ROUND,
+  IN_ROUND_EVALUATION,
+  IN_ROUND_RESULTS,
+  IN_GAME_RESULTS
+}
+
+// DEBUG SYMBOLS
+const SIMULATE_LATENCY: boolean = true; // USEFUL FOR SIMULATING LATENCY DURING CERTAIN STATES
 
 export default function GameRoom() {
   const navigation = useNavigation<AppNavigation>();
   const route = useRoute();
-  const {
-    roomId,
-    isOwner,
-    players: initialPlayers,
-  } = route.params as GameRoomRouteParams;
+  const { roomId, roomData } = route.params as GameRoomRouteParams;
 
-  const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [players, setPlayers] = useState<any[]>(initialPlayers ?? []);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [roundLetter, setRoundLetter] = useState<string>("A");
+  const [sessionState, setSessionState] = useState<SessionState>(SessionState.JOINING);
+  const [answers, setAnswers] = useState<string[]>([]);
+
   const [snackbar, setSnackbar] = useState<SnackBarProps>({
     visible: false,
     message: "",
   });
 
-  useEffect(() => {
-    const ws = SocketStore.getSocket();
-    if (!ws) {
-      const errorSnackBar: SnackBarProps = {
-        visible: true,
-        message: "Connection Lost. Returning to home screen.",
-        color: ERROR_SNACKBAR_COLOR,
-      };
-      setSnackbar(errorSnackBar);
-      navigation.navigate("MyTabs");
-      return;
-    }
-
-    setSocket(ws);
-
-  
-    (async () => {
-      const stored = await getStoredProfile();
-      setUserProfile(stored);
-    })();
-
-    ws.onmessage = (event: MessageEvent) => {
-      const data = event.data;
-
-      if (data.startsWith("USER_LIST_JSON:")) {
-        try {
-          const json = data.replace("USER_LIST_JSON:", "");
-          const parsed = JSON.parse(json);
-          setPlayers(parsed);
-        } catch (err) {
-            const errorSnackBar: SnackBarProps = {
-            visible: true,
-            message: "Error parsing the list",
-            color: ERROR_SNACKBAR_COLOR,
-            };
-
-            setSnackbar(errorSnackBar);
-        }
-      } else if (data === "ROOM_CLOSED_BY_OWNER") {
-        const errorSnackBar: SnackBarProps = {
-          visible: true,
-          message: "The host closed the room.",
-          color: ERROR_SNACKBAR_COLOR,
-        };
-        setSnackbar(errorSnackBar);
-        navigation.navigate("MyTabs");
-      }
+  // Called when the host decides to close the room
+  const onRoomClosed = (data: any): void => {
+    const errorSnackBar: SnackBarProps = {
+      visible: true,
+      message: "The host closed the room",
+      color: ERROR_SNACKBAR_COLOR,
     };
 
-    ws.onclose = () => console.log("WebSocket closed (GameRoom)");
-    return () => {
-      ws.close();
-    };
-  }, []);
-
-  function exitGameRoom() {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send("LEAVE_ROOM");
-      socket.close();
-    }
+    setSnackbar(errorSnackBar);
     navigation.navigate("MyTabs");
   }
 
-  function handleConfigureGame() {
-    navigation.navigate("GameConfiguration", {
-      roomId: roomId,
-    });
+  const onRoundStarted = (data: any): void => {
+    // TODO: Update the round letter based on server response
+
+    setSessionState(SessionState.IN_ROUND);
   }
 
-  const myPlayer = players.find(
-    (p) =>
-      p.Email &&
-      userProfile?.email &&
-      p.Email.toLowerCase() === userProfile.email.toLowerCase()
-  );
+  // Called when the server requests all the player answers
+  const onStop = (data: any): void => {
+    // Send the current answers to the server, so it can proceed with the evaluation
+    const registeredAnswers = [...answers];
+
+    const jsonData = {
+      Answers: JSON.parse(JSON.stringify(registeredAnswers))
+    }
+
+    webSocketService.sendMessage({
+      Type: "GAME_SESSION|SEND_ROUND_ANSWERS",
+      JsonData: JSON.stringify(jsonData)
+    });
+
+    setSessionState(SessionState.IN_ROUND_EVALUATION);
+  }
+
+  // Called when the player wants to go to the previous screen
+  const handleGoBack = (): void => {
+    webSocketService.sendMessage({
+      Type: "GAME_ROOM|LEAVE",
+      JsonData: "{}"
+    });
+
+    const successSnackBar: SnackBarProps = {
+      visible: true,
+      message: "Lobby closed for all players",
+      color: SUCCESS_SNACKBAR_COLOR,
+    };
+    setSnackbar(successSnackBar);
+    navigation.navigate("MyTabs");
+  }
+
+  // This user has just pressed the STOP button
+  const handleStopPress = (): void => {
+    webSocketService.sendMessage({
+      Type: "GAME_SESSION|STOP",
+      JsonData: "{}"
+    });
+
+    setSessionState(SessionState.IN_ROUND_EVALUATION);
+  }
+
+  // Called everytime an answer input text is updated
+  const onAnswerChange = (index: number, value: string) => {
+    if (sessionState != SessionState.IN_ROUND) {
+      return;
+    }
+
+    const newAnswers = [...answers];
+    newAnswers[index] = value;
+    setAnswers(newAnswers);
+  }
+
+  // Evaluates every answer to determine if the STOP button is available or not
+  const isStopAvailable = (): boolean => {
+    let isAvailable: boolean = true;
+
+    answers.forEach((answer) => {
+      // If already found an invalid answer, get out of the loop
+      if (!isAvailable) {
+        return;
+      }
+
+      // The answer is empty or one character only
+      if (answer.trim().length <= 1) {
+        isAvailable = false;
+      }
+
+      // The answer doesn't start with the round letter
+      if (!answer.toUpperCase().startsWith(roundLetter)) {
+        isAvailable = false;
+      }
+    });
+
+    return isAvailable;
+  }
+
+  useEffect(() => {
+    const setup = async () => {
+      const gameManager = new GameManager();
+      const gameData = await gameManager.getGameRoomData();
+      console.log(gameData);
+
+      // TODO: Update categories here from the data in local storage, for now just force it
+      let totalCategories: number = 4;
+      setCategories(["Name", "Country", "Food", "Animal", "Thing"]);
+      setAnswers(new Array(totalCategories).fill(""));
+
+      // Wait a random number of seconds before confirming the ready state
+      if (SIMULATE_LATENCY) {
+        const delay = Math.floor(Math.random() * (2000 - 1000 + 1)) + 1000;
+        await new Promise((r) => setTimeout(r, delay));
+      }
+
+      webSocketService.sendMessage({
+        Type: "GAME_SESSION|READY_FOR_NEXT_ROUND",
+        JsonData: "{}"
+      });
+    }
+
+    // Web Socket callbacks setup
+    webSocketService.connect();
+    webSocketService.addCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
+    webSocketService.addCallbacks("GAME_SESSION|ROUND_STARTED", onRoundStarted);
+    webSocketService.addCallbacks("GAME_SESSION|ON_STOP", onStop);
+
+    // When joining the game session (First time), inmediatelly notify the server about it, so the 
+    // Next round can start when all players are connected
+    if (sessionState == SessionState.JOINING) {
+      setSessionState(SessionState.WAITING_ROUND_START);
+      setup();
+    }
+  }, [answers])
+
+  const renderContent = () => {
+    switch (sessionState) {
+      case SessionState.JOINING:
+        return (
+          <ContentCard
+            title="Joining Game Session..."
+            content={
+              <View>
+                <ActivityIndicator size="large" color={Colors.primary} />
+              </View>
+            }
+          />
+        );
+      case SessionState.WAITING_ROUND_START:
+        return (
+          <ContentCard
+            title="Get ready! The round will start soon..."
+            content={
+              <View>
+                <ActivityIndicator size="large" color={Colors.primary} />
+              </View>
+            }
+          />
+        );
+      case SessionState.IN_ROUND_EVALUATION:
+        return (
+          <ContentCard
+            title="A STOP has been triggered, evaluating answers..."
+            content={
+              <View>
+                <ActivityIndicator size="large" color={Colors.primary} />
+              </View>
+            }
+          />
+        );
+      case SessionState.IN_ROUND:
+        return (
+          <ContentCard
+            title=""
+            content={
+              <View>
+                <View>
+                  {categories.length > 0 ? (
+                    categories.map((category, categoryIndex) => {
+                      return (
+                        <View key={category}>
+                          <Text style={[style.subtitle, { color: Colors.txt, flex: 1, marginTop: 10, marginBottom: 10 }]}>
+                            {category}
+                          </Text>
+
+                          <TextInput
+                            style={style.txtinput}
+                            value={answers[categoryIndex]}
+                            onChangeText={(value) => onAnswerChange(categoryIndex, value)}
+                          />
+                        </View>
+
+                      )
+                    })
+                  ) : (
+                    <View>
+                    </View>
+                  )}
+                </View>
+
+                <View>
+                  <PrimaryButton
+                    title="STOP!"
+                    onPress={handleStopPress}
+                    disabled={!isStopAvailable()}
+                    loading={false}
+                  />
+                </View>
+              </View>
+            }
+          />
+        );
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -117,23 +273,18 @@ export default function GameRoom() {
         backgroundColor={styles.statusBar.backgroundColor}
         barStyle="light-content"
       />
+      <ScreenTitleBar screenName={"Round Letter: " + roundLetter.toUpperCase()} onGoBackPress={handleGoBack} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
       >
-        <GameRoomContent
-          roomId={roomId}
-          isOwner={isOwner}
-          players={players}
-          myPlayer={myPlayer}
-          userProfile={userProfile}
-          onEndGame={exitGameRoom}
-          onConfigure={handleConfigureGame}
-        />
+        <View style={styles.container}>
+          {renderContent()}
+        </View>
       </ScrollView>
-      
+
       {snackbar.visible && (
         <Snackbar
           message={snackbar.message ?? FALLBACK_ERROR_MESSAGE}
