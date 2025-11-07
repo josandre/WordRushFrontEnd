@@ -1,25 +1,23 @@
 import { GameSetting } from "../Lobby/services/constants";
 
 export type GameRoomData = {
-    GameRoomID: string;
-    Settings: GameSetting;
-    CategoryType: CategoryType
+  GameRoomID: string;
+  Settings: GameSetting;
+  CategoryType: CategoryType;
 };
 
 export type WebSocketRoomCreatedEvent = {
-    Type: string;
-    JsonData: string;
+  Type: string;
+  JsonData: string;
 };
 
 export type Category = {
-    id: number;
-    column: string;
+  id: number;
+  column: string;
 };
 
 export type CategoryType = {
-    id: number;
-    name: string;
-    CategoryColumns: Array<Category>
+  id: number;
+  name: string;
+  CategoryColumns: Array<Category>;
 };
-  
-  

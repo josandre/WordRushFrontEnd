@@ -12,6 +12,6 @@ export default class MobileGameManager {
 
   static async getGameRoomData() {
     const gameRoomData = await this.storage.getValue();
-    return gameRoomData
+    return gameRoomData;
   }
 }

@@ -1,23 +1,23 @@
-import React from 'react'
-import { View, Text, ActivityIndicator } from 'react-native'
-import ContentCard from '../atoms/ContentCard'
-import PrimaryButton from '../atoms/PrimaryButton'
-import PlayerCard from '../molecules/PlayerCard'
-import { Colors } from '../../theme/color'
-import styles from './LobbyStyles'
+import React from "react";
+import { View, Text, ActivityIndicator } from "react-native";
+import ContentCard from "../atoms/ContentCard";
+import PrimaryButton from "../atoms/PrimaryButton";
+import PlayerCard from "../molecules/PlayerCard";
+import { Colors } from "../../theme/color";
+import styles from "./LobbyStyles";
 
 type LobbyContentProps = {
-  roomId: string | null
-  isOwner: boolean
-  players: any[]
-  storedProfile: any
-  isStarting: boolean
-  allReady: boolean
-  onCopyRoomCode: () => void
-  onToggleReady: () => void
-  onStartGame: () => void
-  onOpenConfigure: () => void
-}
+  roomId: string | null;
+  isOwner: boolean;
+  players: any[];
+  storedProfile: any;
+  isStarting: boolean;
+  allReady: boolean;
+  onCopyRoomCode: () => void;
+  onToggleReady: () => void;
+  onStartGame: () => void;
+  onOpenConfigure: () => void;
+};
 
 export default function LobbyContent({
   roomId,
@@ -29,7 +29,7 @@ export default function LobbyContent({
   onCopyRoomCode,
   onToggleReady,
   onStartGame,
-  onOpenConfigure
+  onOpenConfigure,
 }: LobbyContentProps) {
   return (
     <View style={styles.container}>
@@ -39,9 +39,7 @@ export default function LobbyContent({
           <View style={styles.content}>
             {roomId ? (
               <View>
-                <Text style={styles.roomIdText}>
-                  Room ID: {roomId}
-                </Text>
+                <Text style={styles.roomIdText}>Room ID: {roomId}</Text>
                 <PrimaryButton
                   title="Copy Room Code"
                   onPress={onCopyRoomCode}
@@ -66,13 +64,13 @@ export default function LobbyContent({
             <View style={styles.playersContainer}>
               {players.length > 0 ? (
                 players.map((p) => {
-                  const myEmail = storedProfile?.email?.toLowerCase()
+                  const myEmail = storedProfile?.email?.toLowerCase();
                   const myNickname = storedProfile?.nickname
                     ?.trim()
-                    ?.toLowerCase()
+                    ?.toLowerCase();
                   const isMe =
                     p.Email?.toLowerCase() === myEmail ||
-                    p.Nickname?.trim()?.toLowerCase() === myNickname
+                    p.Nickname?.trim()?.toLowerCase() === myNickname;
 
                   return (
                     <PlayerCard
@@ -85,15 +83,13 @@ export default function LobbyContent({
                       showReadyButton={isMe}
                       onToggleReady={onToggleReady}
                     />
-                  )
+                  );
                 })
               ) : (
-                <Text style={styles.waitingText}>
-                  Waiting for players...
-                </Text>
+                <Text style={styles.waitingText}>Waiting for players...</Text>
               )}
             </View>
-            
+
             {players.length > 1 ? (
               <View style={styles.statusContainer}>
                 <Text style={styles.statusText}>
@@ -126,5 +122,5 @@ export default function LobbyContent({
         }
       />
     </View>
-  )
+  );
 }

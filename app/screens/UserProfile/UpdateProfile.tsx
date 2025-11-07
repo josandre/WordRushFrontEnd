@@ -56,14 +56,14 @@ export default function UpdateProfile() {
       };
 
       loadUserProfile();
-    }, [isWeb, getProfileUser])
+    }, [isWeb, getProfileUser]),
   );
 
   const handleSuccess = (message: string) => {
     setSnackbar({ visible: true, message, color: SUCCESS_SNACKBAR_COLOR });
     setTimeout(
       () => setSnackbar((prev) => ({ ...prev, visible: false })),
-      2000
+      2000,
     );
   };
 

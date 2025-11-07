@@ -1,33 +1,33 @@
-import React from 'react'
-import { View } from 'react-native'
-import PlayerCard from './PlayerCard'
-import styles from '../organisms/GameRoomStyles'
+import React from "react";
+import { View } from "react-native";
+import PlayerCard from "./PlayerCard";
+import styles from "../organisms/GameRoomStyles";
 
 type Player = {
-  UserId: string
-  Nickname: string
-  Avatar: string
-  IsReady: boolean
-  IsOwner: boolean
-  Email?: string
-}
+  UserId: string;
+  Nickname: string;
+  Avatar: string;
+  IsReady: boolean;
+  IsOwner: boolean;
+  Email?: string;
+};
 
 type UserProfile = {
-  nickname?: string
-  avatar?: string
-  email?: string
-}
+  nickname?: string;
+  avatar?: string;
+  email?: string;
+};
 
 type CurrentPlayerCardProps = {
-  myPlayer?: Player
-  userProfile?: UserProfile
-  isOwner: boolean
-}
+  myPlayer?: Player;
+  userProfile?: UserProfile;
+  isOwner: boolean;
+};
 
-export default function CurrentPlayerCard({ 
-  myPlayer, 
-  userProfile, 
-  isOwner 
+export default function CurrentPlayerCard({
+  myPlayer,
+  userProfile,
+  isOwner,
 }: CurrentPlayerCardProps) {
   if (myPlayer) {
     return (
@@ -41,7 +41,7 @@ export default function CurrentPlayerCard({
           showReadyButton={false}
         />
       </View>
-    )
+    );
   }
 
   if (userProfile) {
@@ -56,8 +56,8 @@ export default function CurrentPlayerCard({
           showReadyButton={false}
         />
       </View>
-    )
+    );
   }
 
-  return null
+  return null;
 }

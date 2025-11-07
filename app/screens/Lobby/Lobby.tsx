@@ -12,7 +12,7 @@ import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from "../Auth/constants";
 import { ERROR_SNACKBAR_COLOR, SUCCESS_SNACKBAR_COLOR } from "../Auth/styles";
 import styles from "./styles";
 
-import { useRoute } from '@react-navigation/native';
+import { useRoute } from "@react-navigation/native";
 import webSocketService from "@/app/services/webSocketService";
 import { GameRoomData, WebSocketRoomCreatedEvent } from "../Home/constants";
 import GameManager from "@/app/StorageManager/GameManager/GameManager";
@@ -28,11 +28,11 @@ type RoomPlayerSnapshot = {
   Avatar: string;
   IsReady: boolean;
   isOwner: boolean;
-}
+};
 
 type RoomData = {
-  Players: RoomPlayerSnapshot[]
-}
+  Players: RoomPlayerSnapshot[];
+};
 
 export default function Lobby() {
   const { copyToClipboard } = useClipboard();
@@ -52,30 +52,33 @@ export default function Lobby() {
   async function onRoomInfoRequested(data: any) {
     try {
       const jsonData = JSON.parse(data.JsonData);
-      
+
       // Update players if present
       if (jsonData.Players) {
-        let roomData = jsonData as RoomData;
+        const roomData = jsonData as RoomData;
         setPlayers(roomData.Players);
       }
-      
+
       // Check if Settings are included in the broadcast (settings updated)
       if (jsonData.Settings) {
         const gameManager = new GameManager();
-        
+
         // Load existing room data to preserve GameRoomID and CategoryType
         const existingRoomData = await gameManager.getGameRoomData();
-        
+
         if (existingRoomData) {
           // Merge new Settings with existing room data
           const updatedRoomData: GameRoomData = {
             GameRoomID: existingRoomData.GameRoomID, // Preserve existing GameRoomID
             Settings: jsonData.Settings, // Use new Settings from broadcast
-            CategoryType: existingRoomData.CategoryType // Preserve existing CategoryType
+            CategoryType: existingRoomData.CategoryType, // Preserve existing CategoryType
           };
-          
+
           await gameManager.saveGameRoomData(updatedRoomData);
-          console.log('Game room data updated from DATA_UPDATED - Settings:', jsonData.Settings);
+          console.log(
+            "Game room data updated from DATA_UPDATED - Settings:",
+            jsonData.Settings,
+          );
         } else {
           // If no existing data, we still need GameRoomID and CategoryType
           // Try to get GameRoomID from route params or use roomId from broadcast if available
@@ -86,24 +89,26 @@ export default function Lobby() {
               CategoryType: jsonData.CategoryType || {
                 id: 0,
                 name: "Default",
-                CategoryColumns: []
-              }
+                CategoryColumns: [],
+              },
             };
             await gameManager.saveGameRoomData(roomData);
-            console.log('Game room data saved from DATA_UPDATED (no existing data)');
+            console.log(
+              "Game room data saved from DATA_UPDATED (no existing data)",
+            );
           }
         }
       }
     } catch (error) {
-      console.error('Error handling room data update:', error);
+      console.error("Error handling room data update:", error);
       // Fallback to original behavior
       try {
-        let roomData = JSON.parse(data.JsonData) as RoomData;
+        const roomData = JSON.parse(data.JsonData) as RoomData;
         if (roomData.Players) {
           setPlayers(roomData.Players);
         }
       } catch (e) {
-        console.error('Error parsing room data:', e);
+        console.error("Error parsing room data:", e);
       }
     }
   }
@@ -113,41 +118,47 @@ export default function Lobby() {
   async function onRoomDataBroadcast(data: WebSocketRoomCreatedEvent) {
     try {
       const jsonData = JSON.parse(data.JsonData);
-      
+
       const gameManager = new GameManager();
-      
+
       // Load existing room data to preserve GameRoomID and CategoryType
       const existingRoomData = await gameManager.getGameRoomData();
-      
+
       // Check if this is full GameRoomData or just Settings update
       if (jsonData.GameRoomID && jsonData.Settings && jsonData.CategoryType) {
         // Full room data - use it directly
         const roomData: GameRoomData = {
           GameRoomID: jsonData.GameRoomID,
           Settings: jsonData.Settings,
-          CategoryType: jsonData.CategoryType
+          CategoryType: jsonData.CategoryType,
         };
-        
+
         await gameManager.saveGameRoomData(roomData);
-        console.log('Game room data updated from broadcast (full data):', roomData);
+        console.log(
+          "Game room data updated from broadcast (full data):",
+          roomData,
+        );
       } else if (jsonData.Settings && existingRoomData) {
         // Just Settings update - merge with existing data
         const updatedRoomData: GameRoomData = {
           GameRoomID: existingRoomData.GameRoomID,
           Settings: jsonData.Settings,
-          CategoryType: existingRoomData.CategoryType
+          CategoryType: existingRoomData.CategoryType,
         };
-        
+
         await gameManager.saveGameRoomData(updatedRoomData);
-        console.log('Game room data updated from broadcast - Settings:', jsonData.Settings);
+        console.log(
+          "Game room data updated from broadcast - Settings:",
+          jsonData.Settings,
+        );
       }
-      
+
       // Also update players if the broadcast includes player data
       if (jsonData.Players) {
         setPlayers(jsonData.Players);
       }
     } catch (error) {
-      console.error('Error updating game room data from broadcast:', error);
+      console.error("Error updating game room data from broadcast:", error);
     }
   }
 
@@ -160,38 +171,44 @@ export default function Lobby() {
 
     setSnackbar(errorSnackBar);
     navigation.navigate("MyTabs");
-  }
+  };
 
   const onGameStarted = (data: any): void => {
     navigation.navigate("GameRoom", {
-      roomId: roomId
-    })
-  }
+      roomId: roomId,
+    });
+  };
 
   useEffect(() => {
     // Web Socket callbacks setup
     webSocketService.connect();
-    webSocketService.addCallbacks("GAME_ROOM|DATA_UPDATED", onRoomInfoRequested);
+    webSocketService.addCallbacks(
+      "GAME_ROOM|DATA_UPDATED",
+      onRoomInfoRequested,
+    );
     webSocketService.addCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
     webSocketService.addCallbacks("GAME_ROOM|GAME_STARTED", onGameStarted);
-    
+
     // Listen for room data broadcasts (when settings are updated)
     // Note: The message type may need to be adjusted based on what the backend actually sends
     // Common patterns: "GAME_ROOM|ROOM_DATA_BROADCAST", "GAME_ROOM|SETTINGS_UPDATED", "GAME_ROOM|ROOM_UPDATED"
     // If the backend reuses "GAME_ROOM|DATA_UPDATED" but includes full room data, we can handle it there too
-    webSocketService.addCallbacks("GAME_ROOM|ROOM_DATA_BROADCAST", onRoomDataBroadcast);
+    webSocketService.addCallbacks(
+      "GAME_ROOM|ROOM_DATA_BROADCAST",
+      onRoomDataBroadcast,
+    );
 
     // When joining the lobby, inmediatelly request the room data to update the visuals
     webSocketService.sendMessage({
       Type: "GAME_ROOM|REQUEST_DATA",
-      JsonData: "{}"
+      JsonData: "{}",
     });
 
     // Used to retrieve the stored profile, so it is acccesible from other subcomponents
     const setup = async () => {
       const profile = await getStoredProfile();
       setStoredProfile(profile);
-    }
+    };
 
     setup();
   }, [navigation]);
@@ -205,12 +222,12 @@ export default function Lobby() {
       color: SUCCESS_SNACKBAR_COLOR,
     };
     setSnackbar(successSnackBar);
-  }
+  };
 
   const handleToggleReady = () => {
     webSocketService.sendMessage({
       Type: "GAME_ROOM|TOGGLE_READY",
-      JsonData: "{}"
+      JsonData: "{}",
     });
   };
 
@@ -220,7 +237,7 @@ export default function Lobby() {
     // When all the players are ready
     webSocketService.sendMessage({
       Type: "GAME_ROOM|START_GAME",
-      JsonData: "{}"
+      JsonData: "{}",
     });
 
     setIsStarting(true);
@@ -229,7 +246,7 @@ export default function Lobby() {
   const handleGoBack = () => {
     webSocketService.sendMessage({
       Type: "GAME_ROOM|LEAVE",
-      JsonData: "{}"
+      JsonData: "{}",
     });
 
     const successSnackBar: SnackBarProps = {
@@ -247,7 +264,7 @@ export default function Lobby() {
         roomId: roomId,
       });
     }
-  }
+  };
 
   const allReady = players.length > 1 && players.every((p) => p.IsReady);
 

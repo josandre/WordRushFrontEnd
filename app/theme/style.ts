@@ -11,10 +11,10 @@ const isDesktop = width > 1024;
 
 export default StyleSheet.create({
   visible: {
-    display: 'flex',
+    display: "flex",
   },
   hidden: {
-    display: 'none',
+    display: "none",
   },
   area: {
     flex: 1,

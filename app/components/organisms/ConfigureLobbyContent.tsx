@@ -1,23 +1,23 @@
-import React from 'react'
-import { View, Text } from 'react-native'
-import ContentCard from '../atoms/ContentCard'
-import PrimaryButton from '../atoms/PrimaryButton'
-import { Colors } from '../../theme/color'
-import style from '../../theme/style'
-import styles from './ConfigureLobbyStyles'
+import React from "react";
+import { View, Text } from "react-native";
+import ContentCard from "../atoms/ContentCard";
+import PrimaryButton from "../atoms/PrimaryButton";
+import { Colors } from "../../theme/color";
+import style from "../../theme/style";
+import styles from "./ConfigureLobbyStyles";
 
 type ConfigureLobbyContentProps = {
-  onAccept: () => void
-  onDiscard: () => void
-  loading?: boolean
-  disabled?: boolean
-}
+  onAccept: () => void;
+  onDiscard: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+};
 
 export default function ConfigureLobbyContent({
   onAccept,
   onDiscard,
   loading = false,
-  disabled = false
+  disabled = false,
 }: ConfigureLobbyContentProps) {
   return (
     <View style={styles.container}>
@@ -28,7 +28,7 @@ export default function ConfigureLobbyContent({
             <Text style={styles.descriptionText}>
               Here you will see the lobby settings
             </Text>
-            
+
             <View style={styles.buttonsContainer}>
               <View style={styles.buttonWrapper}>
                 <PrimaryButton
@@ -38,7 +38,7 @@ export default function ConfigureLobbyContent({
                   loading={loading}
                 />
               </View>
-              
+
               <View style={styles.buttonWrapper}>
                 <PrimaryButton
                   title="Discard Changes"
@@ -52,5 +52,5 @@ export default function ConfigureLobbyContent({
         }
       />
     </View>
-  )
+  );
 }

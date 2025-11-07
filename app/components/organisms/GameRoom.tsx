@@ -1,38 +1,38 @@
-import React from 'react'
-import { View } from 'react-native'
-import ContentCard from '../atoms/ContentCard'
-import RoomInfo from '../atoms/RoomInfo'
-import CurrentPlayerCard from '../molecules/CurrentPlayerCard'
-import PlayerList from '../molecules/PlayerList'
-import GameActions from '../molecules/GameActions'
-import styles from './GameRoomStyles'
+import React from "react";
+import { View } from "react-native";
+import ContentCard from "../atoms/ContentCard";
+import RoomInfo from "../atoms/RoomInfo";
+import CurrentPlayerCard from "../molecules/CurrentPlayerCard";
+import PlayerList from "../molecules/PlayerList";
+import GameActions from "../molecules/GameActions";
+import styles from "./GameRoomStyles";
 
 type Player = {
-  UserId: string
-  Nickname: string
-  Avatar: string
-  IsReady: boolean
-  IsOwner: boolean
-  Email?: string
-}
+  UserId: string;
+  Nickname: string;
+  Avatar: string;
+  IsReady: boolean;
+  IsOwner: boolean;
+  Email?: string;
+};
 
 type UserProfile = {
-  nickname?: string
-  avatar?: string
-  email?: string
-}
+  nickname?: string;
+  avatar?: string;
+  email?: string;
+};
 
 type GameRoomProps = {
-  roomId: string
-  isOwner: boolean
-  players: Player[]
-  myPlayer?: Player
-  userProfile?: UserProfile
-  onEndGame: () => void
-  onStartGame?: () => void
-  onConfigure?: () => void
-  canStartGame?: boolean
-}
+  roomId: string;
+  isOwner: boolean;
+  players: Player[];
+  myPlayer?: Player;
+  userProfile?: UserProfile;
+  onEndGame: () => void;
+  onStartGame?: () => void;
+  onConfigure?: () => void;
+  canStartGame?: boolean;
+};
 
 export default function GameRoomContent({
   roomId,
@@ -43,14 +43,13 @@ export default function GameRoomContent({
   onEndGame,
   onStartGame,
   onConfigure,
-  canStartGame = false
+  canStartGame = false,
 }: GameRoomProps) {
-
   const otherPlayers = players.filter(
     (p) =>
       !userProfile?.email ||
-      p.Email?.toLowerCase() !== userProfile.email.toLowerCase()
-  )
+      p.Email?.toLowerCase() !== userProfile.email.toLowerCase(),
+  );
 
   return (
     <View style={styles.gameRoomContainer}>
@@ -61,7 +60,7 @@ export default function GameRoomContent({
             <View style={styles.section}>
               <RoomInfo roomId={roomId} isOwner={isOwner} />
             </View>
-            
+
             <View style={styles.section}>
               <CurrentPlayerCard
                 myPlayer={myPlayer}
@@ -91,5 +90,5 @@ export default function GameRoomContent({
         }
       />
     </View>
-  )
+  );
 }

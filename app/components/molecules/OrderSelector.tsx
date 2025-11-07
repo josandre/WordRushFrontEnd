@@ -1,28 +1,28 @@
-import React from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
-import Icon from 'react-native-vector-icons/Ionicons'
-import { Colors } from '../../theme/color'
-import style from '../../theme/style'
-import moleculeStyles from './styles'
-import { LetterOrder } from '../../screens/Lobby/services/constants'
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { Colors } from "../../theme/color";
+import style from "../../theme/style";
+import moleculeStyles from "./styles";
+import { LetterOrder } from "../../screens/Lobby/services/constants";
 
 type OrderSelectorProps = {
-  selectedOrder: LetterOrder
-  onOrderChange: (order: LetterOrder) => void
-}
+  selectedOrder: LetterOrder;
+  onOrderChange: (order: LetterOrder) => void;
+};
 
 const ORDER_OPTIONS = [
   {
     value: LetterOrder.Ascending,
-    label: 'Ascending (A-Z)',
-    icon: 'arrow-up',
+    label: "Ascending (A-Z)",
+    icon: "arrow-up",
   },
   {
     value: LetterOrder.Descending,
-    label: 'Descending (Z-A)',
-    icon: 'arrow-down',
+    label: "Descending (Z-A)",
+    icon: "arrow-down",
   },
-]
+];
 
 export default function OrderSelector({
   selectedOrder,
@@ -33,11 +33,11 @@ export default function OrderSelector({
       <Text style={[style.r16, { color: Colors.txt, marginBottom: 12 }]}>
         Letter Order
       </Text>
-      
+
       <View style={moleculeStyles.orderSelectorContainer}>
         {ORDER_OPTIONS.map((option) => {
-          const isSelected = selectedOrder === option.value
-          
+          const isSelected = selectedOrder === option.value;
+
           return (
             <TouchableOpacity
               key={option.value}
@@ -46,7 +46,7 @@ export default function OrderSelector({
                 moleculeStyles.orderOption,
                 {
                   backgroundColor: isSelected ? Colors.primary : Colors.bg,
-                  borderColor: isSelected ? Colors.primary : '#E5E9EF',
+                  borderColor: isSelected ? Colors.primary : "#E5E9EF",
                 },
               ]}
             >
@@ -72,9 +72,9 @@ export default function OrderSelector({
                 <Icon name="checkmark" size={20} color={Colors.secondary} />
               )}
             </TouchableOpacity>
-          )
+          );
         })}
       </View>
     </View>
-  )
+  );
 }

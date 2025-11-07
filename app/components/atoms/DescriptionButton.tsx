@@ -41,7 +41,7 @@ export default function DescriptionButton({
         style={[
           style.box,
           atomStyles.descriptionButton,
-          (disabled || loading) ? { opacity: 0.6 } : null,
+          disabled || loading ? { opacity: 0.6 } : null,
         ]}
       >
         <Image

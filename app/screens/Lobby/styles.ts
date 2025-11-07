@@ -1,6 +1,6 @@
-import { StyleSheet } from 'react-native'
-import { Colors } from '../../theme/color'
-import style from '../../theme/style'
+import { StyleSheet } from "react-native";
+import { Colors } from "../../theme/color";
+import style from "../../theme/style";
 
 export default StyleSheet.create({
   // Main container styles
@@ -8,13 +8,13 @@ export default StyleSheet.create({
     ...style.area,
     backgroundColor: Colors.primary,
   },
-  
+
   // StatusBar styles
   statusBar: {
     translucent: true,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
-  
+
   // ScrollView styles
   scrollView: {
     marginTop: 10,
@@ -22,18 +22,18 @@ export default StyleSheet.create({
   scrollViewContent: {
     flexGrow: 1,
   },
-  
+
   // Content wrapper styles
   contentWrapper: {
     flex: 1,
     paddingHorizontal: 16,
   },
-  
+
   // Loading states
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   loadingText: {
@@ -41,29 +41,29 @@ export default StyleSheet.create({
     color: Colors.txt,
     marginTop: 12,
   },
-  
+
   // Error states
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   errorText: {
     ...style.r16,
     color: Colors.error,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 12,
   },
-  
+
   // Snackbar styles
   snackbarContainer: {
-    position: 'absolute',
+    position: "absolute",
     left: 16,
     right: 16,
     bottom: 16,
   },
-})
+});
 
 export const CONFIGURE_LOBBY_SCREEN_COLORS = {
   primary: Colors.primary,
@@ -73,6 +73,6 @@ export const CONFIGURE_LOBBY_SCREEN_COLORS = {
   error: Colors.error,
   success: Colors.success,
   warning: Colors.warning,
-}
+};
 
 export const ERROR_SNACKBAR_COLOR = "#d32f2f";

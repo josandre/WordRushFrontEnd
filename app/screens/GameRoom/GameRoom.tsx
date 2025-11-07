@@ -68,7 +68,7 @@ export default function GameRoom() {
   const [categories, setCategories] = useState<string[]>([]);
   const [roundLetter, setRoundLetter] = useState<string>("A");
   const [sessionState, setSessionState] = useState<SessionState>(
-    SessionState.JOINING
+    SessionState.JOINING,
   );
   const [answers, setAnswers] = useState<string[]>([]);
   const [snackbar, setSnackbar] = useState<SnackBarProps>({
@@ -93,7 +93,7 @@ export default function GameRoom() {
         }
       };
       loadProfile();
-    }, [getProfileUser])
+    }, [getProfileUser]),
   );
 
   const categoryIcons: Record<string, any> = {
@@ -157,7 +157,7 @@ export default function GameRoom() {
 
   const isStopAvailable = (): boolean =>
     answers.every(
-      (a) => a.trim().length > 1 && a.toUpperCase().startsWith(roundLetter)
+      (a) => a.trim().length > 1 && a.toUpperCase().startsWith(roundLetter),
     );
 
   useEffect(() => {

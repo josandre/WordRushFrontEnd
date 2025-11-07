@@ -10,7 +10,6 @@ export type StoredProfile = {
   avatar?: string;
 };
 
-
 //TODO
 //Change this implementation this is not a hook is a normal function
 
