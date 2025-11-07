@@ -24,7 +24,10 @@ import webSocketService from "@/app/services/webSocketService";
 import { GameRoomData, WebSocketRoomCreatedEvent, Category } from "./constants";
 import GameManager from "@/app/StorageManager/GameManager/GameManager";
 import { Snackbar } from "@react-native-material/core";
-import { SnackBarProps, FALLBACK_ERROR_MESSAGE } from "@/app/screens/Auth/constants";
+import {
+  SnackBarProps,
+  FALLBACK_ERROR_MESSAGE,
+} from "@/app/screens/Auth/constants";
 import { ERROR_SNACKBAR_COLOR } from "@/app/screens/Auth/styles";
 
 export default function Home() {
@@ -55,12 +58,10 @@ export default function Home() {
     if (!isWeb) await new Promise((r) => setTimeout(r, 200));
 
     const stored = await manager.getUserProfile();
-  
 
     if (stored?.email) {
       const result = await getProfileUser({ userEmail: stored.email });
-      if (result.success) 
-        await saveProfile(result.data);
+      if (result.success) await saveProfile(result.data);
     } else {
       console.warn("No stored profile found on device.");
     }
@@ -74,49 +75,51 @@ export default function Home() {
       PlayerProfile: {
         Nickname: pdata?.nickname,
         Avatar: pdata?.avatar,
-        Email: pdata?.email 
-        }
+        Email: pdata?.email,
+      },
     };
 
     webSocketService.sendMessage({
       Type: "GAME_ROOM|CREATE",
-      JsonData: JSON.stringify(jsonData)
+      JsonData: JSON.stringify(jsonData),
     });
   }
 
   async function onRoomCreated(data: WebSocketRoomCreatedEvent) {
     const jsonData = JSON.parse(data.JsonData) as GameRoomData;
-  
+
     const roomData: GameRoomData = {
       GameRoomID: jsonData.GameRoomID,
       Settings: jsonData.Settings,
-      CategoryType: jsonData.CategoryType
+      CategoryType: jsonData.CategoryType,
     };
-    
+
     const gameManager = new GameManager();
 
-    await gameManager.saveGameRoomData(roomData).then(() => { 
-      setCreatingRoom(false);
-      navigation.navigate("Lobby", {
-        isOwner: true,
-        roomId: jsonData.GameRoomID,
-        roomData: roomData,
+    await gameManager
+      .saveGameRoomData(roomData)
+      .then(() => {
+        setCreatingRoom(false);
+        navigation.navigate("Lobby", {
+          isOwner: true,
+          roomId: jsonData.GameRoomID,
+          roomData: roomData,
+        });
+      })
+      .catch((error) => {
+        setCreatingRoom(false);
+        const errorSnackBar: SnackBarProps = {
+          visible: true,
+          message: "Error saving game room data. Please try again.",
+          color: ERROR_SNACKBAR_COLOR,
+        };
+        setSnackbar(errorSnackBar);
       });
-    }).catch((error) => {
-      setCreatingRoom(false);
-      const errorSnackBar: SnackBarProps = {
-        visible: true,
-        message: "Error saving game room data. Please try again.",
-        color: ERROR_SNACKBAR_COLOR,
-      };
-      setSnackbar(errorSnackBar);
-    });
   }
 
   function joinRoom() {
-    navigation.navigate("JoinLobby")
+    navigation.navigate("JoinLobby");
   }
-
 
   useFocusEffect(
     useCallback(() => {
@@ -124,7 +127,7 @@ export default function Home() {
 
       webSocketService.connect();
       webSocketService.addCallbacks("GAME_ROOM|CREATED", onRoomCreated);
-    }, [retrieveProfile])
+    }, [retrieveProfile]),
   );
 
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];

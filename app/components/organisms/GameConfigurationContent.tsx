@@ -1,38 +1,38 @@
-import React, { useEffect } from 'react'
-import { View, Text } from 'react-native'
-import ContentCard from '../atoms/ContentCard'
-import Select from '../atoms/Select'
-import LetterSelector from '../molecules/LetterSelector'
-import OrderSelector from '../molecules/OrderSelector'
-import CategorySelector from '../molecules/CategorySelector'
-import PrimaryButton from '../atoms/PrimaryButton'
-import { Colors } from '../../theme/color'
-import style from '../../theme/style'
-import styles from './GameConfigurationStyles'
-import { GameRoomData, Category } from '../../screens/Home/constants'
-import { LetterOrder } from '../../screens/Lobby/services/constants'
+import React, { useEffect } from "react";
+import { View, Text } from "react-native";
+import ContentCard from "../atoms/ContentCard";
+import Select from "../atoms/Select";
+import LetterSelector from "../molecules/LetterSelector";
+import OrderSelector from "../molecules/OrderSelector";
+import CategorySelector from "../molecules/CategorySelector";
+import PrimaryButton from "../atoms/PrimaryButton";
+import { Colors } from "../../theme/color";
+import style from "../../theme/style";
+import styles from "./GameConfigurationStyles";
+import { GameRoomData, Category } from "../../screens/Home/constants";
+import { LetterOrder } from "../../screens/Lobby/services/constants";
 
 type GameConfigurationContentProps = {
-  timeLimit: number
-  selectedLetters: string[]
-  letterOrder: LetterOrder
-  onTimeLimitChange: (value: number) => void
-  onLetterToggle: (letter: string) => void
-  onOrderChange: (order: LetterOrder) => void
-  onSaveConfiguration: () => void
-  onDiscardChanges: () => void
-  loading?: boolean
-  disabled?: boolean
-  gameRoomData?: GameRoomData | null
-}
+  timeLimit: number;
+  selectedLetters: string[];
+  letterOrder: LetterOrder;
+  onTimeLimitChange: (value: number) => void;
+  onLetterToggle: (letter: string) => void;
+  onOrderChange: (order: LetterOrder) => void;
+  onSaveConfiguration: () => void;
+  onDiscardChanges: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+  gameRoomData?: GameRoomData | null;
+};
 
 // Time options from 45 to 60 seconds in increments of 5
 const TIME_OPTIONS = [
-  { label: '45 seconds', value: 45 },
-  { label: '50 seconds', value: 50 },
-  { label: '55 seconds', value: 55 },
-  { label: '60 seconds', value: 60 },
-]
+  { label: "45 seconds", value: 45 },
+  { label: "50 seconds", value: 50 },
+  { label: "55 seconds", value: 55 },
+  { label: "60 seconds", value: 60 },
+];
 
 export default function GameConfigurationContent({
   timeLimit,
@@ -45,35 +45,38 @@ export default function GameConfigurationContent({
   onDiscardChanges,
   loading = false,
   disabled = false,
-  gameRoomData
+  gameRoomData,
 }: GameConfigurationContentProps) {
-  const isConfigurationValid = selectedLetters.length > 0
-  
-  const categoryType = gameRoomData?.CategoryType as any
-  const rawCategories = categoryType?.CategoryColumns || categoryType?.categoryColumns || []
-  
+  const isConfigurationValid = selectedLetters.length > 0;
+
+  const categoryType = gameRoomData?.CategoryType as any;
+  const rawCategories =
+    categoryType?.CategoryColumns || categoryType?.categoryColumns || [];
+
   const categories: Category[] = rawCategories.map((cat: any) => ({
     id: cat.Id ?? cat.id,
-    column: cat.Column ?? cat.column
-  }))
-  
-  const [selectedCategories, setSelectedCategories] = React.useState<Category[]>([])
+    column: cat.Column ?? cat.column,
+  }));
+
+  const [selectedCategories, setSelectedCategories] = React.useState<
+    Category[]
+  >([]);
 
   useEffect(() => {
     if (categories.length > 0 && selectedCategories.length === 0) {
-      setSelectedCategories([...categories])
+      setSelectedCategories([...categories]);
     }
-  }, [categories, selectedCategories.length])
+  }, [categories, selectedCategories.length]);
 
   const handleCategoryToggle = (category: Category) => {
-    setSelectedCategories(prev => {
-      if (prev.some(cat => cat.id === category.id)) {
-        return prev.filter(cat => cat.id !== category.id)
+    setSelectedCategories((prev) => {
+      if (prev.some((cat) => cat.id === category.id)) {
+        return prev.filter((cat) => cat.id !== category.id);
       } else {
-        return [...prev, category]
+        return [...prev, category];
       }
-    })
-  }
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -105,24 +108,37 @@ export default function GameConfigurationContent({
             </View>
             {gameRoomData?.CategoryType && (
               <View style={styles.section}>
-                <CategorySelector
-                  categories={categories}
-                />
+                <CategorySelector categories={categories} />
               </View>
             )}
 
             {/* Current Settings Display */}
             {gameRoomData?.Settings && (
               <View style={styles.section}>
-                <Text style={[style.r16, { color: Colors.txt, marginBottom: 8 }]}>
+                <Text
+                  style={[style.r16, { color: Colors.txt, marginBottom: 8 }]}
+                >
                   Current Settings
                 </Text>
-                <View style={[styles.summaryContainer, { backgroundColor: Colors.bord, padding: 12, borderRadius: 8 }]}>
-                  <Text style={[style.r14, { color: Colors.txt, marginBottom: 4 }]}>
+                <View
+                  style={[
+                    styles.summaryContainer,
+                    {
+                      backgroundColor: Colors.bord,
+                      padding: 12,
+                      borderRadius: 8,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[style.r14, { color: Colors.txt, marginBottom: 4 }]}
+                  >
                     Time Limit: {gameRoomData.Settings.TimeLimit} seconds
                   </Text>
-                  <Text style={[style.r14, { color: Colors.txt, marginBottom: 4 }]}>
-                    Letters: {gameRoomData.Settings.Letters.join(', ')}
+                  <Text
+                    style={[style.r14, { color: Colors.txt, marginBottom: 4 }]}
+                  >
+                    Letters: {gameRoomData.Settings.Letters.join(", ")}
                   </Text>
                   <Text style={[style.r14, { color: Colors.txt }]}>
                     Order: {gameRoomData.Settings.Order}
@@ -133,21 +149,20 @@ export default function GameConfigurationContent({
 
             {/* Configuration Summary */}
             <View style={styles.summaryContainer}>
-              <Text style={styles.summaryTitle}>
-                Configuration Summary
-              </Text>
+              <Text style={styles.summaryTitle}>Configuration Summary</Text>
               <Text style={styles.summaryText}>
                 Time Limit: {timeLimit} seconds
               </Text>
               <Text style={styles.summaryText}>
-                Selected Letters: {selectedLetters.join(', ')}
+                Selected Letters: {selectedLetters.join(", ")}
               </Text>
               <Text style={styles.summaryText}>
-                Order: {letterOrder === LetterOrder.Ascending ? 'A-Z' : 'Z-A'}
+                Order: {letterOrder === LetterOrder.Ascending ? "A-Z" : "Z-A"}
               </Text>
               {selectedCategories.length > 0 && (
                 <Text style={styles.summaryText}>
-                  Selected Categories: {selectedCategories.map(c => c.column).join(', ')}
+                  Selected Categories:{" "}
+                  {selectedCategories.map((c) => c.column).join(", ")}
                 </Text>
               )}
             </View>
@@ -162,7 +177,7 @@ export default function GameConfigurationContent({
                   loading={loading}
                 />
               </View>
-              
+
               <View style={styles.buttonWrapper}>
                 <PrimaryButton
                   title="Discard Changes"
@@ -176,5 +191,5 @@ export default function GameConfigurationContent({
         }
       />
     </View>
-  )
+  );
 }

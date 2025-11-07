@@ -1,27 +1,27 @@
-import React from 'react'
-import { View, Text, TextInput } from 'react-native'
+import React from "react";
+import { View, Text, TextInput } from "react-native";
 
 import style from "@/app/theme/style";
-import styles from './JoinLobbyStyles'
+import styles from "./JoinLobbyStyles";
 import { Colors } from "@/app/theme/color";
 
-import ContentCard from '../atoms/ContentCard'
-import PrimaryButton from '../atoms/PrimaryButton'
+import ContentCard from "../atoms/ContentCard";
+import PrimaryButton from "../atoms/PrimaryButton";
 
 type JoinLobbyContentProps = {
-  roomCode: string
-  isJoining: boolean
-  onRoomCodeChange: (code: string) => void
-  onJoinRoom: () => void
-  onRoomCodeValid: () => boolean
-}
+  roomCode: string;
+  isJoining: boolean;
+  onRoomCodeChange: (code: string) => void;
+  onJoinRoom: () => void;
+  onRoomCodeValid: () => boolean;
+};
 
 export default function JoinLobbyContent({
   roomCode,
   isJoining,
   onRoomCodeChange,
   onJoinRoom,
-  onRoomCodeValid
+  onRoomCodeValid,
 }: JoinLobbyContentProps) {
   return (
     <View style={styles.container}>
@@ -29,9 +29,7 @@ export default function JoinLobbyContent({
         title="Lobby"
         content={
           <View style={styles.content}>
-            <Text style={styles.instructionText}>
-              Enter a Room Code
-            </Text>
+            <Text style={styles.instructionText}>Enter a Room Code</Text>
             <TextInput
               value={roomCode}
               onChangeText={onRoomCodeChange}
@@ -49,5 +47,5 @@ export default function JoinLobbyContent({
         }
       />
     </View>
-  )
+  );
 }

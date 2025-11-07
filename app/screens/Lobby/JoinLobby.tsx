@@ -26,19 +26,19 @@ export default function JoinLobby() {
   async function onJoinedRoom(data: WebSocketRoomCreatedEvent) {
     const jsonData = JSON.parse(data.JsonData) as GameRoomData;
 
-    console.log('JAC', jsonData)
+    console.log("JAC", jsonData);
     const roomData: GameRoomData = {
       GameRoomID: jsonData.GameRoomID,
       Settings: jsonData.Settings,
-      CategoryType: jsonData.CategoryType
+      CategoryType: jsonData.CategoryType,
     };
-    
+
     const gameManager = new GameManager();
 
     try {
       await gameManager.saveGameRoomData(roomData);
       setIsJoining(false);
-      
+
       // The player is logically added to the room in the server
       // So just navigate so the lobby screen and see the room info
       // The lobby screen has a request for the room data, so it will automatically refresh the info for all the users in the room
@@ -78,21 +78,24 @@ export default function JoinLobby() {
           color: ERROR_SNACKBAR_COLOR,
         };
         setSnackbar(errorSnackBar);
-       
+
         navigation.dispatch(e.data.action);
       };
 
       navigation.addListener("beforeRemove", onBeforeRemove);
       return () => {
         navigation.removeListener("beforeRemove", onBeforeRemove);
-      }
-    }, [])
+      };
+    }, []),
   );
 
   useEffect(() => {
     webSocketService.connect();
     webSocketService.addCallbacks("GAME_ROOM|JOINED", onJoinedRoom);
-    webSocketService.addCallbacks("GAME_ROOM|JOINED_NON_EXISTING_ROOM", onJoinedNonExistingRoom);
+    webSocketService.addCallbacks(
+      "GAME_ROOM|JOINED_NON_EXISTING_ROOM",
+      onJoinedNonExistingRoom,
+    );
   });
 
   const handleJoinRoom = async () => {
@@ -114,21 +117,21 @@ export default function JoinLobby() {
       PlayerProfile: {
         Nickname: profile?.nickname,
         Avatar: profile?.avatar,
-        Email: profile?.email 
+        Email: profile?.email,
       },
-      RoomID: roomCode
+      RoomID: roomCode,
     };
 
     webSocketService.sendMessage({
       Type: "GAME_ROOM|JOIN",
-      JsonData: JSON.stringify(jsonData)
+      JsonData: JSON.stringify(jsonData),
     });
   };
 
   const isRoomCodeValid = () => {
     return roomCode.trim().length > 0;
   };
-  
+
   const handleGoBack = () => {
     navigation.navigate("MyTabs");
   };
@@ -154,7 +157,7 @@ export default function JoinLobby() {
           onRoomCodeValid={isRoomCodeValid}
         />
       </ScrollView>
-      
+
       {snackbar.visible && (
         <Snackbar
           message={snackbar.message ?? FALLBACK_ERROR_MESSAGE}

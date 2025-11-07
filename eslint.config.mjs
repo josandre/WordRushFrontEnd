@@ -48,8 +48,22 @@ export default [
       prettier: prettierPlugin,
     },
     rules: {
+      // ✅ Disable OS-specific line break checks
+      "linebreak-style": "off",
+
+      // ✅ Ensure Prettier respects LF/CRLF automatically
+      "prettier/prettier": [
+        "warn",
+        {
+          endOfLine: "auto",
+        },
+      ],
+
       // TypeScript
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_" },
+      ],
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/no-explicit-any": "off",
 
@@ -70,7 +84,6 @@ export default [
 
       // General
       "no-console": "warn",
-      "prettier/prettier": "warn",
     },
     settings: {
       react: {
@@ -79,6 +92,6 @@ export default [
     },
   },
 
-  // Prettier config (disables conflicting rules)
+  // Prettier config (disables conflicting ESLint stylistic rules)
   prettierConfig,
 ];

@@ -1,13 +1,23 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ScrollView, StatusBar, View, Text, TextInput, ActivityIndicator } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ScrollView,
+  StatusBar,
+  View,
+  Text,
+  TextInput,
+  ActivityIndicator,
+  Image,
+  Platform,
+  useWindowDimensions,
+} from "react-native";
 import style from "@/app/theme/style";
 import { Colors } from "@/app/theme/color";
-
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import GameRoomContent from "@/app/components/organisms/GameRoom";
-import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
-import ScreenTitleBar from "@/app/components/molecules/ScreenTitleBar";
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from "@react-navigation/native";
 import { Snackbar } from "@react-native-material/core";
 import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from "../Auth/constants";
 import { ERROR_SNACKBAR_COLOR, SUCCESS_SNACKBAR_COLOR } from "../Auth/styles";
@@ -18,12 +28,25 @@ import GameManager from "@/app/StorageManager/GameManager/GameManager";
 
 import ContentCard from "@/app/components/atoms/ContentCard";
 import PrimaryButton from "@/app/components/atoms/PrimaryButton";
-import { useFocusEffect } from "expo-router";
+import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
+import ScreenTitleBar from "@/app/components/molecules/ScreenTitleBar";
+import GameRoomTitleBar from "@/app/components/molecules/GameRoomTitleBar";
 
+import ProfileMobileTokenManager from "@/app/StorageManager/ProfileManager/mobile/MobileProfileManager";
+import ProfileWebTokenManager from "@/app/StorageManager/ProfileManager/web/WebProfileManager";
+import useProfileUser from "@/app/screens/UserProfile/services/useProfileUser";
+import avatars, { getAvatarImage } from "@/assets/avatars";
+
+// 🖼️ Category icons
+import personIcon from "@/assets/icons/person.png";
+import globeIcon from "@/assets/icons/globe.png";
+import foodIcon from "@/assets/icons/food.png";
+import animalIcon from "@/assets/icons/animal.png";
+import objectIcon from "@/assets/icons/object.png";
 
 type GameRoomRouteParams = {
   roomId: string;
-  roomData?: any; //TODO change this to the type
+  roomData?: any;
 };
 
 enum SessionState {
@@ -32,159 +55,263 @@ enum SessionState {
   IN_ROUND,
   IN_ROUND_EVALUATION,
   IN_ROUND_RESULTS,
-  IN_GAME_RESULTS
+  IN_GAME_RESULTS,
 }
 
-// DEBUG SYMBOLS
-const SIMULATE_LATENCY: boolean = true; // USEFUL FOR SIMULATING LATENCY DURING CERTAIN STATES
+const SIMULATE_LATENCY: boolean = true;
 
 export default function GameRoom() {
   const navigation = useNavigation<AppNavigation>();
   const route = useRoute();
-  const { roomId, roomData } = route.params as GameRoomRouteParams;
+  const { roomId } = route.params as GameRoomRouteParams;
 
   const [categories, setCategories] = useState<string[]>([]);
   const [roundLetter, setRoundLetter] = useState<string>("A");
-  const [sessionState, setSessionState] = useState<SessionState>(SessionState.JOINING);
+  const [sessionState, setSessionState] = useState<SessionState>(
+    SessionState.JOINING,
+  );
   const [answers, setAnswers] = useState<string[]>([]);
-
   const [snackbar, setSnackbar] = useState<SnackBarProps>({
     visible: false,
     message: "",
   });
 
-  // Called when the host decides to close the room
-  const onRoomClosed = (data: any): void => {
-    const errorSnackBar: SnackBarProps = {
+  const { width } = useWindowDimensions();
+  const isWeb = Platform.OS === "web";
+
+  // 🔹 User Profile (for GameRoomTitleBar)
+  const { getProfileUser, pdata } = useProfileUser();
+  const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
+  const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadProfile = async () => {
+        const stored = await manager.getUserProfile();
+        if (stored?.email) {
+          await getProfileUser({ userEmail: stored.email });
+        }
+      };
+      loadProfile();
+    }, [getProfileUser]),
+  );
+
+  const categoryIcons: Record<string, any> = {
+    Name: personIcon,
+    Country: globeIcon,
+    Food: foodIcon,
+    Animal: animalIcon,
+    Thing: objectIcon,
+  };
+
+  // --- Original GameRoom Logic (unchanged) ---
+  const onRoomClosed = (): void => {
+    setSnackbar({
       visible: true,
       message: "The host closed the room",
       color: ERROR_SNACKBAR_COLOR,
-    };
-
-    setSnackbar(errorSnackBar);
+    });
     navigation.navigate("MyTabs");
-  }
+  };
 
-  const onRoundStarted = (data: any): void => {
-    // TODO: Update the round letter based on server response
+  const onRoundStarted = (): void => setSessionState(SessionState.IN_ROUND);
 
-    setSessionState(SessionState.IN_ROUND);
-  }
-
-  // Called when the server requests all the player answers
-  const onStop = (data: any): void => {
-    // Send the current answers to the server, so it can proceed with the evaluation
-    const registeredAnswers = [...answers];
-
+  const onStop = (): void => {
     const jsonData = {
-      Answers: JSON.parse(JSON.stringify(registeredAnswers))
-    }
-
+      Answers: JSON.parse(JSON.stringify([...answers])),
+    };
     webSocketService.sendMessage({
       Type: "GAME_SESSION|SEND_ROUND_ANSWERS",
-      JsonData: JSON.stringify(jsonData)
+      JsonData: JSON.stringify(jsonData),
     });
-
     setSessionState(SessionState.IN_ROUND_EVALUATION);
-  }
+  };
 
-  // Called when the player wants to go to the previous screen
   const handleGoBack = (): void => {
     webSocketService.sendMessage({
       Type: "GAME_ROOM|LEAVE",
-      JsonData: "{}"
+      JsonData: "{}",
     });
-
-    const successSnackBar: SnackBarProps = {
+    setSnackbar({
       visible: true,
       message: "Lobby closed for all players",
       color: SUCCESS_SNACKBAR_COLOR,
-    };
-    setSnackbar(successSnackBar);
+    });
     navigation.navigate("MyTabs");
-  }
+  };
 
-  // This user has just pressed the STOP button
   const handleStopPress = (): void => {
     webSocketService.sendMessage({
       Type: "GAME_SESSION|STOP",
-      JsonData: "{}"
+      JsonData: "{}",
     });
-
     setSessionState(SessionState.IN_ROUND_EVALUATION);
-  }
+  };
 
-  // Called everytime an answer input text is updated
   const onAnswerChange = (index: number, value: string) => {
-    if (sessionState != SessionState.IN_ROUND) {
-      return;
-    }
-
+    if (sessionState != SessionState.IN_ROUND) return;
     const newAnswers = [...answers];
     newAnswers[index] = value;
     setAnswers(newAnswers);
-  }
+  };
 
-  // Evaluates every answer to determine if the STOP button is available or not
-  const isStopAvailable = (): boolean => {
-    let isAvailable: boolean = true;
-
-    answers.forEach((answer) => {
-      // If already found an invalid answer, get out of the loop
-      if (!isAvailable) {
-        return;
-      }
-
-      // The answer is empty or one character only
-      if (answer.trim().length <= 1) {
-        isAvailable = false;
-      }
-
-      // The answer doesn't start with the round letter
-      if (!answer.toUpperCase().startsWith(roundLetter)) {
-        isAvailable = false;
-      }
-    });
-
-    return isAvailable;
-  }
+  const isStopAvailable = (): boolean =>
+    answers.every(
+      (a) => a.trim().length > 1 && a.toUpperCase().startsWith(roundLetter),
+    );
 
   useEffect(() => {
     const setup = async () => {
-      const gameManager = new GameManager();
-      const gameData = await gameManager.getGameRoomData();
+      const gm = new GameManager();
+      const gameData = await gm.getGameRoomData();
       console.log(gameData);
-
-      // TODO: Update categories here from the data in local storage, for now just force it
-      let totalCategories: number = 4;
       setCategories(["Name", "Country", "Food", "Animal", "Thing"]);
-      setAnswers(new Array(totalCategories).fill(""));
-
-      // Wait a random number of seconds before confirming the ready state
+      setAnswers(["", "", "", "", ""]);
       if (SIMULATE_LATENCY) {
-        const delay = Math.floor(Math.random() * (2000 - 1000 + 1)) + 1000;
+        const delay = Math.floor(Math.random() * 1000) + 1000;
         await new Promise((r) => setTimeout(r, delay));
       }
-
       webSocketService.sendMessage({
         Type: "GAME_SESSION|READY_FOR_NEXT_ROUND",
-        JsonData: "{}"
+        JsonData: "{}",
       });
-    }
+    };
 
-    // Web Socket callbacks setup
     webSocketService.connect();
     webSocketService.addCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
     webSocketService.addCallbacks("GAME_SESSION|ROUND_STARTED", onRoundStarted);
     webSocketService.addCallbacks("GAME_SESSION|ON_STOP", onStop);
 
-    // When joining the game session (First time), inmediatelly notify the server about it, so the 
-    // Next round can start when all players are connected
-    if (sessionState == SessionState.JOINING) {
+    if (sessionState === SessionState.JOINING) {
       setSessionState(SessionState.WAITING_ROUND_START);
       setup();
     }
-  }, [answers])
+  }, [answers]);
+
+  // --- Card Layout (unchanged except for minWidth fix) ---
+  const renderCards = () => {
+    if (!isWeb) {
+      return (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: 20, gap: 16 }}
+        >
+          {categories.map((category, index) => (
+            <View
+              key={category}
+              style={{
+                backgroundColor: "white",
+                borderRadius: 16,
+                paddingVertical: 18,
+                paddingHorizontal: 14,
+                alignItems: "center",
+                justifyContent: "center",
+                shadowColor: "#000",
+                shadowOpacity: 0.15,
+                shadowRadius: 4,
+                elevation: 4,
+              }}
+            >
+              <Image
+                source={categoryIcons[category]}
+                style={{ width: 60, height: 60, marginBottom: 10 }}
+                resizeMode="contain"
+              />
+              <Text
+                style={{ fontSize: 18, fontWeight: "600", marginBottom: 8 }}
+              >
+                {category}
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: "#F4F3FF",
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: "#D1C4E9",
+                  width: "90%",
+                  height: 38,
+                  paddingHorizontal: 10,
+                  textAlign: "center",
+                }}
+                placeholder={`Enter a ${category.toLowerCase()}...`}
+                placeholderTextColor="#aaa"
+                value={answers[index]}
+                onChangeText={(v) => onAnswerChange(index, v)}
+              />
+            </View>
+          ))}
+        </ScrollView>
+      );
+    }
+
+    // 💻 Web
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: 24,
+          padding: 20,
+          width: "100%",
+        }}
+      >
+        {categories.map((category, index) => (
+          <View
+            key={category}
+            style={{
+              backgroundColor: "white",
+              borderRadius: 16,
+              paddingVertical: 24,
+              paddingHorizontal: 18,
+              alignItems: "center",
+              justifyContent: "flex-start",
+              width: Math.min(width * 0.18, 260),
+              minWidth: 190,
+              height: 250,
+              shadowColor: "#000",
+              shadowOpacity: 0.15,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
+          >
+            <Image
+              source={categoryIcons[category]}
+              style={{ width: 80, height: 80, marginBottom: 14 }}
+              resizeMode="contain"
+            />
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "600",
+                marginBottom: 12,
+                color: "#2E2E2E",
+              }}
+            >
+              {category}
+            </Text>
+            <TextInput
+              style={{
+                backgroundColor: "#F4F3FF",
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: "#D1C4E9",
+                width: "85%",
+                height: 42,
+                paddingHorizontal: 10,
+                textAlign: "center",
+                fontSize: 15,
+              }}
+              placeholder={`Enter a ${category.toLowerCase()}...`}
+              placeholderTextColor="#aaa"
+              value={answers[index]}
+              onChangeText={(v) => onAnswerChange(index, v)}
+            />
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   const renderContent = () => {
     switch (sessionState) {
@@ -192,33 +319,21 @@ export default function GameRoom() {
         return (
           <ContentCard
             title="Joining Game Session..."
-            content={
-              <View>
-                <ActivityIndicator size="large" color={Colors.primary} />
-              </View>
-            }
+            content={<ActivityIndicator size="large" color={Colors.primary} />}
           />
         );
       case SessionState.WAITING_ROUND_START:
         return (
           <ContentCard
             title="Get ready! The round will start soon..."
-            content={
-              <View>
-                <ActivityIndicator size="large" color={Colors.primary} />
-              </View>
-            }
+            content={<ActivityIndicator size="large" color={Colors.primary} />}
           />
         );
       case SessionState.IN_ROUND_EVALUATION:
         return (
           <ContentCard
             title="A STOP has been triggered, evaluating answers..."
-            content={
-              <View>
-                <ActivityIndicator size="large" color={Colors.primary} />
-              </View>
-            }
+            content={<ActivityIndicator size="large" color={Colors.primary} />}
           />
         );
       case SessionState.IN_ROUND:
@@ -227,44 +342,19 @@ export default function GameRoom() {
             title=""
             content={
               <View>
-                <View>
-                  {categories.length > 0 ? (
-                    categories.map((category, categoryIndex) => {
-                      return (
-                        <View key={category}>
-                          <Text style={[style.subtitle, { color: Colors.txt, flex: 1, marginTop: 10, marginBottom: 10 }]}>
-                            {category}
-                          </Text>
-
-                          <TextInput
-                            style={style.txtinput}
-                            value={answers[categoryIndex]}
-                            onChangeText={(value) => onAnswerChange(categoryIndex, value)}
-                          />
-                        </View>
-
-                      )
-                    })
-                  ) : (
-                    <View>
-                    </View>
-                  )}
-                </View>
-
-                <View>
-                  <PrimaryButton
-                    title="STOP!"
-                    onPress={handleStopPress}
-                    disabled={!isStopAvailable()}
-                    loading={false}
-                  />
-                </View>
+                {renderCards()}
+                <PrimaryButton
+                  title="STOP!"
+                  onPress={handleStopPress}
+                  disabled={!isStopAvailable()}
+                  loading={false}
+                />
               </View>
             }
           />
         );
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -273,16 +363,23 @@ export default function GameRoom() {
         backgroundColor={styles.statusBar.backgroundColor}
         barStyle="light-content"
       />
-      <ScreenTitleBar screenName={"Round Letter: " + roundLetter.toUpperCase()} onGoBackPress={handleGoBack} />
+
+      {/* ✅ NEW: GameRoomTitleBar (only addition) */}
+      <View style={{ marginTop: 20 }}>
+        <GameRoomTitleBar username={pdata?.nickname} avatar={avatarSource} />
+      </View>
+
+      <ScreenTitleBar
+        screenName={"Round Letter: " + roundLetter.toUpperCase()}
+        onGoBackPress={handleGoBack}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
       >
-        <View style={styles.container}>
-          {renderContent()}
-        </View>
+        <View style={styles.container}>{renderContent()}</View>
       </ScrollView>
 
       {snackbar.visible && (

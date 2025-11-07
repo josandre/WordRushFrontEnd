@@ -12,7 +12,7 @@ export default class ProfileWebTokenManager {
 
   static async getUserProfile() {
     const UserProfile = this.storage.getValue();
-      return UserProfile ? UserProfile : null;
+    return UserProfile ? UserProfile : null;
   }
 
   static async clearProfile(): Promise<void> {

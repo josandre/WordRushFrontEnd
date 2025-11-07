@@ -4,34 +4,31 @@ import MobileGameManager from "./web/MobileGameManager";
 import WebGameManager from "./web/MobileGameManager";
 
 export default class GameManager extends Manager {
+  constructor() {
+    super();
+  }
 
-    constructor() {
-        super();
+  saveGameRoomData = async (gameRoomData: GameRoomData) => {
+    if (this.isWebPlatform()) {
+      await WebGameManager.saveGameRoomData(gameRoomData);
+    } else {
+      await MobileGameManager.saveGameRoomData(gameRoomData);
     }
+  };
 
-    saveGameRoomData = async (gameRoomData: GameRoomData) => {
-        if (this.isWebPlatform()) {
-            await WebGameManager.saveGameRoomData(gameRoomData);
-        } else {
-            await MobileGameManager.saveGameRoomData(gameRoomData);
-        }
+  getGameRoomData = async () => {
+    if (this.isWebPlatform()) {
+      return await WebGameManager.getGameRoomData();
+    } else {
+      return await MobileGameManager.getGameRoomData();
     }
+  };
 
-    getGameRoomData = async () => {
-        if (this.isWebPlatform()) {
-            return await WebGameManager.getGameRoomData();
-        } else {
-            return await MobileGameManager.getGameRoomData();
-        }
+  clearGameRoomData = async () => {
+    if (this.isWebPlatform()) {
+      await WebGameManager.clearGameRoomData();
+    } else {
+      await MobileGameManager.clearGameRoomData();
     }
-
-
-    clearGameRoomData = async () => {
-        if (this.isWebPlatform()) {
-            await WebGameManager.clearGameRoomData();
-        } else {
-            await MobileGameManager.clearGameRoomData();
-        }
-    }
-
+  };
 }

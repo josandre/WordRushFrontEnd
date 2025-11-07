@@ -1,30 +1,40 @@
-import React from 'react'
-import { View, Text, ScrollView } from 'react-native'
-import { Colors } from '../../theme/color'
-import style from '../../theme/style'
-import moleculeStyles from './styles'
-import { Category } from '../../screens/Home/constants'
+import React from "react";
+import { View, Text, ScrollView } from "react-native";
+import { Colors } from "../../theme/color";
+import style from "../../theme/style";
+import moleculeStyles from "./styles";
+import { Category } from "../../screens/Home/constants";
 
 type CategorySelectorProps = {
-  categories: Category[]
-}
+  categories: Category[];
+};
 
 export default function CategorySelector({
   categories,
 }: CategorySelectorProps) {
-
   if (categories.length === 0) {
     return (
       <View>
-        <Text style={[style.r16, { color: Colors.txt, marginBottom: 12 }]}>Categories</Text>
-        <Text style={[style.r14, { color: Colors.disable }]}>No categories available</Text>
+        <Text style={[style.r16, { color: Colors.txt, marginBottom: 12 }]}>
+          Categories
+        </Text>
+        <Text style={[style.r14, { color: Colors.disable }]}>
+          No categories available
+        </Text>
       </View>
-    )
+    );
   }
 
   return (
     <View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 12,
+        }}
+      >
         <Text style={[style.r16, { color: Colors.txt }]}>Categories</Text>
         <Text style={[style.r14, { color: Colors.disable }]}>
           {categories.length}
@@ -38,9 +48,10 @@ export default function CategorySelector({
       >
         <View style={moleculeStyles.letterGrid}>
           {categories.map((category) => {
-            const categoryName = category.column || (category as any).Column || 'Unknown'
-          
-            const dynamicWidth = Math.max(80, categoryName.length * 8 + 24)
+            const categoryName =
+              category.column || (category as any).Column || "Unknown";
+
+            const dynamicWidth = Math.max(80, categoryName.length * 8 + 24);
 
             return (
               <View
@@ -62,8 +73,8 @@ export default function CategorySelector({
                     style.r14,
                     {
                       color: Colors.secondary,
-                      fontWeight: 'bold',
-                      textAlign: 'center',
+                      fontWeight: "bold",
+                      textAlign: "center",
                     },
                   ]}
                   numberOfLines={2}
@@ -71,11 +82,10 @@ export default function CategorySelector({
                   {categoryName}
                 </Text>
               </View>
-            )
+            );
           })}
         </View>
       </ScrollView>
     </View>
-  )
+  );
 }
-

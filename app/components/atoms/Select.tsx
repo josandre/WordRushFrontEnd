@@ -1,45 +1,47 @@
-import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, Modal, FlatList } from 'react-native'
-import Icon from 'react-native-vector-icons/Ionicons'
-import { Colors } from '../../theme/color'
-import style from '../../theme/style'
-import atomStyles from './styles'
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, Modal, FlatList } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { Colors } from "../../theme/color";
+import style from "../../theme/style";
+import atomStyles from "./styles";
 
 type SelectOption = {
-  label: string
-  value: string | number
-}
+  label: string;
+  value: string | number;
+};
 
 type SelectProps = {
-  label: string
-  value: string | number
-  options: SelectOption[]
-  onValueChange: (value: string | number) => void
-  placeholder?: string
-  disabled?: boolean
-}
+  label: string;
+  value: string | number;
+  options: SelectOption[];
+  onValueChange: (value: string | number) => void;
+  placeholder?: string;
+  disabled?: boolean;
+};
 
 export default function Select({
   label,
   value,
   options,
   onValueChange,
-  placeholder = 'Select an option',
+  placeholder = "Select an option",
   disabled = false,
 }: SelectProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isFocused, setIsFocused] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
-  const selectedOption = options.find(option => option.value === value)
+  const selectedOption = options.find((option) => option.value === value);
 
   const handleSelect = (option: SelectOption) => {
-    onValueChange(option.value)
-    setIsOpen(false)
-  }
+    onValueChange(option.value);
+    setIsOpen(false);
+  };
 
   return (
     <>
-      <Text style={[style.r16, { color: Colors.txt, marginBottom: 8 }]}>{label}</Text>
+      <Text style={[style.r16, { color: Colors.txt, marginBottom: 8 }]}>
+        {label}
+      </Text>
       <TouchableOpacity
         onPress={() => !disabled && setIsOpen(true)}
         onFocus={() => setIsFocused(true)}
@@ -50,7 +52,7 @@ export default function Select({
           {
             backgroundColor: Colors.bg,
             borderWidth: isFocused ? 2 : 1,
-            borderColor: isFocused ? Colors.primary : '#E5E9EF',
+            borderColor: isFocused ? Colors.primary : "#E5E9EF",
             opacity: disabled ? 0.5 : 1,
           },
         ]}
@@ -67,7 +69,7 @@ export default function Select({
           {selectedOption ? selectedOption.label : placeholder}
         </Text>
         <Icon
-          name={isOpen ? 'chevron-up' : 'chevron-down'}
+          name={isOpen ? "chevron-up" : "chevron-down"}
           size={20}
           color={Colors.primary}
         />
@@ -86,7 +88,9 @@ export default function Select({
         >
           <View style={atomStyles.modalContent}>
             <View style={atomStyles.modalHeader}>
-              <Text style={[style.subtitle, { color: Colors.txt }]}>{label}</Text>
+              <Text style={[style.subtitle, { color: Colors.txt }]}>
+                {label}
+              </Text>
               <TouchableOpacity onPress={() => setIsOpen(false)}>
                 <Icon name="close" size={24} color={Colors.primary} />
               </TouchableOpacity>
@@ -99,7 +103,8 @@ export default function Select({
                   style={[
                     atomStyles.selectOption,
                     {
-                      backgroundColor: item.value === value ? Colors.primary : 'transparent',
+                      backgroundColor:
+                        item.value === value ? Colors.primary : "transparent",
                     },
                   ]}
                   onPress={() => handleSelect(item)}
@@ -108,7 +113,10 @@ export default function Select({
                     style={[
                       style.r16,
                       {
-                        color: item.value === value ? Colors.secondary : Colors.active,
+                        color:
+                          item.value === value
+                            ? Colors.secondary
+                            : Colors.active,
                       },
                     ]}
                   >
@@ -124,5 +132,5 @@ export default function Select({
         </TouchableOpacity>
       </Modal>
     </>
-  )
+  );
 }

@@ -62,9 +62,8 @@ export default function Login() {
         await MobileTokenManager.saveTokens(tokens);
       }
 
-  
       const user = await getProfileUser({ userEmail: form.email });
-      await saveProfile(user.data); 
+      await saveProfile(user.data);
       navigation.navigate("MyTabs");
     } else {
       const errorSnackBar: SnackBarProps = {

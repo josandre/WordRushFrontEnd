@@ -1,13 +1,13 @@
-import { StyleSheet } from 'react-native'
-import { Colors } from '../../theme/color'
-import style from '../../theme/style'
+import { StyleSheet } from "react-native";
+import { Colors } from "../../theme/color";
+import style from "../../theme/style";
 
 export default StyleSheet.create({
   // GameRoomContent organism styles
   gameRoomContainer: {
     flex: 1,
   },
-  
+
   // RoomInfo atom styles
   roomInfoContainer: {
     marginBottom: 15,
@@ -21,7 +21,7 @@ export default StyleSheet.create({
     color: Colors.txt,
     marginBottom: 15,
   },
-  
+
   // PlayerList molecule styles
   playerListContainer: {
     marginTop: 20,
@@ -29,12 +29,12 @@ export default StyleSheet.create({
   playerItem: {
     marginBottom: 12,
   },
-  
+
   // CurrentPlayerCard molecule styles
   currentPlayerContainer: {
     marginBottom: 20,
   },
-  
+
   // GameActions molecule styles
   gameActionsContainer: {
     marginTop: 20,
@@ -43,7 +43,7 @@ export default StyleSheet.create({
   actionButton: {
     marginBottom: 8,
   },
-  
+
   // Common styles
   container: {
     flex: 1,
@@ -57,7 +57,7 @@ export default StyleSheet.create({
   lastSection: {
     marginBottom: 0,
   },
-})
+});
 
 export const GAME_ROOM_COLORS = {
   primary: Colors.primary,
@@ -68,4 +68,4 @@ export const GAME_ROOM_COLORS = {
   success: Colors.success,
   error: Colors.error,
   warning: Colors.warning,
-}
+};

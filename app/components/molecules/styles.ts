@@ -204,8 +204,8 @@ export default StyleSheet.create({
   },
   // Letter Selector styles
   letterGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 4,
   },
   letterButton: {
@@ -213,8 +213,8 @@ export default StyleSheet.create({
     height: 40,
     borderRadius: 20,
     borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     margin: 4,
   },
   selectedLettersContainer: {
@@ -224,13 +224,13 @@ export default StyleSheet.create({
     borderRadius: 8,
   },
   selectedLettersList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   selectedLetterItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.secondary,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -247,15 +247,15 @@ export default StyleSheet.create({
     gap: 8,
   },
   orderOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
   },
   orderOptionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
