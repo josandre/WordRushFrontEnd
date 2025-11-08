@@ -43,6 +43,7 @@ import globeIcon from "@/assets/icons/globe.png";
 import foodIcon from "@/assets/icons/food.png";
 import animalIcon from "@/assets/icons/animal.png";
 import objectIcon from "@/assets/icons/object.png";
+import { GameRoomData } from "../Home/constants";
 
 type GameRoomRouteParams = {
   roomId: string;
@@ -65,7 +66,7 @@ export default function GameRoom() {
   const route = useRoute();
   const { roomId } = route.params as GameRoomRouteParams;
 
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[] | null | undefined>([]);
   const [roundLetter, setRoundLetter] = useState<string>("A");
   const [sessionState, setSessionState] = useState<SessionState>(
     SessionState.JOINING,
@@ -75,6 +76,8 @@ export default function GameRoom() {
     visible: false,
     message: "",
   });
+
+  const [notifiedIsReady, setNotifiedIsReady] = useState<boolean>(false);
 
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
@@ -114,11 +117,40 @@ export default function GameRoom() {
     navigation.navigate("MyTabs");
   };
 
-  const onRoundStarted = (): void => setSessionState(SessionState.IN_ROUND);
+  const onRoundStarted = (data: any): void => {
+    // TODO: Use type
+    const jsonData = JSON.parse(data.JsonData);
+
+    console.log("--------------STARTING A NEW ROUND", data);
+    // Setup the round letter
+    if (jsonData.RoundLetter)
+    {
+      console.log("Look, starting a round with: ", jsonData.RoundLetter);
+      setRoundLetter(jsonData.RoundLetter);
+    }
+
+    setNotifiedIsReady(false);
+    setAnswers(Array(categories?.length).fill(""));
+    setSessionState(SessionState.IN_ROUND);
+  }
+
+  const onRoundResultReceived = (data: any): void => {
+    console.log("----ROUND DATA: ", data);
+
+    // TODO: Cache results
+
+    setSessionState(SessionState.IN_ROUND_RESULTS);
+  }
+
+  const onGameFinished = (data: any): void => {
+    console.log("GAME FINISHED");
+
+    setSessionState(SessionState.IN_GAME_RESULTS);
+  }
 
   const onStop = (): void => {
     const jsonData = {
-      Answers: JSON.parse(JSON.stringify([...answers])),
+      Answers: [...answers],
     };
     webSocketService.sendMessage({
       Type: "GAME_SESSION|SEND_ROUND_ANSWERS",
@@ -155,22 +187,38 @@ export default function GameRoom() {
     setAnswers(newAnswers);
   };
 
-  const isStopAvailable = (): boolean =>
-    answers.every(
+  const isStopAvailable = (): boolean => {
+    return answers.every(
       (a) => a.trim().length > 1 && a.toUpperCase().startsWith(roundLetter),
     );
+  }
+
+  const handleRoundResultContinue = (): void => {
+    setNotifiedIsReady(true);
+
+    webSocketService.sendMessage({
+      Type: "GAME_SESSION|READY_FOR_NEXT_ROUND",
+      JsonData: "{}",
+    });
+  }
+
+  const handleGameResultContinue = (): void => {
+    handleGoBack(); 
+  }
 
   useEffect(() => {
     const setup = async () => {
       const gm = new GameManager();
-      const gameData = await gm.getGameRoomData();
-      console.log(gameData);
-      setCategories(["Name", "Country", "Food", "Animal", "Thing"]);
-      setAnswers(["", "", "", "", ""]);
+      let gameData: GameRoomData | null = await gm.getGameRoomData();
+      
+      setCategories(gameData?.Settings.CategoriesArray);
+      setAnswers(Array(gameData?.Settings.CategoriesArray?.length).fill(""));
+
       if (SIMULATE_LATENCY) {
         const delay = Math.floor(Math.random() * 1000) + 1000;
         await new Promise((r) => setTimeout(r, delay));
       }
+
       webSocketService.sendMessage({
         Type: "GAME_SESSION|READY_FOR_NEXT_ROUND",
         JsonData: "{}",
@@ -181,12 +229,14 @@ export default function GameRoom() {
     webSocketService.addCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
     webSocketService.addCallbacks("GAME_SESSION|ROUND_STARTED", onRoundStarted);
     webSocketService.addCallbacks("GAME_SESSION|ON_STOP", onStop);
+    webSocketService.addCallbacks("GAME_SESSION|ROUND_RESULTS_SENT", onRoundResultReceived);
+    webSocketService.addCallbacks("GAME_SESSION|GAME_FINISHED", onGameFinished);
 
     if (sessionState === SessionState.JOINING) {
       setSessionState(SessionState.WAITING_ROUND_START);
       setup();
     }
-  }, [answers]);
+  }, [answers, categories, roundLetter]);
 
   // --- Card Layout (unchanged except for minWidth fix) ---
   const renderCards = () => {
@@ -347,6 +397,40 @@ export default function GameRoom() {
                   title="STOP!"
                   onPress={handleStopPress}
                   disabled={!isStopAvailable()}
+                  loading={false}
+                />
+              </View>
+            }
+          />
+        );
+      case SessionState.IN_ROUND_RESULTS:
+        return (
+          <ContentCard
+            title="Round Results"
+            content={
+              <View>
+                <Text>Hey look, the ROUND results will be displayed here (A summary for the letter, MY answers and the score for each one)</Text>
+                <PrimaryButton
+                  title="Ready for next round"
+                  onPress={handleRoundResultContinue}
+                  disabled={false}
+                  loading={notifiedIsReady}
+                />
+              </View>
+            }
+          />
+        );
+      case SessionState.IN_GAME_RESULTS:
+        return (
+          <ContentCard
+            title="GAME FINISHED: Here are the Results"
+            content={
+              <View>
+                <Text>Hey look, the COMPLETE MATCH results will be displayed here (Probably a leaderboard and the possibility to view more details)</Text>
+                <PrimaryButton
+                  title="Return to main menu"
+                  onPress={handleGameResultContinue}
+                  disabled={false}
                   loading={false}
                 />
               </View>
