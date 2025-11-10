@@ -1,16 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import {
+  Animated,
   ScrollView,
   StatusBar,
   View,
   Text,
   TextInput,
-  ActivityIndicator,
   Image,
   Platform,
   useWindowDimensions,
 } from "react-native";
-import style from "@/app/theme/style";
+import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 import { Colors } from "@/app/theme/color";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -23,7 +23,9 @@ import { FALLBACK_ERROR_MESSAGE, SnackBarProps } from "../Auth/constants";
 import { ERROR_SNACKBAR_COLOR, SUCCESS_SNACKBAR_COLOR } from "../Auth/styles";
 import styles from "./styles";
 
-import webSocketService from "@/app/services/webSocketService";
+import webSocketService, {
+  RoundResultsPayload,
+} from "@/app/services/webSocketService";
 import GameManager from "@/app/StorageManager/GameManager/GameManager";
 
 import ContentCard from "@/app/components/atoms/ContentCard";
@@ -42,7 +44,7 @@ import personIcon from "@/assets/icons/person.png";
 import globeIcon from "@/assets/icons/globe.png";
 import foodIcon from "@/assets/icons/food.png";
 import animalIcon from "@/assets/icons/animal.png";
-import objectIcon from "@/assets/icons/object.png";
+import colorIcon from "@/assets/icons/color.png";
 import { GameRoomData } from "../Home/constants";
 
 type GameRoomRouteParams = {
@@ -66,7 +68,7 @@ export default function GameRoom() {
   const route = useRoute();
   const { roomId } = route.params as GameRoomRouteParams;
 
-  const [categories, setCategories] = useState<string[] | null | undefined>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [roundLetter, setRoundLetter] = useState<string>("A");
   const [sessionState, setSessionState] = useState<SessionState>(
     SessionState.JOINING,
@@ -76,8 +78,12 @@ export default function GameRoom() {
     visible: false,
     message: "",
   });
-
   const [notifiedIsReady, setNotifiedIsReady] = useState<boolean>(false);
+
+  // 🆕 New: Store full round results payload
+  const [roundResults, setRoundResults] = useState<RoundResultsPayload | null>(
+    null,
+  );
 
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
@@ -86,6 +92,29 @@ export default function GameRoom() {
   const { getProfileUser, pdata } = useProfileUser();
   const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
+  // 🎞️ Animation for round results
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  // When round results state changes, fade in the section
+  useEffect(() => {
+    if (sessionState === SessionState.IN_ROUND_RESULTS) {
+      fadeAnim.setValue(0);
+      slideAnim.setValue(20);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [sessionState]);
 
   useFocusEffect(
     useCallback(() => {
@@ -101,10 +130,10 @@ export default function GameRoom() {
 
   const categoryIcons: Record<string, any> = {
     Name: personIcon,
-    Country: globeIcon,
-    Food: foodIcon,
+    "Country or City": globeIcon,
+    "Fruit or Food": foodIcon,
     Animal: animalIcon,
-    Thing: objectIcon,
+    Color: colorIcon,
   };
 
   // --- Original GameRoom Logic (unchanged) ---
@@ -118,35 +147,108 @@ export default function GameRoom() {
   };
 
   const onRoundStarted = (data: any): void => {
-    // TODO: Use type
     const jsonData = JSON.parse(data.JsonData);
-
-    console.log("--------------STARTING A NEW ROUND", data);
-    // Setup the round letter
-    if (jsonData.RoundLetter)
-    {
-      console.log("Look, starting a round with: ", jsonData.RoundLetter);
+    if (jsonData.RoundLetter) {
       setRoundLetter(jsonData.RoundLetter);
     }
-
     setNotifiedIsReady(false);
     setAnswers(Array(categories?.length).fill(""));
     setSessionState(SessionState.IN_ROUND);
-  }
+  };
 
+  // ✅ Fixed and normalized: Handle scored round results
   const onRoundResultReceived = (data: any): void => {
     console.log("----ROUND DATA: ", data);
 
-    // TODO: Cache results
+    try {
+      // Detect if the WebSocket message contains JsonData (envelope)
+      const jsonString =
+        typeof data === "string"
+          ? data
+          : typeof data?.JsonData === "string"
+            ? data.JsonData
+            : null;
 
-    setSessionState(SessionState.IN_ROUND_RESULTS);
-  }
+      if (!jsonString) {
+        console.warn("Invalid round results format:", data);
+        return;
+      }
+
+      // Parse the backend payload
+      const parsed = JSON.parse(jsonString);
+
+      // ✅ Normalize casing and structure to match RoundResultsPayload
+      const payload: RoundResultsPayload = {
+        letter: parsed.Letter ?? "",
+        categories: parsed.Categories ?? [],
+        players: Array.isArray(parsed.Players)
+          ? parsed.Players.map((p: any) => ({
+              name: p.Name ?? "",
+              answers: p.Answers ?? {},
+              scores: Object.fromEntries(
+                Object.entries(p.Scores ?? {}).map(([category, score]: any) => [
+                  category,
+                  {
+                    points: score.Points ?? 0,
+                    reason: score.Reason ?? "",
+                  },
+                ]),
+              ),
+              total: p.Total ?? 0,
+            }))
+          : [],
+      };
+
+      console.log("✅ Normalized round results:", payload);
+
+      // Update UI state
+      setRoundResults(payload);
+      setSessionState(SessionState.IN_ROUND_RESULTS);
+    } catch (err) {
+      console.warn("Failed to parse ROUND_RESULTS payload", err);
+    }
+  };
 
   const onGameFinished = (data: any): void => {
-    console.log("GAME FINISHED");
+    try {
+      const jsonString =
+        typeof data === "string"
+          ? data
+          : typeof data?.JsonData === "string"
+            ? data.JsonData
+            : null;
 
-    setSessionState(SessionState.IN_GAME_RESULTS);
-  }
+      if (!jsonString) {
+        console.warn("Invalid GAME_FINISHED payload:", data);
+        return;
+      }
+
+      const parsed = JSON.parse(jsonString);
+
+      if (parsed.Players && Array.isArray(parsed.Players)) {
+        const players = parsed.Players.map((p: any) => ({
+          name: p.Name ?? p.Nickname ?? "",
+          total: p.Total ?? p.TotalScore ?? 0,
+          answers: {},
+          scores: {},
+        }));
+
+        setRoundResults({
+          letter: "—",
+          categories: [],
+          players,
+        });
+
+        console.log("✅ Final game results parsed:", players);
+      } else {
+        console.warn("GAME_FINISHED payload missing Players:", parsed);
+      }
+
+      setSessionState(SessionState.IN_GAME_RESULTS);
+    } catch (err) {
+      console.warn("Failed to parse GAME_FINISHED payload", err);
+    }
+  };
 
   const onStop = (): void => {
     const jsonData = {
@@ -191,27 +293,26 @@ export default function GameRoom() {
     return answers.every(
       (a) => a.trim().length > 1 && a.toUpperCase().startsWith(roundLetter),
     );
-  }
+  };
 
   const handleRoundResultContinue = (): void => {
     setNotifiedIsReady(true);
-
     webSocketService.sendMessage({
       Type: "GAME_SESSION|READY_FOR_NEXT_ROUND",
       JsonData: "{}",
     });
-  }
+  };
 
   const handleGameResultContinue = (): void => {
-    handleGoBack(); 
-  }
+    handleGoBack();
+  };
 
   useEffect(() => {
     const setup = async () => {
       const gm = new GameManager();
-      let gameData: GameRoomData | null = await gm.getGameRoomData();
-      
-      setCategories(gameData?.Settings.CategoriesArray);
+      const gameData: GameRoomData | null = await gm.getGameRoomData();
+
+      setCategories(gameData?.Settings.CategoriesArray ?? []);
       setAnswers(Array(gameData?.Settings.CategoriesArray?.length).fill(""));
 
       if (SIMULATE_LATENCY) {
@@ -229,7 +330,10 @@ export default function GameRoom() {
     webSocketService.addCallbacks("GAME_ROOM|CLOSED", onRoomClosed);
     webSocketService.addCallbacks("GAME_SESSION|ROUND_STARTED", onRoundStarted);
     webSocketService.addCallbacks("GAME_SESSION|ON_STOP", onStop);
-    webSocketService.addCallbacks("GAME_SESSION|ROUND_RESULTS_SENT", onRoundResultReceived);
+    webSocketService.addCallbacks(
+      "GAME_SESSION|ROUND_RESULTS_SENT",
+      onRoundResultReceived,
+    );
     webSocketService.addCallbacks("GAME_SESSION|GAME_FINISHED", onGameFinished);
 
     if (sessionState === SessionState.JOINING) {
@@ -238,7 +342,6 @@ export default function GameRoom() {
     }
   }, [answers, categories, roundLetter]);
 
-  // --- Card Layout (unchanged except for minWidth fix) ---
   const renderCards = () => {
     if (!isWeb) {
       return (
@@ -294,7 +397,7 @@ export default function GameRoom() {
       );
     }
 
-    // 💻 Web
+    // 💻 Web version
     return (
       <View
         style={{
@@ -363,29 +466,238 @@ export default function GameRoom() {
     );
   };
 
+  const renderRoundResults = () => {
+    if (!roundResults) return <Text>No results yet.</Text>;
+
+    const normalizeName = (n: string | undefined | null) =>
+      (n ?? "").replace(/\s+/g, "").trim().toLowerCase();
+
+    const myResult = roundResults.players.find(
+      (p) => normalizeName(p.name) === normalizeName(pdata?.nickname),
+    );
+
+    const otherPlayers = roundResults.players.filter(
+      (p) => normalizeName(p.name) !== normalizeName(pdata?.nickname),
+    );
+
+    // 🖼 static mapping (same as renderCards)
+    const categoryIcons: Record<string, any> = {
+      Name: personIcon,
+      "Country or City": globeIcon,
+      "Fruit or Food": foodIcon,
+      Animal: animalIcon,
+      Color: colorIcon,
+    };
+
+    // 🏆 determine unique winner (no ties, non-zero only)
+    const topScore = Math.max(...roundResults.players.map((p) => p.total));
+    const tiedPlayers = roundResults.players.filter(
+      (p) => p.total === topScore,
+    );
+    const hasUniqueWinner = tiedPlayers.length === 1 && topScore > 0;
+
+    // Only mark winner if there's exactly one with >0
+    const winnerName = hasUniqueWinner
+      ? normalizeName(tiedPlayers[0].name)
+      : null;
+
+    const isWinner = (name: string) =>
+      winnerName !== null && normalizeName(name) === winnerName;
+
+    return (
+      <View
+        style={{
+          marginTop: 0, // reduced gap above card
+          width: "100%",
+          paddingHorizontal: isWeb ? 10 : 8, // slightly tighter padding
+        }}
+      >
+        {/* Round Letter title */}
+        <Text
+          style={{
+            fontWeight: "700",
+            fontSize: 20,
+            color: Colors.secondary,
+            textAlign: "center",
+            marginBottom: 4, // was ~14–10 → reduced to close gap
+          }}
+        >
+          Round Letter: {roundResults.letter?.toUpperCase() ?? "?"}
+        </Text>
+
+        {/* 🧍 My detailed results */}
+        {myResult && (
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 16,
+              padding: isWeb ? 18 : 14,
+              marginBottom: 20,
+              shadowColor: "#000",
+              shadowOpacity: 0.1,
+              shadowRadius: 3,
+              elevation: 2,
+            }}
+          >
+            <Text
+              style={{
+                fontWeight: "bold",
+                fontSize: 18,
+                color: Colors.primary,
+                marginBottom: 10,
+                textAlign: "center",
+              }}
+            >
+              Your score this round — {myResult.total} pts{" "}
+              {isWinner(myResult.name) && (
+                <Text style={{ fontSize: isWeb ? 28 : 24, color: "#f4c542" }}>
+                  {" "}
+                  🏆
+                </Text>
+              )}
+            </Text>
+            {Object.entries(myResult.scores).map(
+              ([category, score], i, arr) => {
+                const icon = categoryIcons[category] ?? null;
+                const answer = myResult.answers?.[category] ?? "";
+                const isLast = i === arr.length - 1;
+
+                return (
+                  <View
+                    key={`${category}-${i}`}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      borderBottomWidth: isLast ? 0 : 0.5,
+                      borderColor: "#e6e0ff",
+                    }}
+                  >
+                    {icon && (
+                      <Image
+                        source={icon}
+                        style={{
+                          width: 45,
+                          height: 45,
+                          marginRight: 10,
+                        }}
+                        resizeMode="contain"
+                      />
+                    )}
+                    <Text
+                      style={{ fontSize: 15, color: "#333", flexShrink: 1 }}
+                    >
+                      <Text style={{ fontWeight: "600" }}>{category}:</Text>{" "}
+                      <Text
+                        style={{ color: Colors.primary, fontWeight: "600" }}
+                      >
+                        {answer || "—"}
+                      </Text>{" "}
+                      ({score.points} pts)
+                    </Text>
+                  </View>
+                );
+              },
+            )}
+          </View>
+        )}
+
+        {/* 🏆 Other players summary */}
+        {otherPlayers.length > 0 && (
+          <View
+            style={{
+              backgroundColor: "#f9f7ff",
+              borderRadius: 16,
+              paddingVertical: 10,
+              marginHorizontal: 4,
+            }}
+          >
+            <Text
+              style={{
+                fontWeight: "700",
+                fontSize: 16,
+                textAlign: "center",
+                marginBottom: 6,
+                color: Colors.primary,
+              }}
+            >
+              Other Players
+            </Text>
+
+            {otherPlayers.map((p, i) => (
+              <View
+                key={`${p.name || "player"}-${i}`}
+                style={{
+                  borderTopWidth: i === 0 ? 0 : 0.5,
+                  borderColor: "#e0dfff",
+                  paddingVertical: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 15,
+                    textAlign: "center",
+                    color: "#000",
+                  }}
+                >
+                  {p.name} —{" "}
+                  <Text style={{ fontWeight: "bold", color: "#000" }}>
+                    {p.total} pts
+                  </Text>{" "}
+                  {isWinner(p.name) && (
+                    <Text style={{ color: "#f4c542" }}>🏆</Text>
+                  )}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  };
+
   const renderContent = () => {
     switch (sessionState) {
       case SessionState.JOINING:
         return (
           <ContentCard
             title="Joining Game Session..."
-            content={<ActivityIndicator size="large" color={Colors.primary} />}
+            content={
+              <WordRushSpinner
+                text="Please Wait..."
+                textColor="#000"
+                size={100}
+              />
+            }
           />
         );
       case SessionState.WAITING_ROUND_START:
         return (
           <ContentCard
             title="Get ready! The round will start soon..."
-            content={<ActivityIndicator size="large" color={Colors.primary} />}
+            content={
+              <WordRushSpinner
+                text="Please Wait..."
+                textColor="#000"
+                size={100}
+              />
+            }
           />
         );
-      case SessionState.IN_ROUND_EVALUATION:
+      case SessionState.IN_ROUND_EVALUATION: {
         return (
           <ContentCard
-            title="A STOP has been triggered, evaluating answers..."
-            content={<ActivityIndicator size="large" color={Colors.primary} />}
+            title=""
+            content={
+              <WordRushSpinner
+                text="STOP!! WordRush is evaluating all answers..."
+                textColor="#000"
+                size={100}
+              />
+            }
           />
         );
+      }
       case SessionState.IN_ROUND:
         return (
           <ContentCard
@@ -405,30 +717,145 @@ export default function GameRoom() {
         );
       case SessionState.IN_ROUND_RESULTS:
         return (
-          <ContentCard
-            title="Round Results"
-            content={
-              <View>
-                <Text>Hey look, the ROUND results will be displayed here (A summary for the letter, MY answers and the score for each one)</Text>
-                <PrimaryButton
-                  title="Ready for next round"
-                  onPress={handleRoundResultContinue}
-                  disabled={false}
-                  loading={notifiedIsReady}
-                />
-              </View>
-            }
-          />
+          <Animated.View
+            style={{
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            }}
+          >
+            <ContentCard
+              title="Round Results"
+              content={
+                <View>
+                  {renderRoundResults()}
+                  <PrimaryButton
+                    title="Ready for next round"
+                    onPress={handleRoundResultContinue}
+                    disabled={false}
+                    loading={notifiedIsReady}
+                  />
+                </View>
+              }
+            />
+          </Animated.View>
         );
-      case SessionState.IN_GAME_RESULTS:
+      case SessionState.IN_GAME_RESULTS: {
+        // sort players by total descending
+        const allPlayers = [...(roundResults?.players ?? [])].sort(
+          (a, b) => b.total - a.total,
+        );
+
+        const topScore = allPlayers.length > 0 ? allPlayers[0].total : 0;
+        const winners =
+          topScore > 0 ? allPlayers.filter((p) => p.total === topScore) : []; // 🧩 only count winners if topScore > 0
+
         return (
           <ContentCard
-            title="GAME FINISHED: Here are the Results"
+            title="Game Results"
             content={
-              <View>
-                <Text>Hey look, the COMPLETE MATCH results will be displayed here (Probably a leaderboard and the possibility to view more details)</Text>
+              <View style={{ alignItems: "center" }}>
+                {allPlayers.length === 0 ? (
+                  <Text style={{ textAlign: "center", color: "#555" }}>
+                    No results available.
+                  </Text>
+                ) : (
+                  <View
+                    style={{
+                      width: "100%",
+                      marginBottom: 16,
+                      backgroundColor: "#fff",
+                      borderRadius: 16,
+                      paddingVertical: 10,
+                      shadowColor: "#000",
+                      shadowOpacity: 0.1,
+                      shadowRadius: 3,
+                      elevation: 2,
+                    }}
+                  >
+                    {allPlayers.map((p, i) => (
+                      <View
+                        key={`${p.name || "player"}-${i}`}
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          borderBottomWidth:
+                            i === allPlayers.length - 1 ? 0 : 0.5,
+                          borderColor: "#eee",
+                          paddingVertical: 10,
+                          paddingHorizontal: 18,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            fontWeight: i === 0 ? "700" : "500",
+                            color: i === 0 ? Colors.primary : "#000",
+                          }}
+                        >
+                          {i + 1}. {p.name}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            fontWeight: "600",
+                            color: i === 0 ? Colors.primary : "#333",
+                          }}
+                        >
+                          {p.total} pts{" "}
+                          {p.total === topScore && topScore > 0 && (
+                            <Text
+                              style={{
+                                fontSize: 22,
+                                lineHeight: 24,
+                                color: "#f4c542",
+                              }}
+                            >
+                              🏆
+                            </Text>
+                          )}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {winners.length > 0 && (
+                  <View
+                    style={{
+                      alignItems: "center",
+                      marginBottom: 20,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 28,
+                        fontWeight: "700",
+                        color: Colors.primary,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Winner{winners.length > 1 ? "s" : ""}!
+                    </Text>
+
+                    {winners.map((w) => (
+                      <Text
+                        key={w.name}
+                        style={{
+                          fontSize: 22,
+                          fontWeight: "600",
+                          color: "#000",
+                          textAlign: "center",
+                        }}
+                      >
+                        {w.name}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+
                 <PrimaryButton
-                  title="Return to main menu"
+                  title="   Return to main menu   "
                   onPress={handleGameResultContinue}
                   disabled={false}
                   loading={false}
@@ -437,6 +864,7 @@ export default function GameRoom() {
             }
           />
         );
+      }
     }
   };
 
@@ -448,15 +876,17 @@ export default function GameRoom() {
         barStyle="light-content"
       />
 
-      {/* ✅ NEW: GameRoomTitleBar (only addition) */}
+      {/* ✅ NEW: GameRoomTitleBar */}
       <View style={{ marginTop: 20 }}>
         <GameRoomTitleBar username={pdata?.nickname} avatar={avatarSource} />
       </View>
 
-      <ScreenTitleBar
-        screenName={"Round Letter: " + roundLetter.toUpperCase()}
-        onGoBackPress={handleGoBack}
-      />
+      {sessionState !== SessionState.IN_GAME_RESULTS && (
+        <ScreenTitleBar
+          screenName={"Round Letter: " + roundLetter.toUpperCase()}
+          onGoBackPress={handleGoBack}
+        />
+      )}
 
       <ScrollView
         showsVerticalScrollIndicator={false}

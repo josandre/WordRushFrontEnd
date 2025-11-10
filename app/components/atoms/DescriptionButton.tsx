@@ -5,9 +5,8 @@ import {
   TouchableOpacity,
   Image,
   ImageSourcePropType,
-  ActivityIndicator,
 } from "react-native";
-
+import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 import Icon from "react-native-vector-icons/Ionicons";
 
 import { Colors } from "@/app/theme/color";
@@ -56,7 +55,7 @@ export default function DescriptionButton({
           </Text>
         </View>
         {loading ? (
-          <ActivityIndicator size="small" color={Colors.primary} />
+          <WordRushSpinner text="Loading..." textColor="#000" size={100} />
         ) : (
           <Icon name="chevron-forward" size={24} color={Colors.primary} />
         )}

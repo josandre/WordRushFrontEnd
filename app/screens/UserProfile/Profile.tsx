@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Text,
   View,
-  ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import { AppBar } from "@react-native-material/core";
@@ -22,6 +21,7 @@ import SettingsList from "../../components/organisms/SettingsList";
 import { AppNavigation } from "@/app/navigator/AppNavigationTypes";
 import ProfileWebTokenManager from "@/app/StorageManager/ProfileManager/web/WebProfileManager";
 import ProfileMobileTokenManager from "@/app/StorageManager/ProfileManager/mobile/MobileProfileManager";
+import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 
 const isWeb = Platform.OS === "web";
 
@@ -76,7 +76,7 @@ export default function Profile() {
         {loading ? (
           <View style={styles.loaderContainer}>
             <View style={styles.loaderBox}>
-              <ActivityIndicator size="large" color={Colors.primary} />
+              <WordRushSpinner text="Loading..." textColor="#000" size={100} />
               <Text style={styles.loadingText}>Loading Profile...</Text>
             </View>
           </View>

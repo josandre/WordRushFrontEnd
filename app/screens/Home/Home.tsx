@@ -1,10 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {
-  SafeAreaView,
-  View,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
+import { SafeAreaView, View, ScrollView } from "react-native";
 import style from "@/app/theme/style";
 import { Colors } from "@/app/theme/color";
 import { isWeb } from "@/app/utils/envDetails";
@@ -24,6 +19,7 @@ import webSocketService from "@/app/services/webSocketService";
 import { GameRoomData, WebSocketRoomCreatedEvent, Category } from "./constants";
 import GameManager from "@/app/StorageManager/GameManager/GameManager";
 import { Snackbar } from "@react-native-material/core";
+import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 import {
   SnackBarProps,
   FALLBACK_ERROR_MESSAGE,
@@ -141,7 +137,7 @@ export default function Home() {
               title="Loading..."
               content={
                 <View>
-                  <ActivityIndicator size="large" color={Colors.primary} />
+                  <WordRushSpinner text="" textColor="#000" size={100} />
                 </View>
               }
             />

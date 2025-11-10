@@ -7,11 +7,10 @@ import { widthPercentage } from "@/app/utils/responsiveStyles";
 export default StyleSheet.create({
   contentCard: {
     padding: 20,
-
-    marginTop: 20,
+    marginTop: 10,
     marginLeft: widthPercentage(5),
     marginRight: widthPercentage(5),
-    marginBottom: 20,
+    marginBottom: 10,
 
     backgroundColor: Colors.secondary,
 

@@ -7,6 +7,22 @@ interface MessageData {
   [key: string]: any;
 }
 
+// --- ADD: Round results constants and type ---
+const GAME_SESSION_ROUND_RESULTS_TYPE = "GAME_SESSION|ROUND_RESULTS_SENT";
+const GAME_SESSION_ROUND_RESULTS_SENT = "GAME_SESSION|ROUND_RESULTS_SENT";
+
+export type RoundResultsPayload = {
+  letter: string;
+  categories: string[];
+  players: {
+    name: string;
+    answers: Record<string, string>;
+    scores: Record<string, { points: number; reason: string }>;
+    total: number;
+  }[];
+};
+// ---------------------------------------------
+
 const WEB_SOCKET_URL: string = isWeb
   ? "ws://127.0.0.1:5178/ws"
   : "ws://10.0.2.2:5178/ws";
@@ -57,11 +73,8 @@ class WebSocketService {
 
     // Open callback
     this.socketRef.onopen = () => {
-      //console.log("WebSocket is connected");
-
       this.isConnected = true;
       this.reconnectAttempts = 0;
-
       this.executeCallback(CONNECT_MESSAGE_TYPE, null);
     };
 
@@ -69,6 +82,47 @@ class WebSocketService {
     this.socketRef.onmessage = (event: MessageEvent) => {
       try {
         const data: MessageData = JSON.parse(event.data);
+        try {
+          const raw = JSON.parse(event.data);
+
+          // Support both your existing message shape and the backend's WebSocketMessage
+          const type: string =
+            (typeof raw?.Type === "string" && raw.Type) ||
+            (typeof raw?.type === "string" && raw.type) ||
+            "";
+
+          // If backend message envelope contains JsonData, parse it; otherwise use raw as-is
+          const jsonDataRaw =
+            typeof raw?.JsonData === "string" ? raw.JsonData : null;
+
+          // ---- ADD: Handle ROUND_RESULTS_SENT ----
+          if (type.includes(GAME_SESSION_ROUND_RESULTS_SENT)) {
+            try {
+              const payload: RoundResultsPayload = jsonDataRaw
+                ? JSON.parse(jsonDataRaw)
+                : (raw?.payload as RoundResultsPayload);
+
+              console.log(
+                "[WEBSOCKET] - ROUND_RESULTS_SENT received:",
+                payload,
+              );
+
+              // Execute all callbacks registered for this message type
+              this.executeCallback(GAME_SESSION_ROUND_RESULTS_SENT, payload);
+            } catch (err) {
+              console.warn(
+                "[WEBSOCKET] - Failed to parse ROUND_RESULTS_SENT payload:",
+                err,
+              );
+            }
+          }
+          // ------------------------------------------
+
+          // keep your existing dispatching / callbacks below...
+        } catch (err) {
+          console.warn("[WS] parse error:", err);
+        }
+
         this.executeCallback(data.Type, data);
       } catch (error) {
         console.error("Error parsing WebSocket message: ", error);
@@ -77,15 +131,11 @@ class WebSocketService {
 
     // Error callback
     this.socketRef.onerror = (event: Event) => {
-      //console.error("WebSocket error: ", event);
-
       this.executeCallback("error", event);
     };
 
     // Close callback
     this.socketRef.onclose = (event: CloseEvent) => {
-      //console.log("WebSocket closed: ", event.code, event.reason);
-
       this.isConnected = false;
       this.socketRef = null;
 
@@ -100,7 +150,6 @@ class WebSocketService {
     };
   }
 
-  //
   public disconnect(): void {
     if (this.socketRef) {
       this.socketRef.close();
@@ -113,10 +162,8 @@ class WebSocketService {
     }
   }
 
-  //
   public sendMessage(data: object): boolean {
     if (this.socketRef && this.isConnected) {
-      console.log(data);
       console.log("[WEBSOCKET] - Sending message: ", JSON.stringify(data));
       this.socketRef.send(JSON.stringify(data));
       return true;
@@ -178,6 +225,18 @@ class WebSocketService {
       this.callbacks[messageType].forEach((callback) => callback(data));
     }
   }
+
+  // --- ADD: Optional helper for READY_FOR_NEXT_ROUND ---
+  public sendReadyForNextRound(userId: string): void {
+    const payload = {
+      Type: "GAME_SESSION|READY_FOR_NEXT_ROUND",
+      JsonData: JSON.stringify({ userId }),
+    };
+
+    this.socketRef?.send(JSON.stringify(payload));
+    console.log("[WEBSOCKET] - Sent READY_FOR_NEXT_ROUND:", userId);
+  }
+  // -----------------------------------------------------
 }
 
 export default WebSocketService.getInstance();
