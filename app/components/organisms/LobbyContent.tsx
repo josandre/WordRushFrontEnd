@@ -1,11 +1,11 @@
 import React from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text } from "react-native";
 import ContentCard from "../atoms/ContentCard";
 import PrimaryButton from "../atoms/PrimaryButton";
 import PlayerCard from "../molecules/PlayerCard";
 import { Colors } from "../../theme/color";
 import styles from "./LobbyStyles";
-
+import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 type LobbyContentProps = {
   roomId: string | null;
   isOwner: boolean;
@@ -58,7 +58,7 @@ export default function LobbyContent({
                 )}
               </View>
             ) : (
-              <ActivityIndicator size="large" color={Colors.secondary} />
+              <WordRushSpinner text="Loading..." textColor="#000" size={100} />
             )}
 
             <View style={styles.playersContainer}>

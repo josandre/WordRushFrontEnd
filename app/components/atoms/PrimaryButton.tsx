@@ -4,13 +4,12 @@ import {
   Text,
   GestureResponderEvent,
   TextStyle,
-  ActivityIndicator,
   ViewStyle,
 } from "react-native";
 import style from "../../theme/style";
 import { Colors } from "../../theme/color";
 import { webButtonStyles, getWebPointerStyles } from "../../utils/webStyles";
-
+import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 type PrimaryButtonProps = {
   title: string;
   onPress?: (event: GestureResponderEvent) => void;
@@ -42,7 +41,7 @@ export default function PrimaryButton({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={Colors.secondary} />
+        <WordRushSpinner text="Loading..." textColor="#000" size={100} />
       ) : (
         <Text style={[style.btntxt, textStyle]}>{title}</Text>
       )}

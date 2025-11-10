@@ -6,12 +6,11 @@ import {
   View,
   Text,
   TextInput,
-  ActivityIndicator,
   Image,
   Platform,
   useWindowDimensions,
 } from "react-native";
-
+import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 import { Colors } from "@/app/theme/color";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -46,7 +45,6 @@ import globeIcon from "@/assets/icons/globe.png";
 import foodIcon from "@/assets/icons/food.png";
 import animalIcon from "@/assets/icons/animal.png";
 import colorIcon from "@/assets/icons/color.png";
-import rushlogo from "@/assets/image/logo2.png";
 import { GameRoomData } from "../Home/constants";
 
 type GameRoomRouteParams = {
@@ -97,49 +95,6 @@ export default function GameRoom() {
   // 🎞️ Animation for round results
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
-  const spinAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (sessionState === SessionState.IN_ROUND_EVALUATION) {
-      // continuous spin (manual recursion for web reliability)
-      const spinOnce = () => {
-        spinAnim.setValue(0);
-        Animated.timing(spinAnim, {
-          toValue: 1,
-          duration: 1800,
-          useNativeDriver: true,
-        }).start(() => spinOnce());
-      };
-      spinOnce();
-
-      // continuous gentle pulse (scale 0.9–1.1)
-      const pulseAnim = new Animated.Value(1);
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.1,
-            duration: 900,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 0.9,
-            duration: 900,
-            useNativeDriver: true,
-          }),
-        ]),
-      ).start();
-
-      // fade-in animation
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }).start();
-
-      // attach pulseAnim to global scope for render use
-      (spinAnim as any).pulse = pulseAnim;
-    }
-  }, [sessionState]);
 
   // When round results state changes, fade in the section
   useEffect(() => {
@@ -707,77 +662,38 @@ export default function GameRoom() {
         return (
           <ContentCard
             title="Joining Game Session..."
-            content={<ActivityIndicator size="large" color={Colors.primary} />}
+            content={
+              <WordRushSpinner
+                text="Please Wait..."
+                textColor="#000"
+                size={100}
+              />
+            }
           />
         );
       case SessionState.WAITING_ROUND_START:
         return (
           <ContentCard
             title="Get ready! The round will start soon..."
-            content={<ActivityIndicator size="large" color={Colors.primary} />}
+            content={
+              <WordRushSpinner
+                text="Please Wait..."
+                textColor="#000"
+                size={100}
+              />
+            }
           />
         );
       case SessionState.IN_ROUND_EVALUATION: {
-        const spin = spinAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: ["0deg", "360deg"],
-        });
-
         return (
           <ContentCard
             title=""
             content={
-              <Animated.View
-                style={{
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingVertical: 50,
-                  opacity: fadeAnim,
-                }}
-              >
-                {/* 🌀 Rotating WordRush logo */}
-                <Animated.Image
-                  source={rushlogo} // replace if your logo lives elsewhere
-                  style={{
-                    width: 96,
-                    height: 96,
-                    transform: [
-                      { rotate: spin },
-                      { scale: (spinAnim as any).pulse ?? 1 },
-                    ],
-
-                    marginBottom: 30,
-                  }}
-                  resizeMode="contain"
-                />
-
-                {/* 🗨️ Evaluation text */}
-                <Text
-                  style={{
-                    fontSize: 26,
-                    color: "#f50000ff",
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    paddingHorizontal: 24,
-                    lineHeight: 22,
-                  }}
-                >
-                  STOP!!
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: "#000",
-                    textAlign: "center",
-                    paddingHorizontal: 24,
-                    lineHeight: 22,
-                  }}
-                >
-                  The game engine is scoring every player’s responses for this
-                  round. Please hold tight while WordRush’s AI checks all
-                  categories.
-                </Text>
-              </Animated.View>
+              <WordRushSpinner
+                text="STOP!! WordRush is evaluating all answers..."
+                textColor="#000"
+                size={100}
+              />
             }
           />
         );
