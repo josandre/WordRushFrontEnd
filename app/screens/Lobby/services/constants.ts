@@ -3,6 +3,11 @@ export type GameSetting = {
   CategoriesArray: string[] | null;
   TimeLimit: number;
   Order: GameOrder;
+  /**
+   * Number of hint tokens each player will have in a game session.
+   * Players consume one token per hint requested. Defaults to 3.
+   */
+  HintTokens?: number;
 };
 
 export enum GameOrder {
