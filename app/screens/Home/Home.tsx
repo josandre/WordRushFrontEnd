@@ -69,6 +69,7 @@ export default function Home() {
     setCreatingRoom(true);
     const jsonData = {
       PlayerProfile: {
+        UserId: pdata?.id,
         Nickname: pdata?.nickname,
         Avatar: pdata?.avatar,
         Email: pdata?.email,

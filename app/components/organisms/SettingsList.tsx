@@ -32,6 +32,12 @@ export default function SettingsList({ email }: SettingsListProps) {
         subtitle={email ?? "No Email"}
         onPress={() => navigation.navigate("ChangePassword")}
       />
+      <SettingItem
+        icon="game-controller-outline"
+        title="Game Information"
+        subtitle="View your game statistics"
+        onPress={() => navigation.navigate("GameInformation")}
+      />
     </ScrollView>
   );
 }

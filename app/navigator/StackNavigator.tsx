@@ -12,6 +12,7 @@ import UpdateProfile from "@/app/screens/UserProfile/UpdateProfile";
 import { isWeb } from "../utils/envDetails";
 import ResetPassword from "../screens/Auth/ResetPassword/ResetPassword";
 import ChangePassword from "../screens/UserProfile/ChangePassword";
+import GameInformation from "../screens/UserProfile/GameInformation";
 import Home from "../screens/Home/Home";
 import GameConfiguration from "@/app/screens/Lobby/GameConfiguration";
 import JoinLobby from "@/app/screens/Lobby/JoinLobby";
@@ -66,6 +67,11 @@ export default function StackNavigator() {
         <Stack.Screen
           name="ChangePassword"
           component={ChangePassword}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="GameInformation"
+          component={GameInformation}
           options={{ headerShown: false }}
         />
         <Stack.Screen
