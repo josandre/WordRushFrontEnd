@@ -9,6 +9,8 @@ import {
   Image,
   Platform,
   useWindowDimensions,
+  Modal,
+  TouchableOpacity,
 } from "react-native";
 import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 import { Colors } from "@/app/theme/color";
@@ -39,6 +41,9 @@ import ProfileWebTokenManager from "@/app/StorageManager/ProfileManager/web/WebP
 import useProfileUser from "@/app/screens/UserProfile/services/useProfileUser";
 import avatars, { getAvatarImage } from "@/assets/avatars";
 
+// Icon library used for hint button
+import Icon from "react-native-vector-icons/Ionicons";
+
 // 🖼️ Category icons
 import personIcon from "@/assets/icons/person.png";
 import globeIcon from "@/assets/icons/globe.png";
@@ -61,6 +66,13 @@ enum SessionState {
   IN_GAME_RESULTS,
 }
 
+// Structure of the hint response coming from the backend.
+// Contains the generated hint text and the number of tokens remaining for the player.
+type HintResponsePayload = {
+  hint: string;
+  tokensLeft: number;
+};
+
 const SIMULATE_LATENCY: boolean = true;
 
 export default function GameRoom() {
@@ -79,6 +91,18 @@ export default function GameRoom() {
     message: "",
   });
   const [notifiedIsReady, setNotifiedIsReady] = useState<boolean>(false);
+
+  // ---------------------------------------------------------------------------
+  // Hint system state
+  // Number of hint tokens the player has remaining in the current game.  This
+  // value is initialized from the server settings when the component mounts
+  // and is updated whenever a hint response is received from the backend.
+  const [hintTokensLeft, setHintTokensLeft] = useState<number>(3);
+  // The actual hint text returned by the backend.  This will be displayed
+  // inside a modal when a hint is requested.
+  const [currentHint, setCurrentHint] = useState<string>("");
+  // Controls whether the hint modal is visible.
+  const [hintModalVisible, setHintModalVisible] = useState<boolean>(false);
 
   // 🆕 New: Store full round results payload
   const [roundResults, setRoundResults] = useState<RoundResultsPayload | null>(
@@ -144,6 +168,45 @@ export default function GameRoom() {
       color: ERROR_SNACKBAR_COLOR,
     });
     navigation.navigate("MyTabs");
+  };
+
+  /**
+   * Handles the server's hint response. The backend sends back both the hint
+   * text and the number of tokens remaining.  Parse the incoming payload
+   * safely, update our state accordingly, and then display the hint in
+   * a modal. If parsing fails, the response is ignored.
+   */
+  const onHintResponse = (data: any): void => {
+    try {
+      // Determine if the backend wrapped the payload in a JsonData string
+      const jsonString =
+        typeof data === "string"
+          ? data
+          : typeof data?.JsonData === "string"
+            ? data.JsonData
+            : null;
+      let payload: HintResponsePayload | null = null;
+      if (jsonString) {
+        payload = JSON.parse(jsonString) as HintResponsePayload;
+      } else if (data && typeof data === "object") {
+        payload = {
+          hint: (data.hint as string) ?? "",
+          tokensLeft:
+            typeof data.tokensLeft === "number"
+              ? (data.tokensLeft as number)
+              : hintTokensLeft,
+        };
+      }
+      if (payload) {
+        setCurrentHint(payload.hint || "");
+        if (typeof payload.tokensLeft === "number") {
+          setHintTokensLeft(payload.tokensLeft);
+        }
+        setHintModalVisible(true);
+      }
+    } catch (err) {
+      console.warn("Failed to parse HINT_RESPONSE payload", err);
+    }
   };
 
   const onRoundStarted = (data: any): void => {
@@ -289,6 +352,48 @@ export default function GameRoom() {
     setAnswers(newAnswers);
   };
 
+  /**
+   * Sends a hint request to the backend for the provided category.  Hints can
+   * only be requested when the game is currently in a round and the player
+   * still has tokens remaining. The active round letter is included in
+   * the payload.  If no tokens remain, a snackbar notification is shown.
+   */
+  const onHintPress = (category: string) => {
+    if (sessionState !== SessionState.IN_ROUND) return;
+
+    if (hintTokensLeft <= 0) {
+      setSnackbar({
+        visible: true,
+        message: "No hints left for this game",
+        color: ERROR_SNACKBAR_COLOR,
+      });
+      return;
+    }
+
+    try {
+      const payload = {
+        Type: "GAME_SESSION|REQUEST_HINT",
+        JsonData: JSON.stringify({
+          category: category,
+          letter: roundLetter,
+        }),
+      };
+
+      webSocketService.sendMessage(payload); // ✅ single-argument version
+    } catch (err) {
+      console.warn("Failed to send hint request", err);
+    }
+  };
+
+  /**
+   * Closes the hint modal and clears the current hint text.  This does not
+   * restore any tokens, it simply hides the hint popup.
+   */
+  const closeHintModal = () => {
+    setHintModalVisible(false);
+    setCurrentHint("");
+  };
+
   const isStopAvailable = (): boolean => {
     return answers.every(
       (a) => a.trim().length > 1 && a.toUpperCase().startsWith(roundLetter),
@@ -315,6 +420,14 @@ export default function GameRoom() {
       setCategories(gameData?.Settings.CategoriesArray ?? []);
       setAnswers(Array(gameData?.Settings.CategoriesArray?.length).fill(""));
 
+      // Initialise hint tokens based on the current room settings (default to 3)
+      const initialTokens = (gameData?.Settings as any)?.HintTokens;
+      setHintTokensLeft(
+        typeof initialTokens === "number" && initialTokens >= 0
+          ? initialTokens
+          : 3,
+      );
+
       if (SIMULATE_LATENCY) {
         const delay = Math.floor(Math.random() * 1000) + 1000;
         await new Promise((r) => setTimeout(r, delay));
@@ -335,6 +448,9 @@ export default function GameRoom() {
       onRoundResultReceived,
     );
     webSocketService.addCallbacks("GAME_SESSION|GAME_FINISHED", onGameFinished);
+
+    // Listen for hint responses from the backend to update the UI
+    webSocketService.addCallbacks("GAME_SESSION|HINT_RESPONSE", onHintResponse);
 
     if (sessionState === SessionState.JOINING) {
       setSessionState(SessionState.WAITING_ROUND_START);
@@ -365,6 +481,31 @@ export default function GameRoom() {
                 elevation: 4,
               }}
             >
+              {/* Hint overlay button for mobile */}
+              <TouchableOpacity
+                onPress={() => onHintPress(category)}
+                disabled={
+                  hintTokensLeft <= 0 || sessionState !== SessionState.IN_ROUND
+                }
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  zIndex: 5,
+                  padding: 4,
+                }}
+              >
+                <Icon
+                  name="help-circle"
+                  size={24}
+                  color={
+                    hintTokensLeft > 0 && sessionState === SessionState.IN_ROUND
+                      ? Colors.primary
+                      : "#ccc"
+                  }
+                />
+              </TouchableOpacity>
+
               <Image
                 source={categoryIcons[category]}
                 style={{ width: 60, height: 60, marginBottom: 10 }}
@@ -428,6 +569,31 @@ export default function GameRoom() {
               elevation: 4,
             }}
           >
+            {/* Hint overlay button for web */}
+            <TouchableOpacity
+              onPress={() => onHintPress(category)}
+              disabled={
+                hintTokensLeft <= 0 || sessionState !== SessionState.IN_ROUND
+              }
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                zIndex: 5,
+                padding: 4,
+              }}
+            >
+              <Icon
+                name="help-circle"
+                size={26}
+                color={
+                  hintTokensLeft > 0 && sessionState === SessionState.IN_ROUND
+                    ? Colors.primary
+                    : "#ccc"
+                }
+              />
+            </TouchableOpacity>
+
             <Image
               source={categoryIcons[category]}
               style={{ width: 80, height: 80, marginBottom: 14 }}
@@ -704,6 +870,18 @@ export default function GameRoom() {
             title=""
             content={
               <View>
+                {/* Display remaining hint tokens */}
+                <View style={{ alignItems: "center", marginBottom: 12 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: "600",
+                      color: Colors.primary,
+                    }}
+                  >
+                    Hints left: {hintTokensLeft}
+                  </Text>
+                </View>
                 {renderCards()}
                 <PrimaryButton
                   title="STOP!"
@@ -895,6 +1073,61 @@ export default function GameRoom() {
       >
         <View style={styles.container}>{renderContent()}</View>
       </ScrollView>
+
+      {/* Hint modal: shown when a hint is received */}
+      <Modal
+        transparent
+        visible={hintModalVisible}
+        animationType="fade"
+        onRequestClose={closeHintModal}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0,0,0,0.4)",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "white",
+              padding: 20,
+              borderRadius: 12,
+              width: "85%",
+              maxWidth: 400,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "700",
+                color: Colors.primary,
+                marginBottom: 12,
+                textAlign: "center",
+              }}
+            >
+              Hint
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                color: "#333",
+                marginBottom: 20,
+                textAlign: "center",
+              }}
+            >
+              {currentHint || "No hint available."}
+            </Text>
+            <PrimaryButton
+              title="Close"
+              onPress={closeHintModal}
+              disabled={false}
+              loading={false}
+            />
+          </View>
+        </View>
+      </Modal>
 
       {snackbar.visible && (
         <Snackbar

@@ -45,6 +45,8 @@ export default function GameConfiguration() {
   const [letterOrder, setLetterOrder] = useState<LetterOrder>(
     LetterOrder.Ascending,
   );
+  // Number of hint tokens (default to 3)
+  const [hintTokens, setHintTokens] = useState<number>(3);
 
   const sortLettersByOrder = (
     letters: string[],
@@ -72,6 +74,10 @@ export default function GameConfiguration() {
             : ["A"];
           const sortedLetters = sortLettersByOrder(lettersFromStorage, order);
           setSelectedLetters(sortedLetters);
+
+          // Load hint tokens from settings, default to 3 if missing
+          const tokens = (data.Settings as any).HintTokens;
+          setHintTokens(tokens !== undefined && tokens !== null ? tokens : 3);
         }
       }
       setLoadingData(false);
@@ -107,6 +113,7 @@ export default function GameConfiguration() {
         Letters: lettersToSave,
         TimeLimit: timeLimit,
         Order: letterOrderToGameOrder(letterOrder),
+        HintTokens: hintTokens,
       },
     };
 
@@ -119,6 +126,7 @@ export default function GameConfiguration() {
               Letters: lettersToSave,
               TimeLimit: timeLimit,
               Order: letterOrderToGameOrder(letterOrder),
+                HintTokens: hintTokens,
             },
           };
 
@@ -163,10 +171,14 @@ export default function GameConfiguration() {
         ? [...gameRoomData.Settings.Letters]
         : ["A"];
       setSelectedLetters(sortLettersByOrder(letters, order));
+      // Reset tokens to stored value or default
+      const tokens = (gameRoomData.Settings as any).HintTokens;
+      setHintTokens(tokens !== undefined && tokens !== null ? tokens : 3);
     } else {
       setTimeLimit(45);
       setSelectedLetters(["A"]);
       setLetterOrder(LetterOrder.Ascending);
+      setHintTokens(3);
     }
     navigation.navigate("Lobby", {
       isOwner: true,
@@ -209,6 +221,8 @@ export default function GameConfiguration() {
           loading={loading}
           disabled={loading || loadingData}
           gameRoomData={gameRoomData}
+          hintTokens={hintTokens}
+          onHintTokensChange={setHintTokens}
         />
       </ScrollView>
 
