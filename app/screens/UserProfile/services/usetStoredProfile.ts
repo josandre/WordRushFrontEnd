@@ -5,6 +5,7 @@ import ProfileMobileTokenManager from "@/app/StorageManager/ProfileManager/mobil
 const isWeb = Platform.OS === "web";
 
 export type StoredProfile = {
+  id?: number;
   nickname?: string;
   email?: string;
   avatar?: string;
@@ -20,6 +21,7 @@ export async function getStoredProfile(): Promise<StoredProfile | null> {
 
     if (userdata?.nickname || userdata?.email) {
       return {
+        id: userdata.id,
         nickname: userdata.nickname ?? "Player",
         email: userdata.email ?? "",
         avatar: userdata.avatar ?? "default",

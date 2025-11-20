@@ -115,6 +115,7 @@ export default function JoinLobby() {
 
     const jsonData = {
       PlayerProfile: {
+        UserId: profile?.id,
         Nickname: profile?.nickname,
         Avatar: profile?.avatar,
         Email: profile?.email,

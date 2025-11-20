@@ -10,6 +10,7 @@ export type AppRoutes = {
   Profile: undefined;
   EditProfile: undefined;
   ChangePassword: undefined;
+  GameInformation: undefined;
   About: undefined;
   Contact: undefined;
   PrivacyPolicy: undefined;
