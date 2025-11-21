@@ -16,6 +16,7 @@ export type RoundResultsPayload = {
   categories: string[];
   players: {
     name: string;
+    userId?: number;
     answers: Record<string, string>;
     scores: Record<string, { points: number; reason: string }>;
     total: number;

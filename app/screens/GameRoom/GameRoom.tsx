@@ -92,6 +92,7 @@ export default function GameRoom() {
   });
   const [notifiedIsReady, setNotifiedIsReady] = useState<boolean>(false);
 
+  // New: Store full round results payload
   // ---------------------------------------------------------------------------
   // Hint system state
   // Number of hint tokens the player has remaining in the current game.  This
@@ -108,14 +109,32 @@ export default function GameRoom() {
   const [roundResults, setRoundResults] = useState<RoundResultsPayload | null>(
     null,
   );
+  // current player's userId (from profile storage)
+  const [userId, setUserId] = useState<number | null>(null);
 
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
 
-  // 🔹 User Profile (for GameRoomTitleBar)
+  // User Profile (for GameRoomTitleBar)
   const { getProfileUser, pdata } = useProfileUser();
   const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
+  // load userId once from stored profile (UserProfile key)
+  useEffect(() => {
+    const loadUserIdFromProfile = async () => {
+      try {
+        const storedProfile = await manager.getUserProfile();
+        if (storedProfile?.id != null) {
+          setUserId(storedProfile.id);
+          console.log("Loaded userId from profile:", storedProfile.id);
+        }
+      } catch (err) {
+        console.warn("Failed to get userId from profile", err);
+      }
+    };
+    loadUserIdFromProfile();
+  }, []);
+
   // 🎞️ Animation for round results
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
@@ -225,12 +244,21 @@ export default function GameRoom() {
 
     try {
       // Detect if the WebSocket message contains JsonData (envelope)
-      const jsonString =
-        typeof data === "string"
-          ? data
-          : typeof data?.JsonData === "string"
-            ? data.JsonData
-            : null;
+      // Accept raw objects OR wrapped envelopes
+      let jsonString: string | null = null;
+
+      // Case 1: backend sent the full object directly (no envelope)
+      if (typeof data === "object" && data.Letter) {
+        jsonString = JSON.stringify(data);
+      }
+      // Case 2: backend sent the envelope with JsonData
+      else if (typeof data?.JsonData === "string") {
+        jsonString = data.JsonData;
+      }
+      // Case 3: backend sent string directly
+      else if (typeof data === "string") {
+        jsonString = data;
+      }
 
       if (!jsonString) {
         console.warn("Invalid round results format:", data);
@@ -246,6 +274,7 @@ export default function GameRoom() {
         categories: parsed.Categories ?? [],
         players: Array.isArray(parsed.Players)
           ? parsed.Players.map((p: any) => ({
+              userId: p.Id ?? p.userId ?? p.UserId,
               name: p.Name ?? "",
               answers: p.Answers ?? {},
               scores: Object.fromEntries(
@@ -314,9 +343,12 @@ export default function GameRoom() {
   };
 
   const onStop = (): void => {
-    const jsonData = {
+    const jsonData: any = {
       Answers: [...answers],
     };
+    if (userId != null) {
+      jsonData.userId = userId;
+    }
     webSocketService.sendMessage({
       Type: "GAME_SESSION|SEND_ROUND_ANSWERS",
       JsonData: JSON.stringify(jsonData),
@@ -338,9 +370,15 @@ export default function GameRoom() {
   };
 
   const handleStopPress = (): void => {
+    const jsonData: any = {};
+
+    if (userId != null) {
+      jsonData.userId = userId;
+    }
+
     webSocketService.sendMessage({
       Type: "GAME_SESSION|STOP",
-      JsonData: "{}",
+      JsonData: JSON.stringify(jsonData),
     });
     setSessionState(SessionState.IN_ROUND_EVALUATION);
   };
@@ -402,10 +440,17 @@ export default function GameRoom() {
 
   const handleRoundResultContinue = (): void => {
     setNotifiedIsReady(true);
-    webSocketService.sendMessage({
-      Type: "GAME_SESSION|READY_FOR_NEXT_ROUND",
-      JsonData: "{}",
-    });
+
+    // Prefer the helper that already formats JsonData with userId
+    if (userId != null) {
+      webSocketService.sendReadyForNextRound(userId.toString());
+    } else {
+      // Fallback to original behavior if userId isn't available
+      webSocketService.sendMessage({
+        Type: "GAME_SESSION|READY_FOR_NEXT_ROUND",
+        JsonData: "{}",
+      });
+    }
   };
 
   const handleGameResultContinue = (): void => {
