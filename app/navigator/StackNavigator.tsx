@@ -39,7 +39,7 @@ export default function StackNavigator() {
           />
         ) : null}
 
-        {isWeb ? (
+        {/* {isWeb ? (
           <Stack.Screen
             name="Option"
             component={Option}
@@ -51,8 +51,12 @@ export default function StackNavigator() {
             component={Introduction}
             options={{ headerShown: false }}
           />
-        )}
-
+        )} */}
+        <Stack.Screen
+          name="Option"
+          component={Option}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="MyTabs"
           component={MyTabs}
@@ -94,13 +98,13 @@ export default function StackNavigator() {
           component={UpdateProfile}
           options={{ headerShown: false }}
         />
-        {!isWeb && (
+        {/* {!isWeb && (
           <Stack.Screen
             name="Option"
             component={Option}
             options={{ headerShown: false }}
           />
-        )}
+        )} */}
         <Stack.Screen
           name="Home"
           component={Home}

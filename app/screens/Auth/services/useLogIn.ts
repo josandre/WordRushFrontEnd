@@ -26,6 +26,10 @@ export default function useLogIn() {
     const result = await api.post<LogInResponse>(path, payload);
 
     if (!result.success) {
+      if (result.errorMessage === "ACCOUNT_INACTIVE") {
+        return { success: false, errorMessage: "ACCOUNT_INACTIVE" };
+      }
+
       setError(result.errorMessage);
       setLoading(false);
       return { success: false, errorMessage: result.errorMessage };
