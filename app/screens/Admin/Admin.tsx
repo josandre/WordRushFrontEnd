@@ -4,68 +4,21 @@ import {
   View,
   Text,
   TextInput,
-  FlatList,
-  StyleSheet,
   TouchableOpacity,
-  Switch,
   ActivityIndicator,
+  StyleSheet,
+  ImageBackground,
 } from "react-native";
-import useAdminUsers, { AdminUser } from "./services/useAdminUsers";
 import { Colors } from "@/app/theme/color";
+import { isWeb } from "@/app/utils/envDetails";
+import useAdminUsers from "./services/useAdminUsers";
 
-function Header() {
-  return (
-    <View style={styles.headerRow}>
-      <Text style={[styles.headerCell, styles.cellId]}>ID</Text>
-      <Text style={[styles.headerCell, styles.cellLarge]}>Nickname</Text>
-      <Text style={[styles.headerCell, styles.cellLarge]}>Email</Text>
-      <Text style={[styles.headerCell, styles.cellSmall]}>Role</Text>
-      <Text style={[styles.headerCell, styles.cellMedium]}>Created</Text>
-      <Text style={[styles.headerCell, styles.cellSmall]}>Played</Text>
-      <Text style={[styles.headerCell, styles.cellSmall]}>Wins</Text>
-      <Text style={[styles.headerCell, styles.cellSmall]}>Score</Text>
-      <Text style={[styles.headerCell, styles.cellSmall]}>Active</Text>
-      <Text style={[styles.headerCell, styles.cellSmall]}>Toggle</Text>
-    </View>
-  );
-}
+// ORGANISMS
+import AdminUsersTable from "@/app/components/organisms/admin/AdminUsersTable";
+import AdminUsersList from "@/app/components/organisms/admin/AdminUsersList";
 
-function Row({
-  user,
-  onToggle,
-}: {
-  user: AdminUser;
-  onToggle: (id: number) => void;
-}) {
-  return (
-    <View style={styles.row}>
-      <Text style={[styles.cell, styles.cellId]}>{user.id}</Text>
-      <Text style={[styles.cell, styles.cellLarge]} numberOfLines={1}>
-        {user.nickname}
-      </Text>
-      <Text style={[styles.cell, styles.cellLarge]} numberOfLines={1}>
-        {user.email}
-      </Text>
-      <Text style={[styles.cell, styles.cellSmall]}>{user.roleId}</Text>
-      <Text style={[styles.cell, styles.cellMedium]}>
-        {new Date(user.createdOn).toLocaleDateString()}
-      </Text>
-      <Text style={[styles.cell, styles.cellSmall]}>
-        {user.totalPlayedGame}
-      </Text>
-      <Text style={[styles.cell, styles.cellSmall]}>{user.wonGames}</Text>
-      <Text style={[styles.cell, styles.cellSmall]}>{user.totalStore}</Text>
-      <View style={[styles.cell, styles.cellSmall, styles.switchCell]}>
-        <Switch value={user.isActive} onValueChange={() => onToggle(user.id)} />
-      </View>
-      <View style={[styles.cell, styles.cellSmall]}>
-        <TouchableOpacity onPress={() => onToggle(user.id)}>
-          <Text style={styles.toggleText}>Toggle</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
+// YOUR ACTUAL APP BACKGROUND
+import introBg from "@/assets/image/bge.png";
 
 export default function Admin() {
   const { loading, error, users, refresh, setSearch, toggleActive } =
@@ -76,70 +29,76 @@ export default function Admin() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Admin Panel</Text>
-      <Text style={styles.subtitle}>
-        Manage users, activation status and basic game statistics.
-      </Text>
+    <ImageBackground source={introBg} resizeMode="cover" style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.overlay} />
 
-      <View style={styles.searchRow}>
-        <TextInput
-          placeholder="Search by nickname or email"
-          placeholderTextColor={Colors.disable}
-          onChangeText={setSearch}
-          onSubmitEditing={refresh}
-          style={styles.searchInput}
-        />
-        <TouchableOpacity style={styles.searchButton} onPress={refresh}>
-          <Text style={styles.searchButtonText}>Search</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.contentWrapper}>
+          <Text style={styles.title}>Admin Panel</Text>
 
-      {loading && (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <View style={styles.searchRow}>
+            <TextInput
+              placeholder="Search by nickname or email"
+              placeholderTextColor={Colors.disable}
+              onChangeText={setSearch}
+              onSubmitEditing={refresh}
+              style={styles.searchInput}
+              returnKeyType="search"
+            />
+
+            <TouchableOpacity style={styles.searchButton} onPress={refresh}>
+              <Text style={styles.searchButtonText}>Search</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loading && <ActivityIndicator size="large" color={Colors.primary} />}
+
+          {!loading && error && <Text style={styles.errorText}>{error}</Text>}
+
+          {!loading &&
+            !error &&
+            (isWeb ? (
+              <AdminUsersTable users={users} onToggle={toggleActive} />
+            ) : (
+              <AdminUsersList users={users} onToggle={toggleActive} />
+            ))}
         </View>
-      )}
-
-      {error && !loading && <Text style={styles.errorText}>{error}</Text>}
-
-      {!loading && !error && (
-        <FlatList
-          data={users}
-          keyExtractor={(item) => item.id.toString()}
-          ListHeaderComponent={<Header />}
-          stickyHeaderIndices={[0]}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => <Row user={item} onToggle={toggleActive} />}
-        />
-      )}
-    </SafeAreaView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    alignItems: "center",
   },
+
+  // subtle transparent overlay to ensure text readability
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.25)",
+  },
+
+  contentWrapper: {
+    flex: 1,
+    width: "100%",
+    maxWidth: 960,
+    padding: 16,
+  },
+
   title: {
     fontSize: 22,
     fontWeight: "700",
-    color: Colors.active,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.txt1,
+    color: Colors.secondary,
     marginBottom: 12,
   },
+
   searchRow: {
     flexDirection: "row",
-    alignItems: "center",
     marginBottom: 12,
   },
+
   searchInput: {
     flex: 1,
     backgroundColor: Colors.bg1,
@@ -151,69 +110,19 @@ const styles = StyleSheet.create({
     marginRight: 8,
     color: Colors.txt,
   },
+
   searchButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.bord,
     borderRadius: 12,
-  },
-  searchButtonText: {
-    color: Colors.secondary,
-    fontWeight: "600",
-  },
-  headerRow: {
-    flexDirection: "row",
-    backgroundColor: Colors.bg1,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.bord,
-  },
-  headerCell: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: Colors.txt,
-  },
-  row: {
-    flexDirection: "row",
-    backgroundColor: Colors.bg,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.bord,
-  },
-  cell: {
-    fontSize: 12,
-    color: Colors.txt,
-    paddingRight: 4,
-  },
-  cellId: {
-    width: 40,
-  },
-  cellSmall: {
-    width: 60,
-  },
-  cellMedium: {
-    width: 90,
-  },
-  cellLarge: {
-    flex: 1,
-  },
-  listContent: {
-    paddingBottom: 32,
-  },
-  switchCell: {
+    paddingHorizontal: 16,
     justifyContent: "center",
   },
-  toggleText: {
+
+  searchButtonText: {
     color: Colors.primary,
     fontWeight: "600",
   },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+
   errorText: {
     color: Colors.error,
     marginBottom: 8,
