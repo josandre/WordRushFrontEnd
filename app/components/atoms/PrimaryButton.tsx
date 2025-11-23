@@ -7,7 +7,6 @@ import {
   ViewStyle,
 } from "react-native";
 import style from "../../theme/style";
-import { Colors } from "../../theme/color";
 import { webButtonStyles, getWebPointerStyles } from "../../utils/webStyles";
 import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 type PrimaryButtonProps = {
@@ -16,7 +15,7 @@ type PrimaryButtonProps = {
   textStyle?: TextStyle;
   disabled?: boolean;
   loading?: boolean;
-  style?: ViewStyle; // ✅ new optional style prop
+  style?: ViewStyle;
 };
 
 export default function PrimaryButton({
@@ -25,7 +24,7 @@ export default function PrimaryButton({
   textStyle,
   disabled,
   loading,
-  style: customStyle, // renamed to avoid collision
+  style: customStyle,
 }: PrimaryButtonProps) {
   return (
     <TouchableOpacity
@@ -36,7 +35,7 @@ export default function PrimaryButton({
         style.container,
         webButtonStyles,
         getWebPointerStyles(),
-        customStyle, // ✅ allows external styles like marginTop
+        customStyle,
         disabled || loading ? { opacity: 0.5 } : null,
       ]}
     >

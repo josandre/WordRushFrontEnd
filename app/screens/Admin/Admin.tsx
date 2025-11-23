@@ -12,17 +12,20 @@ import {
 import { Colors } from "@/app/theme/color";
 import { isWeb } from "@/app/utils/envDetails";
 import useAdminUsers from "./services/useAdminUsers";
-
-// ORGANISMS
 import AdminUsersTable from "@/app/components/organisms/admin/AdminUsersTable";
 import AdminUsersList from "@/app/components/organisms/admin/AdminUsersList";
-
-// YOUR ACTUAL APP BACKGROUND
 import introBg from "@/assets/image/bge.png";
 
 export default function Admin() {
-  const { loading, error, users, refresh, setSearch, toggleActive } =
-    useAdminUsers();
+  const {
+    loading,
+    error,
+    users,
+    refresh,
+    setSearch,
+    toggleActive,
+    setUserRole,
+  } = useAdminUsers();
 
   useEffect(() => {
     refresh();
@@ -58,9 +61,17 @@ export default function Admin() {
           {!loading &&
             !error &&
             (isWeb ? (
-              <AdminUsersTable users={users} onToggle={toggleActive} />
+              <AdminUsersTable
+                users={users}
+                onToggle={toggleActive}
+                onToggleRole={setUserRole}
+              />
             ) : (
-              <AdminUsersList users={users} onToggle={toggleActive} />
+              <AdminUsersList
+                users={users}
+                onToggle={toggleActive}
+                onToggleRole={setUserRole}
+              />
             ))}
         </View>
       </SafeAreaView>
@@ -74,7 +85,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // subtle transparent overlay to ensure text readability
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.25)",

@@ -26,9 +26,15 @@ export default function MyTabs() {
   useEffect(() => {
     async function checkRole() {
       try {
-        const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
+        const manager = isWeb
+          ? ProfileWebTokenManager
+          : ProfileMobileTokenManager;
         const profile = await manager.getUserProfile();
-        if (profile && typeof profile.roleId === "number" && profile.roleId === 2) {
+        if (
+          profile &&
+          typeof profile.roleId === "number" &&
+          profile.roleId === 2
+        ) {
           setIsAdmin(true);
         }
       } catch (error) {

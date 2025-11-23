@@ -7,12 +7,14 @@ import AdminMetaText from "@/app/components/atoms/admin/AdminMetaText";
 
 type Props = {
   user: AdminUser;
-  onToggle: (id: number) => void;
+  onToggle: (id: number) => void; // ACTIVE toggle
+  onToggleRole: (id: number, newRoleId: number) => void; // rol admin
 };
 
-export default function AdminUserCard({ user, onToggle }: Props) {
+export default function AdminUserCard({ user, onToggle, onToggleRole }: Props) {
   return (
     <View style={styles.card}>
+      {/** HEADER: Nombre, Email + Toggle Activo */}
       <View style={styles.headerRow}>
         <View style={{ flex: 1 }}>
           <Text style={styles.nickname} numberOfLines={1}>
@@ -20,8 +22,10 @@ export default function AdminUserCard({ user, onToggle }: Props) {
           </Text>
           <AdminMetaText>{user.email}</AdminMetaText>
         </View>
+
         <View style={styles.switchContainer}>
           <AdminMetaText>{user.isActive ? "Activo" : "Inactivo"}</AdminMetaText>
+
           <AdminSwitch
             value={user.isActive}
             onToggle={() => onToggle(user.id)}
@@ -29,8 +33,22 @@ export default function AdminUserCard({ user, onToggle }: Props) {
         </View>
       </View>
 
+      {/** ADMIN ROLE SWITCH BELOW ACTIVE SWITCH — opción B */}
+      <View style={{ marginTop: 8, alignItems: "flex-end" }}>
+        <AdminMetaText>{user.roleId === 2 ? "Admin" : "Usuario"}</AdminMetaText>
+
+        <AdminSwitch
+          value={user.roleId === 2}
+          onToggle={() => {
+            const newRole = user.roleId === 2 ? 1 : 2;
+            onToggleRole(user.id, newRole);
+          }}
+        />
+      </View>
+
       <AdminMetaText>ID: {user.id}</AdminMetaText>
       <AdminMetaText>Rol: {user.roleId}</AdminMetaText>
+
       <AdminMetaText>
         Creado: {new Date(user.createdOn).toLocaleDateString()}
       </AdminMetaText>

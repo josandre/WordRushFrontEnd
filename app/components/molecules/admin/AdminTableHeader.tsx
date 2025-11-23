@@ -8,7 +8,7 @@ export default function AdminTableHeader() {
       <Text style={[styles.headerCell, styles.cellId]}>ID</Text>
       <Text style={[styles.headerCell, styles.cellLarge]}>Nickname</Text>
       <Text style={[styles.headerCell, styles.cellLarge]}>Email</Text>
-      <Text style={[styles.headerCell, styles.cellSmall]}>Role</Text>
+      <Text style={[styles.headerCell, styles.cellSmall]}>Admin</Text>
       <Text style={[styles.headerCell, styles.cellMedium]}>Created</Text>
       <Text style={[styles.headerCell, styles.cellSmall]}>Played</Text>
       <Text style={[styles.headerCell, styles.cellSmall]}>Wins</Text>

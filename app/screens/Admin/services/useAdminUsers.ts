@@ -21,6 +21,13 @@ export type UseAdminUsersResult = {
   refresh: () => Promise<void>;
   setSearch: (value: string) => void;
   toggleActive: (id: number) => Promise<void>;
+  setUserRole: (
+    userId: number,
+    newRoleId: number,
+  ) => Promise<{
+    success: boolean;
+    error?: unknown;
+  }>;
 };
 
 const GET_PATH = "/api/admin/users";
@@ -37,20 +44,52 @@ export default function useAdminUsers(): UseAdminUsersResult {
   const load = useCallback(async () => {
     setLoading(true);
     setError(undefined);
+
     const query = search ? `?search=${encodeURIComponent(search)}` : "";
     const response = await client.get<AdminUser[]>(`${GET_PATH}${query}`);
+
     if (!response.success) {
       setError(response.errorMessage || "Failed to load users");
       setUsers([]);
     } else {
       setUsers(response.data || []);
     }
+
     setLoading(false);
   }, [search]);
 
   const refresh = useCallback(async () => {
     await load();
   }, [load]);
+
+  /**
+   * NEW: Cambiar rol de usuario (1 = normal, 2 = admin)
+   */
+  const setUserRole = useCallback(
+    async (userId: number, newRoleId: number) => {
+      try {
+        const response = await client.post(
+          `/api/admin/user/${userId}/set-role?roleId=${newRoleId}`,
+          {},
+        );
+
+        if (!response.success) {
+          return { success: false, error: response.errorMessage };
+        }
+
+        // Actualiza el estado local como toggleActive
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, roleId: newRoleId } : u)),
+        );
+
+        return { success: true };
+      } catch (err) {
+        console.error("Error changing role:", err);
+        return { success: false, error: err };
+      }
+    },
+    [client],
+  );
 
   const toggleActive = useCallback(
     async (id: number) => {
@@ -59,6 +98,7 @@ export default function useAdminUsers(): UseAdminUsersResult {
         setError(response.errorMessage || "Failed to toggle user state");
         return;
       }
+
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, isActive: !u.isActive } : u)),
       );
@@ -73,5 +113,6 @@ export default function useAdminUsers(): UseAdminUsersResult {
     refresh,
     setSearch,
     toggleActive,
+    setUserRole,
   };
 }

@@ -15,23 +15,19 @@ type Props = {
 
 const AVATAR_SIZE = 70;
 const SPACING = 10;
-// Total width of one item (Avatar size + margin on both sides)
+
 const ITEM_WIDTH = AVATAR_SIZE + SPACING;
 
 export default function AvatarPicker({ avatar, onChange }: Props) {
   const flatListRef = useRef<FlatList<AvatarId>>(null);
-  const avatarKeys = Object.keys(avatars) as AvatarId[]; // explicit cast
+  const avatarKeys = Object.keys(avatars) as AvatarId[];
 
-  // Fix: Use getItemLayout to prevent 'scrollToIndex' error
   const getItemLayout = (data: any, index: number) => ({
-    // length is the fixed width of a single item
     length: ITEM_WIDTH,
-    // offset is the starting point of the item in the list (index * item width)
     offset: ITEM_WIDTH * index,
     index,
   });
 
-  // Scroll to selected avatar on mount / avatar change
   useEffect(() => {
     const index = avatarKeys.indexOf(avatar);
     if (index >= 0 && flatListRef.current) {
@@ -52,7 +48,6 @@ export default function AvatarPicker({ avatar, onChange }: Props) {
         keyExtractor={(item: AvatarId) => item}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 15 }}
-        // ✅ The Fix: Adding getItemLayout
         getItemLayout={getItemLayout}
         renderItem={({ item }: { item: AvatarId }) => {
           const isSelected = item === avatar;
@@ -75,11 +70,9 @@ export default function AvatarPicker({ avatar, onChange }: Props) {
 
 const styles = StyleSheet.create({
   avatarContainer: {
-    // Width and height are AVATAR_SIZE
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
-    // Horizontal margin is SPACING / 2, making the total gap SPACING
     marginHorizontal: SPACING / 2,
     justifyContent: "center",
     alignItems: "center",

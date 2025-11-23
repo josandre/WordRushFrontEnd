@@ -28,8 +28,11 @@ const isWeb = Platform.OS === "web";
 
 export default function GameInformation(): React.JSX.Element {
   const navigation = useNavigation<AppNavigation>();
-  const { getGameStatistics, loading, data: statisticsData } =
-    useGameStatistics();
+  const {
+    getGameStatistics,
+    loading,
+    data: statisticsData,
+  } = useGameStatistics();
   const { getProfileUser, pdata } = useProfileUser();
 
   // Load profile and statistics when screen is focused
@@ -81,7 +84,7 @@ export default function GameInformation(): React.JSX.Element {
             elevation={0}
             leading={
               <TouchableOpacity
-                onPress={() => navigation.navigate("Profile")}
+                onPress={() => navigation.goBack()}
                 style={resetPasswordStyles.backButton}
               >
                 <Icon name="arrow-back" size={24} color={Colors.active} />
@@ -143,4 +146,3 @@ export default function GameInformation(): React.JSX.Element {
     </SafeAreaView>
   );
 }
-

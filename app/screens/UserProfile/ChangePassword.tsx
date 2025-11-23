@@ -47,7 +47,7 @@ export default function ChangePassword(): React.JSX.Element {
         color: SUCCESS_SNACKBAR_COLOR,
       };
       setSnackbar(successSnackBar);
-      navigation.navigate("Login", { fromRegisterSuccess: true });
+      navigation.goBack();
     } else {
       const errorSnackBar: SnackBarProps = {
         visible: true,
@@ -79,7 +79,7 @@ export default function ChangePassword(): React.JSX.Element {
             elevation={0}
             leading={
               <TouchableOpacity
-                onPress={() => navigation.navigate("Profile")}
+                onPress={() => navigation.goBack()}
                 style={resetPasswordStyles.backButton}
               >
                 <Icon name="arrow-back" size={24} color={Colors.active} />

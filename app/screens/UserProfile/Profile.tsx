@@ -107,11 +107,7 @@ export default function Profile() {
               email={pdata?.email ?? ""}
             />
 
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Login", { fromRegisterSuccess: false })
-              }
-            >
+            <TouchableOpacity onPress={() => navigation.goBack()}>
               <Text
                 style={[
                   style.m16,
