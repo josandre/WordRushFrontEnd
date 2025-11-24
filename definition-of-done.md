@@ -1,4 +1,4 @@
-# ✅ Definition of Done (DoD) — WordRushFrontEnd
+# Definition of Done (DoD) — WordRushFrontEnd
 
 Este documento establece los criterios que deben cumplirse para que una tarea/feature se considere completada en el proyecto **WordRushFrontEnd**.
 

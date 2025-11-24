@@ -2,14 +2,14 @@
 
 # README — Frontend (React Native)
 
-## 📦 Proyecto
+## Proyecto
 
 Aplicación móvil _React Native_ (Cliente) que consume la API del Servidor (.NET).  
 Arquitectura _Atomic Design_ y tipado reforzado a partir de los modelos del backend.
 
 ---
 
-## 🏗️ Arquitectura y Setup Inicial
+## Arquitectura y Setup Inicial
 
 ### Arquitectura general del sistema
 
@@ -32,7 +32,7 @@ Se generan types/DTOs desde Swagger/OpenAPI del backend para asegurar contratos 
 
 ---
 
-## 🧰 Herramientas
+## Herramientas
 
 - _Repos_: Dos repos separados (Client y Server).
 - _GitHub_ con dos ramas principales: develop y master.
@@ -42,7 +42,7 @@ Se generan types/DTOs desde Swagger/OpenAPI del backend para asegurar contratos 
 
 ---
 
-# 📐 Estándares de Desarrollo
+# Estándares de Desarrollo
 
 ## Estrategia de ramas (Git)
 
@@ -92,7 +92,7 @@ Se generan types/DTOs desde Swagger/OpenAPI del backend para asegurar contratos 
 
 ---
 
-## ⚙️ Pipelines CI/CD
+## Pipelines CI/CD
 
 - Los **pipelines** se ejecutan automáticamente **cuando se realiza un `push` en cualquier rama**.
 - El flujo incluye las siguientes etapas:
@@ -109,7 +109,7 @@ Se generan types/DTOs desde Swagger/OpenAPI del backend para asegurar contratos 
 
 ---
 
-## ⚙️ Setup local
+## Setup local
 
 ```bash
 # instalar dependencias

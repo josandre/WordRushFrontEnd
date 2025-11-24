@@ -39,7 +39,7 @@ export default function UpdateProfile() {
     }
   }
 
-  // ✅ Load user profile when screen gains focus
+  // Load user profile when screen gains focus
   useFocusEffect(
     useCallback(() => {
       const loadUserProfile = async () => {
@@ -67,7 +67,7 @@ export default function UpdateProfile() {
     );
   };
 
-  // ✅ Preselect avatar safely
+  // Preselect avatar safely
   const avatar: AvatarId =
     pdata?.avatar && Object.keys(avatars).includes(pdata.avatar)
       ? (pdata.avatar as AvatarId)
@@ -115,7 +115,7 @@ export default function UpdateProfile() {
               const result = await updateProfileAPI(updated);
 
               if (result.success) {
-                // ✅ Save the new profile locally so Lobby/Home reflect instantly
+                // Save the new profile locally so Lobby/Home reflect instantly
                 await saveProfile(result.data);
                 handleSuccess("Profile Updated Successfully");
                 setTimeout(() => navigation.goBack(), 800);
@@ -123,7 +123,7 @@ export default function UpdateProfile() {
                 console.warn(result.errorMessage);
               }
             }}
-            onLogin={() => navigation.navigate("Profile")}
+            onLogin={() => navigation.goBack()}
           />
 
           {snackbar.visible && (
