@@ -462,8 +462,8 @@ export default function GameRoom() {
       const gm = new GameManager();
       const gameData: GameRoomData | null = await gm.getGameRoomData();
 
-      setCategories(gameData?.Settings.CategoriesArray ?? []);
-      setAnswers(Array(gameData?.Settings.CategoriesArray?.length).fill(""));
+      setCategories(gameData?.Settings.Categories ?? []);
+      setAnswers(Array(gameData?.Settings.Categories?.length).fill(""));
 
       // Initialise hint tokens based on the current room settings (default to 3)
       const initialTokens = (gameData?.Settings as any)?.HintTokens;

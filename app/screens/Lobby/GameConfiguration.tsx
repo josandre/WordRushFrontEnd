@@ -15,6 +15,8 @@ import {
 import styles, { ERROR_SNACKBAR_COLOR } from "./styles";
 import GameManager from "../../StorageManager/GameManager/GameManager";
 import { GameRoomData } from "../Home/constants";
+import { GameSettings } from "./services/useUpdateGameSettings";
+import webSocketService from "@/app/services/webSocketService";
 
 type SnackBarProps = {
   visible: boolean;
@@ -37,6 +39,8 @@ export default function GameConfiguration() {
     visible: false,
     message: "",
   });
+
+  const [initialDataLoaded, setInitialDataLoaded] = useState<boolean>(false);
   const [gameRoomData, setGameRoomData] = useState<GameRoomData | null>(null);
   const [loadingData, setLoadingData] = useState(true);
 
@@ -45,6 +49,10 @@ export default function GameConfiguration() {
   const [letterOrder, setLetterOrder] = useState<LetterOrder>(
     LetterOrder.Ascending,
   );
+  const [categories, setCategories] = useState<string[] | null>([]);
+  const [newCategory, setNewCategory] = useState<string>("");
+  const [waitingForValidCategoryCheck, setWaitingForValidCategoryCheck] = useState<boolean>(false);
+
   // Number of hint tokens (default to 3)
   const [hintTokens, setHintTokens] = useState<number>(3);
 
@@ -78,13 +86,21 @@ export default function GameConfiguration() {
           // Load hint tokens from settings, default to 3 if missing
           const tokens = (data.Settings as any).HintTokens;
           setHintTokens(tokens !== undefined && tokens !== null ? tokens : 3);
+          
+          setCategories(data.Settings.Categories);
         }
       }
       setLoadingData(false);
+      setInitialDataLoaded(true);
     };
 
-    loadGameRoomData();
-  }, []);
+    webSocketService.connect();
+    webSocketService.addCallbacks("GAME_ROOM|VALID_CATEGORY_CHECK_RESULT", onValidCategoryCheckResult);
+
+    if (!initialDataLoaded) {
+        loadGameRoomData();
+    }
+  }, [roomId, timeLimit, selectedLetters, letterOrder, categories, newCategory]);
 
   const handleLetterToggle = (letter: string) => {
     setSelectedLetters((prev) => {
@@ -104,13 +120,48 @@ export default function GameConfiguration() {
     setSelectedLetters((prev) => sortLettersByOrder(prev, newOrder));
   };
 
+  const handleCategoryAdded = () => {
+    const jsonData = {
+      Category: newCategory,
+    };
+    
+    webSocketService.sendMessage({
+      Type: "GAME_ROOM|VALID_CATEGORY_CHECK",
+      JsonData: JSON.stringify(jsonData)
+    });
+    
+    setWaitingForValidCategoryCheck(true);
+  }
+
+  const onValidCategoryCheckResult = (data: any) => {
+    const jsonData = JSON.parse(data.JsonData);
+    
+    console.log("Is valid category? ", newCategory, jsonData.IsValidCategory)
+    console.log(data);
+    // Add the category if valid
+    if (jsonData.IsValidCategory) {
+      setCategories((categories ? [...categories, jsonData.Category] : [jsonData.Category]));
+    }
+
+    setWaitingForValidCategoryCheck(false);
+  }
+
+  const handleCategoryRemoved = (categoryIndex: number) => {
+    if (categories === null) {
+      return; // Or handle this case as appropriate
+    }
+    const categoriesCopy = categories.filter((_, index) => index !== categoryIndex);
+    setCategories(categoriesCopy);
+  }
+
   const handleSaveConfiguration = async () => {
     const lettersToSave = sortLettersByOrder(selectedLetters, letterOrder);
 
-    const payload = {
+    const payload: GameSettings = {
       RoomId: roomId,
       Settings: {
         Letters: lettersToSave,
+        Categories: categories,
         TimeLimit: timeLimit,
         Order: letterOrderToGameOrder(letterOrder),
         HintTokens: hintTokens,
@@ -119,32 +170,6 @@ export default function GameConfiguration() {
 
     updateGameSettings(payload)
       .then((result) => {
-        if (gameRoomData) {
-          const updatedGameRoomData: GameRoomData = {
-            ...gameRoomData,
-            Settings: {
-              Letters: lettersToSave,
-              TimeLimit: timeLimit,
-              Order: letterOrderToGameOrder(letterOrder),
-                HintTokens: hintTokens,
-            },
-          };
-
-          const gameManager = new GameManager();
-          gameManager
-            .saveGameRoomData(updatedGameRoomData)
-            .then(() => {
-              setSelectedLetters([...lettersToSave]);
-            })
-            .catch((error) => {
-              const errorSnackBar: SnackBarProps = {
-                visible: true,
-                message: error.message || FALLBACK_ERROR_MESSAGE,
-                color: ERROR_SNACKBAR_COLOR,
-              };
-              setSnackbar(errorSnackBar);
-            });
-        }
       })
       .then(() => {
         navigation.navigate("Lobby", {
@@ -211,11 +236,17 @@ export default function GameConfiguration() {
       >
         <GameConfigurationContent
           timeLimit={timeLimit}
+          categories={categories}
           selectedLetters={selectedLetters}
           letterOrder={letterOrder}
+          newCategory={newCategory}
+          waitingForValidCategoryCheck={waitingForValidCategoryCheck}
           onTimeLimitChange={setTimeLimit}
           onLetterToggle={handleLetterToggle}
           onOrderChange={handleOrderChange}
+          onCategoryAdded={handleCategoryAdded}
+          onCategoryRemoved={handleCategoryRemoved}
+          onNewCategoryChange={setNewCategory}
           onSaveConfiguration={handleSaveConfiguration}
           onDiscardChanges={handleDiscardChanges}
           loading={loading}

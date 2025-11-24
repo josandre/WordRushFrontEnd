@@ -14,11 +14,17 @@ import { LetterOrder } from "../../screens/Lobby/services/constants";
 
 type GameConfigurationContentProps = {
   timeLimit: number;
+  categories: string[] | null;
   selectedLetters: string[];
   letterOrder: LetterOrder;
+  newCategory: string;
+  waitingForValidCategoryCheck: boolean,
   onTimeLimitChange: (value: number) => void;
   onLetterToggle: (letter: string) => void;
   onOrderChange: (order: LetterOrder) => void;
+  onNewCategoryChange: (newCategoryValue: string) => void;
+  onCategoryAdded: () => void;
+  onCategoryRemoved: (categoryIndex: number) => void;
   onSaveConfiguration: () => void;
   onDiscardChanges: () => void;
   loading?: boolean;
@@ -54,11 +60,17 @@ const TOKEN_OPTIONS = [
 
 export default function GameConfigurationContent({
   timeLimit,
+  categories,
   selectedLetters,
   letterOrder,
+  newCategory,
+  waitingForValidCategoryCheck,
   onTimeLimitChange,
   onLetterToggle,
   onOrderChange,
+  onNewCategoryChange,
+  onCategoryAdded,
+  onCategoryRemoved,
   onSaveConfiguration,
   onDiscardChanges,
   loading = false,
@@ -69,34 +81,8 @@ export default function GameConfigurationContent({
 }: GameConfigurationContentProps) {
   const isConfigurationValid = selectedLetters.length > 0;
 
-  const categoryType = gameRoomData?.CategoryType as any;
-  const rawCategories =
-    categoryType?.CategoryColumns || categoryType?.categoryColumns || [];
-
-  const categories: Category[] = rawCategories.map((cat: any) => ({
-    id: cat.Id ?? cat.id,
-    column: cat.Column ?? cat.column,
-  }));
-
-  const [selectedCategories, setSelectedCategories] = React.useState<
-    Category[]
-  >([]);
-
   useEffect(() => {
-    if (categories.length > 0 && selectedCategories.length === 0) {
-      setSelectedCategories([...categories]);
-    }
-  }, [categories, selectedCategories.length]);
-
-  const handleCategoryToggle = (category: Category) => {
-    setSelectedCategories((prev) => {
-      if (prev.some((cat) => cat.id === category.id)) {
-        return prev.filter((cat) => cat.id !== category.id);
-      } else {
-        return [...prev, category];
-      }
-    });
-  };
+  }, [categories]);
 
   return (
     <View style={styles.container}>
@@ -104,13 +90,15 @@ export default function GameConfigurationContent({
         title="Game Settings"
         content={
           <View style={styles.content}>
+            {/* Hint Tokens Selector */}
             <View style={styles.section}>
               <Select
-                label="Time Limit"
-                value={timeLimit}
-                options={TIME_OPTIONS}
-                onValueChange={(value) => onTimeLimitChange(value as number)}
-                placeholder="Select time limit"
+                label="Hint Tokens"
+                value={hintTokens}
+                options={TOKEN_OPTIONS}
+                onValueChange={(value) => onHintTokensChange(value as number)}
+                placeholder="Select number of hints"
+                disabled={disabled}
               />
             </View>
             <View style={styles.section}>
@@ -127,65 +115,19 @@ export default function GameConfigurationContent({
               />
             </View>
 
-            {/* Hint Tokens Selector */}
             <View style={styles.section}>
-              <Select
-                label="Hint Tokens"
-                value={hintTokens}
-                options={TOKEN_OPTIONS}
-                onValueChange={(value) => onHintTokensChange(value as number)}
-                placeholder="Select number of hints"
-                disabled={disabled}
-              />
+              <CategorySelector 
+                categories={categories} 
+                newCategory={newCategory}
+                waitingForValidCategoryCheck={waitingForValidCategoryCheck}
+                onCategoryAdded={onCategoryAdded}
+                onCategoryRemoved={onCategoryRemoved}
+                onNewCategoryChange={onNewCategoryChange}/>
             </View>
-            {gameRoomData?.CategoryType && (
-              <View style={styles.section}>
-                <CategorySelector categories={categories} />
-              </View>
-            )}
-
-            {/* Current Settings Display */}
-            {gameRoomData?.Settings && (
-              <View style={styles.section}>
-                <Text
-                  style={[style.r16, { color: Colors.txt, marginBottom: 8 }]}
-                >
-                  Current Settings
-                </Text>
-                <View
-                  style={[
-                    styles.summaryContainer,
-                    {
-                      backgroundColor: Colors.bord,
-                      padding: 12,
-                      borderRadius: 8,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[style.r14, { color: Colors.txt, marginBottom: 4 }]}
-                  >
-                    Time Limit: {gameRoomData.Settings.TimeLimit} seconds
-                  </Text>
-                  <Text
-                    style={[style.r14, { color: Colors.txt, marginBottom: 4 }]}
-                  >
-                    Letters: {gameRoomData.Settings.Letters.join(", ")}
-                  </Text>
-                  <Text style={[style.r14, { color: Colors.txt, marginBottom: 4 }]}>
-                    Order: {gameRoomData.Settings.Order}
-                  </Text>
-                  <Text style={[style.r14, { color: Colors.txt }]}>Hint Tokens: {(gameRoomData.Settings as any).HintTokens ?? 3}</Text>
-                </View>
-              </View>
-            )}
 
             {/* Configuration Summary */}
             <View style={styles.summaryContainer}>
               <Text style={styles.summaryTitle}>Configuration Summary</Text>
-              <Text style={styles.summaryText}>
-                Time Limit: {timeLimit} seconds
-              </Text>
               <Text style={styles.summaryText}>
                 Selected Letters: {selectedLetters.join(", ")}
               </Text>
@@ -193,10 +135,10 @@ export default function GameConfigurationContent({
                 Order: {letterOrder === LetterOrder.Ascending ? "A-Z" : "Z-A"}
               </Text>
               <Text style={styles.summaryText}>Hint Tokens: {hintTokens}</Text>
-              {selectedCategories.length > 0 && (
+              {categories && categories.length > 0 && (
                 <Text style={styles.summaryText}>
                   Selected Categories:{" "}
-                  {selectedCategories.map((c) => c.column).join(", ")}
+                  {categories.map((c) => c).join(", ")}
                 </Text>
               )}
             </View>

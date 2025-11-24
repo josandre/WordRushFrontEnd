@@ -3,7 +3,6 @@ import { GameSetting } from "../Lobby/services/constants";
 export type GameRoomData = {
   GameRoomID: string;
   Settings: GameSetting;
-  CategoryType: CategoryType;
 };
 
 export type WebSocketRoomCreatedEvent = {

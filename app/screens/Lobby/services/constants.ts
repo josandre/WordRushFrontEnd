@@ -1,6 +1,6 @@
 export type GameSetting = {
-  LettersArray: string[] | null;
-  CategoriesArray: string[] | null;
+  Letters: string[] | null;
+  Categories: string[] | null;
   TimeLimit: number;
   Order: GameOrder;
   /**

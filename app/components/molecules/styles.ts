@@ -258,4 +258,20 @@ export default StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  // Category select styles
+  removeCategoryBtn: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    top: -4,
+    right: -4,
+    backgroundColor: '#ff5353ff',
+    borderRadius: 10,
+    padding: 2,
+    elevation: 2,        // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+  },
 });
