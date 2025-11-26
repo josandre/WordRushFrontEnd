@@ -141,6 +141,13 @@ export default function GameConfiguration() {
     // Add the category if valid
     if (jsonData.IsValidCategory) {
       setCategories((categories ? [...categories, jsonData.Category] : [jsonData.Category]));
+    } else {
+      const errorSnackBar: SnackBarProps = {
+        visible: true,
+        message: "The category couldn't be added because is not valid.",
+        color: ERROR_SNACKBAR_COLOR,
+      };
+      setSnackbar(errorSnackBar);
     }
 
     setWaitingForValidCategoryCheck(false);
