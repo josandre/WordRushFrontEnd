@@ -50,10 +50,17 @@ export default function Login() {
 
     const result = await logIn(payload);
 
+    if (!result.success && result.errorMessage === "ACCOUNT_INACTIVE") {
+      setSnackbar({
+        visible: true,
+        message: "Innactive account. Please contact an administrator.",
+        color: ERROR_SNACKBAR_COLOR,
+      });
+      return;
+    }
+
     if (result.success) {
       const tokens = result.data;
-
-      // TODO create centralize object to avoid branching
 
       // SAVE THE NEW TOKEN
       if (isWeb) {

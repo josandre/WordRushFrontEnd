@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, Image } from "react-native";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
 import PrimaryButton from "@/app/components/atoms/PrimaryButton";
 import { Colors } from "@/app/theme/color";
 import style from "@/app/theme/style";
@@ -41,10 +40,8 @@ export default function PlayerCard({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 5,
-        //elevation: 20,
       }}
     >
-      {/* Avatar and info */}
       <View
         style={{
           flexDirection: "row",
@@ -76,8 +73,6 @@ export default function PlayerCard({
           </Text>
         </View>
       </View>
-
-      {/* Ready button only for current user */}
       {showReadyButton && (
         <PrimaryButton
           title={isReady ? "Not Ready" : "Ready!"}

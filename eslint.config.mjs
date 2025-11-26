@@ -48,10 +48,10 @@ export default [
       prettier: prettierPlugin,
     },
     rules: {
-      // ✅ Disable OS-specific line break checks
+      // Disable OS-specific line break checks
       "linebreak-style": "off",
 
-      // ✅ Ensure Prettier respects LF/CRLF automatically
+      // Ensure Prettier respects LF/CRLF automatically
       "prettier/prettier": [
         "warn",
         {

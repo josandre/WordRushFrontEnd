@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from "react";
 import { Animated, Image, View, Text, StyleSheet, Easing } from "react-native";
 import { Colors } from "@/app/theme/color";
 
-// 🌀 Import your logo
 import rushlogo from "@/assets/image/logo2.png";
 
 interface WordRushSpinnerProps {
@@ -14,10 +13,6 @@ interface WordRushSpinnerProps {
   pulse?: boolean;
 }
 
-/**
- * WordRushSpinner
- * A reusable spinning + pulsing WordRush logo loader.
- */
 export default function WordRushSpinner({
   text = "Loading...",
   showText = true,
@@ -30,7 +25,6 @@ export default function WordRushSpinner({
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Continuous rotation
     const spinLoop = () => {
       spinAnim.setValue(0);
       Animated.timing(spinAnim, {
@@ -42,7 +36,6 @@ export default function WordRushSpinner({
     };
     spinLoop();
 
-    // Optional pulsing scale
     if (pulse) {
       Animated.loop(
         Animated.sequence([

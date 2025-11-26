@@ -42,10 +42,8 @@ import ProfileWebTokenManager from "@/app/StorageManager/ProfileManager/web/WebP
 import useProfileUser from "@/app/screens/UserProfile/services/useProfileUser";
 import avatars, { getAvatarImage } from "@/assets/avatars";
 
-// Icon library used for hint button
 import Icon from "react-native-vector-icons/Ionicons";
 
-// 🖼️ Category icons
 import personIcon from "@/assets/icons/person.png";
 import globeIcon from "@/assets/icons/globe.png";
 import foodIcon from "@/assets/icons/food.png";
@@ -69,8 +67,6 @@ enum SessionState {
   IN_GAME_RESULTS,
 }
 
-// Structure of the hint response coming from the backend.
-// Contains the generated hint text and the number of tokens remaining for the player.
 type HintResponsePayload = {
   hint: string;
   tokensLeft: number;
@@ -95,34 +91,18 @@ export default function GameRoom() {
   });
   const [notifiedIsReady, setNotifiedIsReady] = useState<boolean>(false);
 
-  // New: Store full round results payload
-  // ---------------------------------------------------------------------------
-  // Hint system state
-  // Number of hint tokens the player has remaining in the current game.  This
-  // value is initialized from the server settings when the component mounts
-  // and is updated whenever a hint response is received from the backend.
   const [hintTokensLeft, setHintTokensLeft] = useState<number>(3);
-  // The actual hint text returned by the backend.  This will be displayed
-  // inside a modal when a hint is requested.
   const [currentHint, setCurrentHint] = useState<string>("");
-  // Controls whether the hint modal is visible.
   const [hintModalVisible, setHintModalVisible] = useState<boolean>(false);
-
-  // 🆕 New: Store full round results payload
   const [roundResults, setRoundResults] = useState<RoundResultsPayload | null>(
     null,
   );
-  // current player's userId (from profile storage)
   const [userId, setUserId] = useState<number | null>(null);
-
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
-
-  // User Profile (for GameRoomTitleBar)
   const { getProfileUser, pdata } = useProfileUser();
   const manager = isWeb ? ProfileWebTokenManager : ProfileMobileTokenManager;
   const avatarSource = getAvatarImage(pdata?.avatar) || avatars["default"];
-  // load userId once from stored profile (UserProfile key)
   useEffect(() => {
     const loadUserIdFromProfile = async () => {
       try {
@@ -137,12 +117,8 @@ export default function GameRoom() {
     };
     loadUserIdFromProfile();
   }, []);
-
-  // 🎞️ Animation for round results
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
-
-  // When round results state changes, fade in the section
   useEffect(() => {
     if (sessionState === SessionState.IN_ROUND_RESULTS) {
       fadeAnim.setValue(0);
@@ -182,7 +158,6 @@ export default function GameRoom() {
     Color: colorIcon,
   };
 
-  // --- Original GameRoom Logic (unchanged) ---
   const onRoomClosed = (): void => {
     setSnackbar({
       visible: true,
@@ -192,15 +167,8 @@ export default function GameRoom() {
     navigation.navigate("MyTabs");
   };
 
-  /**
-   * Handles the server's hint response. The backend sends back both the hint
-   * text and the number of tokens remaining.  Parse the incoming payload
-   * safely, update our state accordingly, and then display the hint in
-   * a modal. If parsing fails, the response is ignored.
-   */
   const onHintResponse = (data: any): void => {
     try {
-      // Determine if the backend wrapped the payload in a JsonData string
       const jsonString =
         typeof data === "string"
           ? data
@@ -241,25 +209,17 @@ export default function GameRoom() {
     setSessionState(SessionState.IN_ROUND);
   };
 
-  // ✅ Fixed and normalized: Handle scored round results
   const onRoundResultReceived = (data: any): void => {
     console.log("----ROUND DATA: ", data);
 
     try {
-      // Detect if the WebSocket message contains JsonData (envelope)
-      // Accept raw objects OR wrapped envelopes
       let jsonString: string | null = null;
 
-      // Case 1: backend sent the full object directly (no envelope)
       if (typeof data === "object" && data.Letter) {
         jsonString = JSON.stringify(data);
-      }
-      // Case 2: backend sent the envelope with JsonData
-      else if (typeof data?.JsonData === "string") {
+      } else if (typeof data?.JsonData === "string") {
         jsonString = data.JsonData;
-      }
-      // Case 3: backend sent string directly
-      else if (typeof data === "string") {
+      } else if (typeof data === "string") {
         jsonString = data;
       }
 
@@ -271,7 +231,7 @@ export default function GameRoom() {
       // Parse the backend payload
       const parsed = JSON.parse(jsonString);
 
-      // ✅ Normalize casing and structure to match RoundResultsPayload
+      // Normalize casing and structure to match RoundResultsPayload
       const payload: RoundResultsPayload = {
         letter: parsed.Letter ?? "",
         categories: parsed.Categories ?? [],
@@ -294,7 +254,7 @@ export default function GameRoom() {
           : [],
       };
 
-      console.log("✅ Normalized round results:", payload);
+      console.log("Normalized round results:", payload);
 
       // Update UI state
       setRoundResults(payload);
@@ -334,7 +294,7 @@ export default function GameRoom() {
           players,
         });
 
-        console.log("✅ Final game results parsed:", players);
+        console.log("Final game results parsed:", players);
       } else {
         console.warn("GAME_FINISHED payload missing Players:", parsed);
       }
@@ -393,12 +353,6 @@ export default function GameRoom() {
     setAnswers(newAnswers);
   };
 
-  /**
-   * Sends a hint request to the backend for the provided category.  Hints can
-   * only be requested when the game is currently in a round and the player
-   * still has tokens remaining. The active round letter is included in
-   * the payload.  If no tokens remain, a snackbar notification is shown.
-   */
   const onHintPress = (category: string) => {
     if (sessionState !== SessionState.IN_ROUND) return;
 
@@ -420,16 +374,12 @@ export default function GameRoom() {
         }),
       };
 
-      webSocketService.sendMessage(payload); // ✅ single-argument version
+      webSocketService.sendMessage(payload);
     } catch (err) {
       console.warn("Failed to send hint request", err);
     }
   };
 
-  /**
-   * Closes the hint modal and clears the current hint text.  This does not
-   * restore any tokens, it simply hides the hint popup.
-   */
   const closeHintModal = () => {
     setHintModalVisible(false);
     setCurrentHint("");
@@ -444,11 +394,9 @@ export default function GameRoom() {
   const handleRoundResultContinue = (): void => {
     setNotifiedIsReady(true);
 
-    // Prefer the helper that already formats JsonData with userId
     if (userId != null) {
       webSocketService.sendReadyForNextRound(userId.toString());
     } else {
-      // Fallback to original behavior if userId isn't available
       webSocketService.sendMessage({
         Type: "GAME_SESSION|READY_FOR_NEXT_ROUND",
         JsonData: "{}",
@@ -594,7 +542,7 @@ export default function GameRoom() {
       );
     }
 
-    // 💻 Web version
+    // Web version
     return (
       <View
         style={{
@@ -701,8 +649,8 @@ export default function GameRoom() {
     const otherPlayers = roundResults.players.filter(
       (p) => normalizeName(p.name) !== normalizeName(pdata?.nickname),
     );
-
-    // 🏆 determine unique winner (no ties, non-zero only)
+    
+    // determine unique winner (no ties, non-zero only)
     const topScore = Math.max(...roundResults.players.map((p) => p.total));
     const tiedPlayers = roundResults.players.filter(
       (p) => p.total === topScore,
@@ -720,9 +668,9 @@ export default function GameRoom() {
     return (
       <View
         style={{
-          marginTop: 0, // reduced gap above card
+          marginTop: 0,
           width: "100%",
-          paddingHorizontal: isWeb ? 10 : 8, // slightly tighter padding
+          paddingHorizontal: isWeb ? 10 : 8,
         }}
       >
         {/* Round Letter title */}
@@ -732,13 +680,13 @@ export default function GameRoom() {
             fontSize: 20,
             color: Colors.secondary,
             textAlign: "center",
-            marginBottom: 4, // was ~14–10 → reduced to close gap
+            marginBottom: 4,
           }}
         >
           Round Letter: {roundResults.letter?.toUpperCase() ?? "?"}
         </Text>
 
-        {/* 🧍 My detailed results */}
+        {/* My detailed results */}
         {myResult && (
           <View
             style={{
@@ -815,7 +763,7 @@ export default function GameRoom() {
           </View>
         )}
 
-        {/* 🏆 Other players summary */}
+        {/* Other players summary */}
         {otherPlayers.length > 0 && (
           <View
             style={{
@@ -972,7 +920,7 @@ export default function GameRoom() {
 
         const topScore = allPlayers.length > 0 ? allPlayers[0].total : 0;
         const winners =
-          topScore > 0 ? allPlayers.filter((p) => p.total === topScore) : []; // 🧩 only count winners if topScore > 0
+          topScore > 0 ? allPlayers.filter((p) => p.total === topScore) : []; // only count winners if topScore > 0
 
         return (
           <ContentCard
@@ -1101,7 +1049,6 @@ export default function GameRoom() {
         barStyle="light-content"
       />
 
-      {/* ✅ NEW: GameRoomTitleBar */}
       <View style={{ marginTop: 20 }}>
         <GameRoomTitleBar username={pdata?.nickname} avatar={avatarSource} />
       </View>
@@ -1121,7 +1068,6 @@ export default function GameRoom() {
         <View style={styles.container}>{renderContent()}</View>
       </ScrollView>
 
-      {/* Hint modal: shown when a hint is received */}
       <Modal
         transparent
         visible={hintModalVisible}
