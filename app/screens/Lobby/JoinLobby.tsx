@@ -30,7 +30,6 @@ export default function JoinLobby() {
     const roomData: GameRoomData = {
       GameRoomID: jsonData.GameRoomID,
       Settings: jsonData.Settings,
-      CategoryType: jsonData.CategoryType,
     };
 
     const gameManager = new GameManager();

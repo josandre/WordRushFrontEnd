@@ -229,6 +229,8 @@ export default StyleSheet.create({
     color: Colors.secondary,
     fontFamily: isWeb ? "Rubik, sans-serif" : "Rubik-Medium",
     fontWeight: isWeb ? "500" : "normal",
+    textAlign: "center",
+    alignSelf: "center",
   },
   btnoutline: {
     alignItems: "center",

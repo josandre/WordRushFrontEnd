@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
   Modal,
   TouchableOpacity,
+  ImageSourcePropType,
 } from "react-native";
 import WordRushSpinner from "@/app/components/atoms/WordRushSpinner";
 import { Colors } from "@/app/theme/color";
@@ -48,6 +49,8 @@ import globeIcon from "@/assets/icons/globe.png";
 import foodIcon from "@/assets/icons/food.png";
 import animalIcon from "@/assets/icons/animal.png";
 import colorIcon from "@/assets/icons/color.png";
+import customIcon from "@/assets/icons/custom.png";
+
 import { GameRoomData } from "../Home/constants";
 
 type GameRoomRouteParams = {
@@ -153,6 +156,7 @@ export default function GameRoom() {
     "Fruit or Food": foodIcon,
     Animal: animalIcon,
     Color: colorIcon,
+    Custom: customIcon,
   };
 
   const onRoomClosed = (): void => {
@@ -410,8 +414,8 @@ export default function GameRoom() {
       const gm = new GameManager();
       const gameData: GameRoomData | null = await gm.getGameRoomData();
 
-      setCategories(gameData?.Settings.CategoriesArray ?? []);
-      setAnswers(Array(gameData?.Settings.CategoriesArray?.length).fill(""));
+      setCategories(gameData?.Settings.Categories ?? []);
+      setAnswers(Array(gameData?.Settings.Categories?.length).fill(""));
 
       // Initialise hint tokens based on the current room settings (default to 3)
       const initialTokens = (gameData?.Settings as any)?.HintTokens;
@@ -450,6 +454,17 @@ export default function GameRoom() {
       setup();
     }
   }, [answers, categories, roundLetter]);
+
+  // const getCategoryIcon = (category: string): ImageSourcePropType => {
+  //   if (categoryIcons.hasOwnProperty(category)) {
+  //     return categoryIcons[category];
+  //   }
+
+  //   return customIcon;
+  // };
+  const getCategoryIcon = (category: string): ImageSourcePropType => {
+    return categoryIcons[category] ?? categoryIcons.Custom;
+  };
 
   const renderCards = () => {
     if (!isWeb) {
@@ -500,7 +515,7 @@ export default function GameRoom() {
               </TouchableOpacity>
 
               <Image
-                source={categoryIcons[category]}
+                source={getCategoryIcon(category)}
                 style={{ width: 60, height: 60, marginBottom: 10 }}
                 resizeMode="contain"
               />
@@ -588,7 +603,7 @@ export default function GameRoom() {
             </TouchableOpacity>
 
             <Image
-              source={categoryIcons[category]}
+              source={getCategoryIcon(category)}
               style={{ width: 80, height: 80, marginBottom: 14 }}
               resizeMode="contain"
             />
@@ -638,14 +653,6 @@ export default function GameRoom() {
     const otherPlayers = roundResults.players.filter(
       (p) => normalizeName(p.name) !== normalizeName(pdata?.nickname),
     );
-
-    const categoryIcons: Record<string, any> = {
-      Name: personIcon,
-      "Country or City": globeIcon,
-      "Fruit or Food": foodIcon,
-      Animal: animalIcon,
-      Color: colorIcon,
-    };
 
     // determine unique winner (no ties, non-zero only)
     const topScore = Math.max(...roundResults.players.map((p) => p.total));
@@ -716,7 +723,7 @@ export default function GameRoom() {
             </Text>
             {Object.entries(myResult.scores).map(
               ([category, score], i, arr) => {
-                const icon = categoryIcons[category] ?? null;
+                const icon = getCategoryIcon(category) ?? null;
                 const answer = myResult.answers?.[category] ?? "";
                 const isLast = i === arr.length - 1;
 
