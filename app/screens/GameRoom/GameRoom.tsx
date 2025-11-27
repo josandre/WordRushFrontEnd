@@ -156,6 +156,7 @@ export default function GameRoom() {
     "Fruit or Food": foodIcon,
     Animal: animalIcon,
     Color: colorIcon,
+    Custom: customIcon,
   };
 
   const onRoomClosed = (): void => {
@@ -454,13 +455,16 @@ export default function GameRoom() {
     }
   }, [answers, categories, roundLetter]);
 
+  // const getCategoryIcon = (category: string): ImageSourcePropType => {
+  //   if (categoryIcons.hasOwnProperty(category)) {
+  //     return categoryIcons[category];
+  //   }
+
+  //   return customIcon;
+  // };
   const getCategoryIcon = (category: string): ImageSourcePropType => {
-    if (categoryIcons.hasOwnProperty(category)) {
-      return categoryIcons[category];
-    }
-    
-    return customIcon;
-  }
+    return categoryIcons[category] ?? categoryIcons.Custom;
+  };
 
   const renderCards = () => {
     if (!isWeb) {
@@ -649,7 +653,7 @@ export default function GameRoom() {
     const otherPlayers = roundResults.players.filter(
       (p) => normalizeName(p.name) !== normalizeName(pdata?.nickname),
     );
-    
+
     // determine unique winner (no ties, non-zero only)
     const topScore = Math.max(...roundResults.players.map((p) => p.total));
     const tiedPlayers = roundResults.players.filter(
