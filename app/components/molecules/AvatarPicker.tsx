@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef } from "react";
 import {
   FlatList,
   ScrollView,
@@ -15,7 +15,8 @@ type Props = {
   onChange: (id: AvatarId) => void;
 };
 
-const AVATAR_SIZE = 120;
+// 30% bigger
+const AVATAR_SIZE = 90;
 const SPACING = 10;
 const SCROLL_STEP = 250;
 
@@ -23,49 +24,98 @@ export default function AvatarPicker({ avatar, onChange }: Props) {
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollXRef = useRef(0);
 
+  // for scroll clamp
   const viewportWidthRef = useRef(0);
   const contentWidthRef = useRef(0);
 
   const avatarKeys = Object.keys(avatars) as AvatarId[];
 
+  //
+  // ---------------- MOBILE VERSION (2 rows) ----------------
+  //
   if (Platform.OS !== "web") {
+    const half = Math.ceil(avatarKeys.length / 2);
+    const row1 = avatarKeys.slice(0, half);
+    const row2 = avatarKeys.slice(half);
+
+    const perItem = AVATAR_SIZE + SPACING;
+    const rowPixelWidth = perItem * row1.length + 15;
+
     return (
-      <View style={{ marginVertical: 20 }}>
-        <FlatList
+      <View style={styles.webWrapper}>
+        <ScrollView
+          ref={scrollViewRef}
           horizontal
-          data={avatarKeys}
-          keyExtractor={(item) => item}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 15 }}
-          renderItem={({ item }) => {
-            const selected = item === avatar;
-            return (
-              <TouchableOpacity
-                onPress={() => onChange(item)}
-                style={[
-                  styles.avatarContainer,
-                  selected && styles.selectedAvatar,
-                ]}
-              >
-                <Image source={avatars[item]} style={styles.avatar} />
-              </TouchableOpacity>
-            );
+          onScroll={(e) => {
+            scrollXRef.current = e.nativeEvent.contentOffset.x;
           }}
-        />
+          scrollEventThrottle={16}
+          onLayout={(e) => {
+            viewportWidthRef.current = e.nativeEvent.layout.width;
+          }}
+        >
+          <View
+            style={[styles.twoRowContainer, { width: rowPixelWidth }]}
+            onLayout={(e) => {
+              contentWidthRef.current = e.nativeEvent.layout.width;
+            }}
+          >
+            <View style={styles.row}>
+              {row1.map((item) => {
+                const selected = item === avatar;
+                return (
+                  <TouchableOpacity
+                    key={item}
+                    onPress={() => onChange(item)}
+                    style={[
+                      styles.avatarContainer,
+                      selected && styles.selectedAvatar,
+                    ]}
+                  >
+                    <Image source={avatars[item]} style={styles.avatar} />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={styles.row}>
+              {row2.map((item) => {
+                const selected = item === avatar;
+                return (
+                  <TouchableOpacity
+                    key={item}
+                    onPress={() => onChange(item)}
+                    style={[
+                      styles.avatarContainer,
+                      selected && styles.selectedAvatar,
+                    ]}
+                  >
+                    <Image source={avatars[item]} style={styles.avatar} />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </ScrollView>
       </View>
     );
   }
 
-  const midpoint = Math.ceil(avatarKeys.length / 2);
-  const row1 = avatarKeys.slice(0, midpoint);
-  const row2 = avatarKeys.slice(midpoint);
+  //
+  // ---------------- WEB VERSION (3 rows + scroll clamp) ----------------
+  //
 
+  // split into 3 rows
+  const itemsPerRow = Math.ceil(avatarKeys.length / 3);
+  const row1 = avatarKeys.slice(0, itemsPerRow);
+  const row2 = avatarKeys.slice(itemsPerRow, itemsPerRow * 2);
+  const row3 = avatarKeys.slice(itemsPerRow * 2);
+
+  // calculate real width (based on longest row)
+  const longestRow = Math.max(row1.length, row2.length, row3.length);
   const perItem = AVATAR_SIZE + SPACING;
-  const rowPixelWidth = perItem * row1.length + 15;
-
-  const onScroll = (event: any) => {
-    scrollXRef.current = event.nativeEvent.contentOffset.x;
-  };
+  const rowPixelWidth = longestRow * perItem + 15;
 
   const scrollBy = (delta: number) => {
     if (!scrollViewRef.current) return;
@@ -97,19 +147,22 @@ export default function AvatarPicker({ avatar, onChange }: Props) {
       <ScrollView
         ref={scrollViewRef}
         horizontal
-        scrollEventThrottle={16}
-        onScroll={onScroll}
         showsHorizontalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={(e) => {
+          scrollXRef.current = e.nativeEvent.contentOffset.x;
+        }}
         onLayout={(e) => {
           viewportWidthRef.current = e.nativeEvent.layout.width;
         }}
       >
         <View
-          style={[styles.twoRowContainer, { width: rowPixelWidth }]}
+          style={[styles.threeRowContainer, { width: rowPixelWidth }]}
           onLayout={(e) => {
             contentWidthRef.current = e.nativeEvent.layout.width;
           }}
         >
+          {/* Row 1 */}
           <View style={styles.row}>
             {row1.map((item) => {
               const selected = item === avatar;
@@ -128,8 +181,28 @@ export default function AvatarPicker({ avatar, onChange }: Props) {
             })}
           </View>
 
+          {/* Row 2 */}
           <View style={styles.row}>
             {row2.map((item) => {
+              const selected = item === avatar;
+              return (
+                <TouchableOpacity
+                  key={item}
+                  onPress={() => onChange(item)}
+                  style={[
+                    styles.avatarContainer,
+                    selected && styles.selectedAvatar,
+                  ]}
+                >
+                  <Image source={avatars[item]} style={styles.avatar} />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Row 3 */}
+          <View style={styles.row}>
+            {row3.map((item) => {
               const selected = item === avatar;
               return (
                 <TouchableOpacity
@@ -172,6 +245,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
 
+  threeRowContainer: {
+    flexDirection: "column",
+    paddingHorizontal: 15,
+  },
+
   row: {
     flexDirection: "row",
     paddingVertical: 5,
@@ -180,7 +258,7 @@ const styles = StyleSheet.create({
 
   arrowButton: {
     width: 35,
-    height: AVATAR_SIZE * 2 + 10,
+    height: AVATAR_SIZE * 4,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -188,9 +266,9 @@ const styles = StyleSheet.create({
   arrowLeft: {
     width: 0,
     height: 0,
-    borderTopWidth: 14,
-    borderBottomWidth: 14,
-    borderRightWidth: 20,
+    borderTopWidth: 18,
+    borderBottomWidth: 18,
+    borderRightWidth: 24,
     borderTopColor: "transparent",
     borderBottomColor: "transparent",
     borderRightColor: "#888",
@@ -199,9 +277,9 @@ const styles = StyleSheet.create({
   arrowRight: {
     width: 0,
     height: 0,
-    borderTopWidth: 14,
-    borderBottomWidth: 14,
-    borderLeftWidth: 20,
+    borderTopWidth: 18,
+    borderBottomWidth: 18,
+    borderLeftWidth: 24,
     borderTopColor: "transparent",
     borderBottomColor: "transparent",
     borderLeftColor: "#888",
