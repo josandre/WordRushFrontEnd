@@ -121,6 +121,17 @@ export default function GameConfiguration() {
   };
 
   const handleCategoryAdded = () => {
+    if (categories?.includes(newCategory)) {
+      const errorSnackBar: SnackBarProps = {
+        visible: true,
+        message: "The category couldn't be added because it is already included in the rules.",
+        color: ERROR_SNACKBAR_COLOR,
+      };
+      setSnackbar(errorSnackBar);
+
+      return;
+    }
+
     const jsonData = {
       Category: newCategory,
     };
@@ -141,6 +152,7 @@ export default function GameConfiguration() {
     // Add the category if valid
     if (jsonData.IsValidCategory) {
       setCategories((categories ? [...categories, jsonData.Category] : [jsonData.Category]));
+      setNewCategory("");
     } else {
       const errorSnackBar: SnackBarProps = {
         visible: true,
