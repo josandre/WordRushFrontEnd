@@ -120,8 +120,17 @@ export default function GameConfiguration() {
     setSelectedLetters((prev) => sortLettersByOrder(prev, newOrder));
   };
 
+  const isCategoryAlreadyAdded = (categoryToCheck: string, categoriesToCompare: string[] | null) => {
+    const normalize = (s: string) =>
+    s.toLowerCase().replace(/[\s\-_]/g, "");
+
+    const normalizedTarget = normalize(categoryToCheck);
+
+    return categoriesToCompare?.some(item => normalize(item) === normalizedTarget);
+  }
+
   const handleCategoryAdded = () => {
-    if (categories?.includes(newCategory)) {
+    if (isCategoryAlreadyAdded(newCategory, categories)) {
       const errorSnackBar: SnackBarProps = {
         visible: true,
         message: "The category couldn't be added because it is already included in the rules.",
